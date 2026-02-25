@@ -1,41 +1,54 @@
 import React from "react";
 import { FaCheckDouble, FaLongArrowAltRight } from "react-icons/fa";
 import { FaCircle } from "react-icons/fa";
-import { formatDateAndTime, getAvatarName } from "../../utils/index";
+import {
+  formatDateAndTime,
+  formatReadableOrderId,
+  getAvatarName,
+  getReadableCustomerName,
+} from "../../utils/index";
 
-const OrderCard = ({ key, order }) => {
-  console.log(order);
+const OrderCard = ({ order, onSelect }) => {
+  const readableName = getReadableCustomerName(
+    order?.customerDetails?.name,
+    order?.customerDetails?.phone
+  );
+  const readableOrderId = formatReadableOrderId(order?._id);
+
   return (
-    <div key={key} className="w-[500px] bg-[#262626] p-4 rounded-lg mb-4">
-      <div className="flex items-center gap-5">
-        <button className="bg-[#f6b100] p-3 text-xl font-bold rounded-lg">
-          {getAvatarName(order.customerDetails.name)}
+    <div
+      className="w-full bg-[#262626] p-4 rounded-lg mb-3 cursor-pointer border border-transparent hover:border-[#555] active:scale-[0.995] transition-transform"
+      onClick={() => onSelect?.(order)}
+    >
+      <div className="flex items-start md:items-center gap-3 md:gap-5">
+        <button className="bg-[#f6b100] min-h-[44px] min-w-[44px] px-3 text-xl font-bold rounded-lg">
+          {getAvatarName(readableName)}
         </button>
-        <div className="flex items-center justify-between w-[100%]">
+        <div className="flex items-start md:items-center justify-between w-[100%] gap-3">
           <div className="flex flex-col items-start gap-1">
             <h1 className="text-[#f5f5f5] text-lg font-semibold tracking-wide">
-              {order.customerDetails.name}
+              {readableName}
             </h1>
-            <p className="text-[#ababab] text-sm">#{Math.floor(new Date(order.orderDate).getTime())} / Dine in</p>
-            <p className="text-[#ababab] text-sm">Table <FaLongArrowAltRight className="text-[#ababab] ml-2 inline" /> {order.table.tableNo}</p>
+            <p className="text-[#ababab] text-xs md:text-sm">{readableOrderId} / Dine in</p>
+            <p className="text-[#ababab] text-xs md:text-sm">Table <FaLongArrowAltRight className="text-[#ababab] ml-2 inline" /> {order.table?.tableNo || "N/A"}</p>
           </div>
-          <div className="flex flex-col items-end gap-2">
+          <div className="flex flex-col items-end gap-1 md:gap-2">
             {order.orderStatus === "Ready" ? (
               <>
-                <p className="text-green-600 bg-[#2e4a40] px-2 py-1 rounded-lg">
+                <p className="text-green-600 bg-[#2e4a40] px-2 py-1 rounded-lg text-xs md:text-sm">
                   <FaCheckDouble className="inline mr-2" /> {order.orderStatus}
                 </p>
-                <p className="text-[#ababab] text-sm">
+                <p className="text-[#ababab] text-xs md:text-sm">
                   <FaCircle className="inline mr-2 text-green-600" /> Ready to
                   serve
                 </p>
               </>
             ) : (
               <>
-                <p className="text-yellow-600 bg-[#4a452e] px-2 py-1 rounded-lg">
+                <p className="text-yellow-600 bg-[#4a452e] px-2 py-1 rounded-lg text-xs md:text-sm">
                   <FaCircle className="inline mr-2" /> {order.orderStatus}
                 </p>
-                <p className="text-[#ababab] text-sm">
+                <p className="text-[#ababab] text-xs md:text-sm">
                   <FaCircle className="inline mr-2 text-yellow-600" /> Preparing your order
                 </p>
               </>
@@ -43,15 +56,19 @@ const OrderCard = ({ key, order }) => {
           </div>
         </div>
       </div>
-      <div className="flex justify-between items-center mt-4 text-[#ababab]">
-        <p>{formatDateAndTime(order.orderDate)}</p>
-        <p>{order.items.length} Items</p>
+      <div className="flex justify-between items-center mt-4 text-[#ababab] text-xs md:text-sm gap-2">
+        <p className="truncate">{formatDateAndTime(order.orderDate)}</p>
+        <p className="text-right">
+          {order.items.length} Items · {order.sourceType || "POS"}
+          {order.externalOrderId ? ` · ${order.externalOrderId}` : ""}
+        </p>
       </div>
       <hr className="w-full mt-4 border-t-1 border-gray-500" />
       <div className="flex items-center justify-between mt-4">
         <h1 className="text-[#f5f5f5] text-lg font-semibold">Total</h1>
-        <p className="text-[#f5f5f5] text-lg font-semibold">₹{order.bills.totalWithTax.toFixed(2)}</p>
+        <p className="text-[#f5f5f5] text-lg font-semibold">€{Number(order?.bills?.totalWithTax || 0).toFixed(2)}</p>
       </div>
+      <p className="text-xs text-[#8bbcff] mt-2">Click to view order details</p>
     </div>
   );
 };

@@ -4,7 +4,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon app.js",
-    "start": "node app.js"
+    "start": "node app.js",
+    "seed": "node scripts/seed.js",
+    "test": "JWT_SECRET=test-secret node --test tests/*.test.js",
+    "test:e2e:phase2": "node scripts/phase2-e2e.js",
+    "test:e2e:playwright": "node scripts/playwright-fullstack-e2e.js"
   },
   "keywords": [],
   "author": "",
@@ -14,15 +18,15 @@
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
-    "crypto": "^1.0.1",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "http-errors": "^2.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
-    "razorpay": "^2.9.5"
+    "stripe": "^20.3.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "playwright": "^1.58.2"
   }
 }

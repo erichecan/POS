@@ -1,0 +1,221 @@
+const HARDWARE_CATALOG_VERSION = "2026-02-24-na-eu-v1";
+
+const DEVICE_CLASSES = Object.freeze([
+  "POS_TERMINAL",
+  "MOBILE_POS",
+  "PAYMENT_TERMINAL",
+  "RECEIPT_PRINTER",
+  "KITCHEN_PRINTER",
+  "KDS",
+  "CASH_DRAWER",
+  "KIOSK",
+  "CUSTOMER_DISPLAY",
+  "QUEUE_DISPLAY",
+  "DIGITAL_SIGNAGE",
+  "NETWORK",
+  "OTHER",
+]);
+
+const CAPABILITIES = Object.freeze([
+  "COUNTER_CHECKOUT",
+  "TABLESIDE_ORDERING",
+  "EMV_NFC_PAYMENT",
+  "FRONT_RECEIPT_PRINT",
+  "KITCHEN_TICKET_PRINT",
+  "KDS_PRODUCTION",
+  "CASH_MANAGEMENT",
+  "SELF_ORDER_KIOSK",
+  "CUSTOMER_FACING_DISPLAY",
+  "QUEUE_CALLING",
+  "MENU_AD_SIGNAGE",
+  "OFFLINE_TOLERANCE",
+]);
+
+const HARDWARE_PROVIDERS = Object.freeze([
+  {
+    providerCode: "TOAST",
+    providerName: "Toast",
+    countryCodes: ["US", "CA", "IE", "GB"],
+    notes: [
+      "Primary region coverage: US/CA/IE/GB in this catalog profile.",
+      "Some hardware/SKU availability may vary by contract and local operations policy.",
+    ],
+    devices: [
+      {
+        modelCode: "TOAST_FLEX_3_COUNTERTOP",
+        displayName: "Toast Flex 3 Countertop",
+        deviceClass: "POS_TERMINAL",
+        capabilityTags: ["COUNTER_CHECKOUT", "EMV_NFC_PAYMENT", "CUSTOMER_FACING_DISPLAY"],
+        recommendedFor: ["FULL_SERVICE", "WESTERN_DINING", "DIM_SUM", "HOTPOT"],
+      },
+      {
+        modelCode: "TOAST_FLEX_3_WEDGE",
+        displayName: "Toast Flex 3 Wedge",
+        deviceClass: "POS_TERMINAL",
+        capabilityTags: ["COUNTER_CHECKOUT", "EMV_NFC_PAYMENT", "FRONT_RECEIPT_PRINT"],
+        recommendedFor: ["CHINESE_FAST_FOOD", "MILK_TEA", "SUSHI"],
+      },
+      {
+        modelCode: "TOAST_GO_3",
+        displayName: "Toast Go 3",
+        deviceClass: "MOBILE_POS",
+        capabilityTags: ["TABLESIDE_ORDERING", "EMV_NFC_PAYMENT", "OFFLINE_TOLERANCE"],
+        recommendedFor: ["FULL_SERVICE", "SUSHI", "DIM_SUM", "HOTPOT"],
+      },
+      {
+        modelCode: "TOAST_TAP",
+        displayName: "Toast Tap",
+        deviceClass: "PAYMENT_TERMINAL",
+        capabilityTags: ["EMV_NFC_PAYMENT"],
+        recommendedFor: ["FULL_SERVICE", "WESTERN_DINING", "NAIL_SALON"],
+      },
+      {
+        modelCode: "TOAST_KIOSK",
+        displayName: "Toast Kiosk",
+        deviceClass: "KIOSK",
+        capabilityTags: ["SELF_ORDER_KIOSK", "EMV_NFC_PAYMENT", "CUSTOMER_FACING_DISPLAY"],
+        recommendedFor: ["CHINESE_FAST_FOOD", "MILK_TEA"],
+      },
+      {
+        modelCode: "TOAST_KDS",
+        displayName: "Toast Kitchen Display System",
+        deviceClass: "KDS",
+        capabilityTags: ["KDS_PRODUCTION", "KITCHEN_TICKET_PRINT"],
+        recommendedFor: ["FULL_SERVICE", "SUSHI", "DIM_SUM", "HOTPOT", "CHINESE_FAST_FOOD"],
+      },
+      {
+        modelCode: "TOAST_RECEIPT_PRINTER",
+        displayName: "Toast Receipt Printer",
+        deviceClass: "RECEIPT_PRINTER",
+        capabilityTags: ["FRONT_RECEIPT_PRINT"],
+        recommendedFor: ["ALL"],
+      },
+      {
+        modelCode: "TOAST_KITCHEN_PRINTER",
+        displayName: "Toast Kitchen Impact Printer",
+        deviceClass: "KITCHEN_PRINTER",
+        capabilityTags: ["KITCHEN_TICKET_PRINT"],
+        recommendedFor: ["ALL"],
+      },
+      {
+        modelCode: "TOAST_CASH_DRAWER",
+        displayName: "Toast Cash Drawer",
+        deviceClass: "CASH_DRAWER",
+        capabilityTags: ["CASH_MANAGEMENT"],
+        recommendedFor: ["ALL"],
+      },
+    ],
+  },
+  {
+    providerCode: "SQUARE",
+    providerName: "Square",
+    countryCodes: ["US", "CA", "IE", "GB", "FR", "ES", "NL"],
+    notes: [
+      "Square hardware is country-specific; device purchase country and usage country must align.",
+      "Square Kiosk can require an additional POS host path for some peripheral workflows.",
+    ],
+    devices: [
+      {
+        modelCode: "SQUARE_REGISTER",
+        displayName: "Square Register",
+        deviceClass: "POS_TERMINAL",
+        capabilityTags: ["COUNTER_CHECKOUT", "EMV_NFC_PAYMENT", "CUSTOMER_FACING_DISPLAY"],
+        recommendedFor: ["CHINESE_FAST_FOOD", "MILK_TEA", "NAIL_SALON"],
+      },
+      {
+        modelCode: "SQUARE_STAND",
+        displayName: "Square Stand",
+        deviceClass: "POS_TERMINAL",
+        capabilityTags: ["COUNTER_CHECKOUT", "EMV_NFC_PAYMENT"],
+        recommendedFor: ["SUSHI", "WESTERN_DINING", "NAIL_SALON"],
+      },
+      {
+        modelCode: "SQUARE_TERMINAL",
+        displayName: "Square Terminal",
+        deviceClass: "PAYMENT_TERMINAL",
+        capabilityTags: ["EMV_NFC_PAYMENT", "FRONT_RECEIPT_PRINT"],
+        recommendedFor: ["ALL"],
+      },
+      {
+        modelCode: "SQUARE_HANDHELD",
+        displayName: "Square Handheld",
+        deviceClass: "MOBILE_POS",
+        capabilityTags: ["TABLESIDE_ORDERING", "EMV_NFC_PAYMENT", "OFFLINE_TOLERANCE"],
+        recommendedFor: ["FULL_SERVICE", "DIM_SUM", "HOTPOT", "SUSHI"],
+      },
+      {
+        modelCode: "SQUARE_KIOSK",
+        displayName: "Square Kiosk",
+        deviceClass: "KIOSK",
+        capabilityTags: ["SELF_ORDER_KIOSK", "EMV_NFC_PAYMENT"],
+        recommendedFor: ["CHINESE_FAST_FOOD", "MILK_TEA"],
+      },
+      {
+        modelCode: "SQUARE_KDS",
+        displayName: "Square Kitchen Display System",
+        deviceClass: "KDS",
+        capabilityTags: ["KDS_PRODUCTION"],
+        recommendedFor: ["ALL"],
+      },
+      {
+        modelCode: "SQUARE_RECEIPT_PRINTER",
+        displayName: "Square-Compatible Receipt Printer",
+        deviceClass: "RECEIPT_PRINTER",
+        capabilityTags: ["FRONT_RECEIPT_PRINT"],
+        recommendedFor: ["ALL"],
+      },
+      {
+        modelCode: "SQUARE_KITCHEN_PRINTER",
+        displayName: "Square-Compatible Kitchen Printer",
+        deviceClass: "KITCHEN_PRINTER",
+        capabilityTags: ["KITCHEN_TICKET_PRINT"],
+        recommendedFor: ["ALL"],
+      },
+      {
+        modelCode: "SQUARE_CASH_DRAWER",
+        displayName: "Square Cash Drawer",
+        deviceClass: "CASH_DRAWER",
+        capabilityTags: ["CASH_MANAGEMENT"],
+        recommendedFor: ["ALL"],
+      },
+    ],
+  },
+  {
+    providerCode: "CUSTOM",
+    providerName: "Custom/Partner Integration",
+    countryCodes: ["US", "CA", "IE", "GB", "FR", "ES", "NL"],
+    notes: [
+      "Queue calling and digital signage are commonly delivered by a web display player integration.",
+    ],
+    devices: [
+      {
+        modelCode: "WEB_QUEUE_DISPLAY",
+        displayName: "Web Queue Display Player",
+        deviceClass: "QUEUE_DISPLAY",
+        capabilityTags: ["QUEUE_CALLING"],
+        recommendedFor: ["CHINESE_FAST_FOOD", "MILK_TEA"],
+      },
+      {
+        modelCode: "WEB_DIGITAL_SIGNAGE",
+        displayName: "Web Digital Signage Player",
+        deviceClass: "DIGITAL_SIGNAGE",
+        capabilityTags: ["MENU_AD_SIGNAGE"],
+        recommendedFor: ["ALL"],
+      },
+      {
+        modelCode: "GENERIC_NETWORK_AP",
+        displayName: "Managed Router/AP",
+        deviceClass: "NETWORK",
+        capabilityTags: ["OFFLINE_TOLERANCE"],
+        recommendedFor: ["ALL"],
+      },
+    ],
+  },
+]);
+
+module.exports = {
+  HARDWARE_CATALOG_VERSION,
+  DEVICE_CLASSES,
+  CAPABILITIES,
+  HARDWARE_PROVIDERS,
+};

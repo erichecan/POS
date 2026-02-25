@@ -14,7 +14,7 @@ A full-featured **Restaurant POS System** built using the **MERN Stack** to stre
   Secure login and role-based access control for admins, staff, and users.
 
 - 💸 **Payment Integration**  
-  Integrated with **Razorpay** (or other gateways) for seamless online payments.
+  Integrated with **Stripe** (or other gateways) for seamless online payments.
 
 - 🧾 **Billing & Invoicing**  
   Automatically generate detailed bills and invoices for every order.
@@ -28,7 +28,7 @@ A full-featured **Restaurant POS System** built using the **MERN Stack** to stre
 | 🔙 **Backend**           | Node.js, Express.js           |
 | 🗄️ **Database**          | MongoDB                       |
 | 🔐 **Authentication**    | JWT, bcrypt                   |
-| 💳 **Payment Integration**| Razorpay    |
+| 💳 **Payment Integration**| Stripe    |
 | 📊 **State Management**   | Redux Toolkit                 |
 | ⚡ **Data Fetching & Caching** | React Query            |
 | 🔗 **APIs**              | RESTful APIs                   |

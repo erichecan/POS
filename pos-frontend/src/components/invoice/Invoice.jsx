@@ -91,7 +91,7 @@ const Invoice = ({ orderInfo, setShowInvoice }) => {
                   <span>
                     {item.name} x{item.quantity}
                   </span>
-                  <span>₹{item.price.toFixed(2)}</span>
+                  <span>€{item.price.toFixed(2)}</span>
                 </li>
               ))}
             </ul>
@@ -101,13 +101,13 @@ const Invoice = ({ orderInfo, setShowInvoice }) => {
 
           <div className="mt-4 border-t pt-4 text-sm">
             <p>
-              <strong>Subtotal:</strong> ₹{orderInfo.bills.total.toFixed(2)}
+              <strong>Subtotal:</strong> €{orderInfo.bills.total.toFixed(2)}
             </p>
             <p>
-              <strong>Tax:</strong> ₹{orderInfo.bills.tax.toFixed(2)}
+              <strong>Tax:</strong> €{orderInfo.bills.tax.toFixed(2)}
             </p>
             <p className="text-md font-semibold">
-              <strong>Grand Total:</strong> ₹
+              <strong>Grand Total:</strong> €
               {orderInfo.bills.totalWithTax.toFixed(2)}
             </p>
           </div>
@@ -119,18 +119,22 @@ const Invoice = ({ orderInfo, setShowInvoice }) => {
               <p>
                 <strong>Payment Method:</strong> {orderInfo.paymentMethod}
               </p>
+            ) : orderInfo.paymentMethod === "Pending" ? (
+              <p>
+                <strong>Payment Method:</strong> Pending (unpaid)
+              </p>
             ) : (
               <>
                 <p>
                   <strong>Payment Method:</strong> {orderInfo.paymentMethod}
                 </p>
                 <p>
-                  <strong>Razorpay Order ID:</strong>{" "}
-                  {orderInfo.paymentData?.razorpay_order_id}
+                  <strong>Stripe Session ID:</strong>{" "}
+                  {orderInfo.paymentData?.stripe_session_id}
                 </p>
                 <p>
-                  <strong>Razorpay Payment ID:</strong>{" "}
-                  {orderInfo.paymentData?.razorpay_payment_id}
+                  <strong>Stripe Payment Intent ID:</strong>{" "}
+                  {orderInfo.paymentData?.stripe_payment_intent_id}
                 </p>
               </>
             )}

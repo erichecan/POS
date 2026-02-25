@@ -3,7 +3,7 @@ import { popularDishes } from "../../constants";
 
 const PopularDishes = () => {
   return (
-    <div className="mt-6 pr-6">
+    <div className="mt-6 px-4 md:px-6">
       <div className="bg-[#1a1a1a] w-full rounded-lg">
         <div className="flex justify-between items-center px-6 py-4">
           <h1 className="text-[#f5f5f5] text-lg font-semibold tracking-wide">
@@ -14,14 +14,14 @@ const PopularDishes = () => {
           </a>
         </div>
 
-        <div className="overflow-y-scroll h-[680px] scrollbar-hide">
+        <div className="overflow-y-scroll h-[520px] xl:h-[680px] scrollbar-hide pb-4">
           {popularDishes.map((dish) => {
             return (
               <div
                 key={dish.id}
-                className="flex items-center gap-4 bg-[#1f1f1f] rounded-[15px] px-6 py-4 mt-4 mx-6"
+                className="flex items-center gap-3 bg-[#1f1f1f] rounded-[15px] px-4 py-3 mt-3 mx-4 md:mx-6"
               >
-                <h1 className="text-[#f5f5f5] font-bold text-xl mr-4">{dish.id < 10 ? `0${dish.id}` : dish.id}</h1>
+                <h1 className="text-[#f5f5f5] font-bold text-lg md:text-xl mr-2">{dish.id < 10 ? `0${dish.id}` : dish.id}</h1>
                 <img
                   src={dish.image}
                   alt={dish.name}

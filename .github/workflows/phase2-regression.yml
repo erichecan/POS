@@ -1,0 +1,124 @@
+name: Phase2 Regression
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"
+
+jobs:
+  backend-unit-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pos-backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: pos-backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run backend unit tests
+        run: npm test
+        env:
+          JWT_SECRET: test-secret
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: pos-frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: pos-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+  phase2-e2e:
+    runs-on: ubuntu-latest
+    needs:
+      - backend-unit-tests
+      - frontend-build
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - "27017:27017"
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    defaults:
+      run:
+        working-directory: pos-backend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: pos-backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Seed database
+        run: npm run seed
+        env:
+          JWT_SECRET: test-secret
+          MONGODB_URI: mongodb://127.0.0.1:27017/pos-db
+
+      - name: Start backend
+        run: npm run dev > /tmp/phase2_backend.log 2>&1 &
+        env:
+          JWT_SECRET: test-secret
+          MONGODB_URI: mongodb://127.0.0.1:27017/pos-db
+          FRONTEND_URL: http://localhost:5173
+
+      - name: Wait for backend ready
+        run: |
+          for i in {1..30}; do
+            if curl -sSf http://127.0.0.1:8000/ > /dev/null; then
+              echo "Backend is ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Backend failed to start"
+          exit 1
+
+      - name: Run phase2 e2e
+        run: npm run test:e2e:phase2
+        env:
+          PHASE2_E2E_BASE_URL: http://127.0.0.1:8000
+          PHASE2_E2E_ADMIN_EMAIL: admin@restro.local
+          PHASE2_E2E_ADMIN_PASSWORD: Admin@12345
+
+      - name: Upload backend log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase2-backend-log
+          path: /tmp/phase2_backend.log

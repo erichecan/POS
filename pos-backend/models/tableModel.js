@@ -1,14 +1,17 @@
 const mongoose = require("mongoose");
 
 const tableSchema = new mongoose.Schema({
-    tableNo: { type: Number, required: true, unique: true },
+    tableNo: { type: Number, required: true, unique: true, min: 1 },
     status: {
         type: String,
-        default: "Available"
+        default: "Available",
+        enum: ["Available", "Booked"]
     },
     seats: { 
         type: Number,
-        required: true
+        required: true,
+        min: 1,
+        max: 20
     },
     currentOrder: {type: mongoose.Schema.Types.ObjectId, ref: "Order"}
 });
