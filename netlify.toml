@@ -1,0 +1,13 @@
+# Netlify config for POS frontend (allpos.netlify.app)
+# 2026-02-24
+
+[build]
+  base = "pos-frontend"
+  command = "npm run build"
+  publish = "dist"
+
+# SPA: all routes serve index.html for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
