@@ -177,7 +177,9 @@ export const getStoreVerticalProfile = (locationId, params) =>
 export const upsertStoreVerticalProfile = ({ locationId, ...data }) =>
   axiosWrapper.put(`/api/organization/vertical-templates/profiles/${locationId}`, data);
 
-// Organization Store Provisioning Endpoints
+// Organization Store Endpoints
+export const listStores = (params) =>
+  axiosWrapper.get("/api/organization/stores", { params });
 export const createOrganizationStore = (data) =>
   axiosWrapper.post("/api/organization/stores", data);
 export const previewStoreProvisioning = (data) =>

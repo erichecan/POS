@@ -34,6 +34,22 @@ A full-featured **Restaurant POS System** built using the **MERN Stack** to stre
 | 🔗 **APIs**              | RESTful APIs                   |
 
 ---
+
+## 📄 **产品与文档**（2026-02-24 CODE_REVIEW I4）
+
+开发与排期以产品需求文档（PRD）为准，请勿在未查阅需求的情况下自行创造需求。
+
+| 文档 | 说明 |
+|------|------|
+| [docs/PRD_Global_POS_2026.md](docs/PRD_Global_POS_2026.md) | 产品需求文档（能力基线、目标能力、模块说明） |
+| [docs/EXPERIENCE_GUIDE_FULL_2026-02-21.md](docs/EXPERIENCE_GUIDE_FULL_2026-02-21.md) | 体验与主流程指南 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南（Fork/Clone、PR、需求基准） |
+| [docs/PHASE2_E2E_RUNBOOK.md](docs/PHASE2_E2E_RUNBOOK.md) | Phase2 E2E 测试与运维 |
+| [docs/OPS_ONCALL_ESCALATION.md](docs/OPS_ONCALL_ESCALATION.md) | 值班与升级 |
+| [SECURITY_KEY_ROTATION.md](SECURITY_KEY_ROTATION.md) | 密钥轮换清单 |
+| [docs/SECURITY.md](docs/SECURITY.md) | 安全与合规说明（审计、高风险审批、错误脱敏） |
+
+---
 <br>
 
 ## 📺 **YouTube Playlist**

@@ -15,13 +15,19 @@ Thank you for considering contributing to the **Restaurant POS System**! Your he
 ## 🏢 How to Contribute
 
 1. **Fork the repository** 📚
-2. **Clone your fork (Only the dev Branch)**
+2. **Clone your fork**（使用当前仓库与主开发分支。2026-02-24 CODE_REVIEW C2 修正）
    ```bash
-   git clone --branch dev https://github.com/amritmaurya1504/Restaurant-POS-System.git
+   git clone https://github.com/erichecan/POS.git
+   cd POS
    ```
-3. **Navigate into the project directory**
+   若需指定分支（请与仓库实际主分支一致，如 `main` 或 `dev`）：
    ```bash
-   cd Restaurant-POS-System
+   git clone --branch main https://github.com/erichecan/POS.git
+   cd POS
+   ```
+3. **Navigate into the project directory**（若上一步未 cd）
+   ```bash
+   cd POS
    ```
 4. **Create a new branch** 🌿
    ```bash
@@ -66,16 +72,18 @@ Thank you for considering contributing to the **Restaurant POS System**! Your he
 
 ## 📋 Contribution Guidelines
 
+- **需求基准**：修改前请查阅产品需求文档（`docs/PRD_Global_POS_2026.md`），以 PRD 为需求基准，不自行创造需求。（2026-02-24 CODE_REVIEW 文档补充）
 - Follow the existing code style and naming conventions.
 - Write clear, concise commit messages.
 - Add comments where necessary.
+- **注释与时间戳**：对业务逻辑或核心领域的重要变更，建议在关键处添加简要修改说明与时间戳（到秒）；若团队约定为可选，以 CONTRIBUTING 或项目规则为准。（2026-02-24 CODE_REVIEW S1）
 
 ---
 
 ## ✅ Pull Request Process
 
-- Always branch out from the `dev` branch.
-- Submit your pull request to the `dev` branch.
+- Always branch out from the repository’s main development branch（如 `main` 或 `dev`，以仓库为准）.
+- Submit your pull request to that same branch.
 - Ensure your PR is linked to an issue if applicable.
 - Wait for approval before merging.
 - Only maintainers can merge into the `master` branch.
@@ -84,7 +92,7 @@ Thank you for considering contributing to the **Restaurant POS System**! Your he
 
 ## 🐛 Reporting Issues
 
-Found a bug or have a feature request? Open an [Issue](https://github.com/amritmaurya1504/Restaurant-POS-System/issues) and follow the template provided.
+Found a bug or have a feature request? Open an [Issue](https://github.com/erichecan/POS/issues) and follow the template provided.
 
 ---
 

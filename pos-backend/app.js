@@ -10,11 +10,11 @@ const app = express();
 const PORT = config.port;
 connectDB();
 
-// Middlewares
+// Middlewares — 2026-02-24 22:15:00 CORS 使用 config.frontendUrl，多环境一致（CODE_REVIEW I1）
 app.use(cors({
     credentials: true,
-    origin: ['http://localhost:5173']
-}))
+    origin: config.frontendUrl ? [config.frontendUrl] : ["http://localhost:5173"],
+}));
 app.use("/api/payment/webhook-verification", express.raw({ type: "application/json" }));
 app.use(express.json()); // parse incoming request in json format
 app.use(cookieParser())

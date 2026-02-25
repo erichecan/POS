@@ -8,7 +8,8 @@
     "seed": "node scripts/seed.js",
     "test": "JWT_SECRET=test-secret node --test tests/*.test.js",
     "test:e2e:phase2": "node scripts/phase2-e2e.js",
-    "test:e2e:playwright": "node scripts/playwright-fullstack-e2e.js"
+    "test:e2e:playwright": "node scripts/playwright-fullstack-e2e.js",
+    "test:coverage": "JWT_SECRET=test-secret node --test --experimental-test-coverage tests/*.test.js"
   },
   "keywords": [],
   "author": "",

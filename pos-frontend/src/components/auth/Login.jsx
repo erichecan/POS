@@ -28,7 +28,10 @@ const Login = () => {
     mutationFn: (reqData) => login(reqData),
     onSuccess: (res) => {
       const { data } = res;
-      console.log(data);
+      // 2026-02-24 22:15:00 移除生产环境 console.log，避免泄露用户信息（CODE_REVIEW I2）
+      if (import.meta.env.DEV) {
+        console.log(data);
+      }
       const { _id, name, email, phone, role } = data.data;
       dispatch(setUser({ _id, name, email, phone, role }));
       navigate("/");

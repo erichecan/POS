@@ -127,7 +127,7 @@ const More = () => {
         label: "Dashboard",
         description: "Operational KPI and kitchen/payment monitoring.",
         icon: <MdDashboard size={22} />,
-        route: "/dashboard",
+        route: "/dashboard/overview",
       });
     }
 

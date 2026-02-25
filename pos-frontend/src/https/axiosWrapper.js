@@ -35,3 +35,18 @@ axiosWrapper.interceptors.request.use((config) => {
   config.headers = headers;
   return config;
 });
+
+// 2026-02-24 22:15:00 401 全局处理：清除登录态并跳转登录页（CODE_REVIEW I3）
+axiosWrapper.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      const origin = typeof window !== "undefined" ? window.location.origin : "";
+      const authPath = "/auth";
+      if (origin) {
+        window.location.href = `${origin}${authPath}`;
+      }
+    }
+    return Promise.reject(error);
+  }
+);

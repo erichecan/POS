@@ -5,11 +5,28 @@ import {
   useLocation,
   Navigate,
 } from "react-router-dom";
-import { Home, Auth, Orders, Tables, Menu, Dashboard, More, TableLayout } from "./pages";
+import { Home, Auth, Orders, Tables, Menu, More, TableLayout } from "./pages";
+import {
+  Overview,
+  OrdersPage,
+  PaymentsPage,
+  KitchenPage,
+  OpsPage,
+  SLOPage,
+  ChannelsPage,
+  HardwarePage,
+  TemplatesPage,
+  StoresPage,
+  TeamPage,
+  SettingsPage,
+  AuditPage,
+} from "./pages/admin";
 import Header from "./components/shared/Header";
+import NotFound from "./components/shared/NotFound";
+import AdminLayout from "./layouts/AdminLayout";
 import { useSelector } from "react-redux";
 import useLoadData from "./hooks/useLoadData";
-import FullScreenLoader from "./components/shared/FullScreenLoader"
+import FullScreenLoader from "./components/shared/FullScreenLoader";
 
 const normalizeRole = (role) => `${role || ""}`.trim().toLowerCase();
 
@@ -17,13 +34,14 @@ function Layout() {
   const isLoading = useLoadData();
   const location = useLocation();
   const hideHeaderRoutes = ["/auth"];
+  const isDashboard = location.pathname.startsWith("/dashboard");
   const { isAuth } = useSelector(state => state.user);
 
   if(isLoading) return <FullScreenLoader />
 
   return (
     <>
-      {!hideHeaderRoutes.includes(location.pathname) && <Header />}
+      {!hideHeaderRoutes.includes(location.pathname) && !isDashboard && <Header />}
       <Routes>
         <Route
           path="/"
@@ -63,41 +81,26 @@ function Layout() {
           element={
             <ProtectedRoutes>
               <RoleProtectedRoute allowedRoles={["Admin"]}>
-                <Dashboard />
+                <AdminLayout />
               </RoleProtectedRoute>
             </ProtectedRoutes>
           }
-        />
-        <Route
-          path="/dashboard/channels"
-          element={
-            <ProtectedRoutes>
-              <RoleProtectedRoute allowedRoles={["Admin"]}>
-                <Dashboard defaultTab="Channels" />
-              </RoleProtectedRoute>
-            </ProtectedRoutes>
-          }
-        />
-        <Route
-          path="/dashboard/hardware"
-          element={
-            <ProtectedRoutes>
-              <RoleProtectedRoute allowedRoles={["Admin"]}>
-                <Dashboard defaultTab="Hardware" />
-              </RoleProtectedRoute>
-            </ProtectedRoutes>
-          }
-        />
-        <Route
-          path="/dashboard/templates"
-          element={
-            <ProtectedRoutes>
-              <RoleProtectedRoute allowedRoles={["Admin"]}>
-                <Dashboard defaultTab="Templates" />
-              </RoleProtectedRoute>
-            </ProtectedRoutes>
-          }
-        />
+        >
+          <Route index element={<Navigate to="/dashboard/overview" replace />} />
+          <Route path="overview" element={<Overview />} />
+          <Route path="orders" element={<OrdersPage />} />
+          <Route path="payments" element={<PaymentsPage />} />
+          <Route path="kitchen" element={<KitchenPage />} />
+          <Route path="ops" element={<OpsPage />} />
+          <Route path="slo" element={<SLOPage />} />
+          <Route path="channels" element={<ChannelsPage />} />
+          <Route path="hardware" element={<HardwarePage />} />
+          <Route path="templates" element={<TemplatesPage />} />
+          <Route path="stores" element={<StoresPage />} />
+          <Route path="team" element={<TeamPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="audit" element={<AuditPage />} />
+        </Route>
         <Route
           path="/more"
           element={
@@ -114,7 +117,7 @@ function Layout() {
             </ProtectedRoutes>
           }
         />
-        <Route path="*" element={<div>Not Found</div>} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );

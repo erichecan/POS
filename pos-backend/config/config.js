@@ -29,7 +29,8 @@ const config = Object.freeze({
         const normalized = `${value}`.trim().toLowerCase();
         return ["1", "true", "yes", "on"].includes(normalized);
     },
-    port: process.env.PORT || 3000,
+    // 2026-02-24 22:15:00 与 README/E2E 一致，默认 8000（CODE_REVIEW C1）
+    port: process.env.PORT || 8000,
     databaseURI: process.env.MONGODB_URI || "mongodb://localhost:27017/pos-db",
     nodeEnv: process.env.NODE_ENV || "development",
     frontendUrl: process.env.FRONTEND_URL || "http://localhost:5173",
