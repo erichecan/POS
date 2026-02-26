@@ -35,8 +35,11 @@ const toDateTime = (value) => {
   return date.toLocaleString();
 };
 
-const PaymentsCenter = () => {
+/** 2026-02-26: initialSection for sub-page filtered view (ledger|refunds|reconciliation) */
+const PaymentsCenter = ({ initialSection }) => {
   const queryClient = useQueryClient();
+  const showSection = (key) => !initialSection || initialSection === key;
+  const showSummary = !initialSection;
   const [filter, setFilter] = useState({
     status: "",
     verified: "",
@@ -203,6 +206,7 @@ const PaymentsCenter = () => {
 
   return (
     <div className="container mx-auto py-2 px-6 md:px-4 space-y-4">
+      {showSummary && (
       <div className={panelClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Payment Summary</h2>
         <div className="grid grid-cols-5 gap-3 mb-3">
@@ -225,7 +229,9 @@ const PaymentsCenter = () => {
           </p>
         )}
       </div>
+      )}
 
+      {showSection("ledger") && (
       <div className={panelClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Filters</h2>
         <div className="grid grid-cols-5 gap-3">
@@ -274,7 +280,10 @@ const PaymentsCenter = () => {
           />
         </div>
       </div>
+      )}
 
+      {showSection("refunds") && (
+      <>
       <div className={panelClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Manual Refund</h2>
         <form
@@ -378,7 +387,10 @@ const PaymentsCenter = () => {
           )}
         </div>
       </div>
+      </>
+      )}
 
+      {showSection("reconciliation") && (
       <div className={panelClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Reconciliation</h2>
         <div className="grid grid-cols-3 gap-3 mb-3">
@@ -447,7 +459,9 @@ const PaymentsCenter = () => {
           )}
         </div>
       </div>
+      )}
 
+      {showSection("ledger") && (
       <div className={panelClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Payment Ledger</h2>
         <div className="space-y-2 max-h-[520px] overflow-auto">
@@ -524,6 +538,7 @@ const PaymentsCenter = () => {
           {payments.length === 0 && <p className="text-[#ababab] text-sm">No payments found.</p>}
         </div>
       </div>
+      )}
     </div>
   );
 };

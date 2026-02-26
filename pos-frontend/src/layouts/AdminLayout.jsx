@@ -1,6 +1,7 @@
 /**
  * Admin Shell: sidebar + top bar + main content. SaaS-style backend layout.
  * 2026-02-24
+ * 2026-02-26: support two-level (sub-item) menus
  */
 import React, { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate, NavLink } from "react-router-dom";
@@ -26,6 +27,17 @@ const AdminLayout = () => {
       return false;
     }
   });
+  // 2026-02-26: support two-level sidebar navigation
+  const [expandedKeys, setExpandedKeys] = useState(new Set());
+
+  const toggleExpanded = (key) => {
+    setExpandedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   useEffect(() => {
     document.title = "POS | Admin Dashboard";
@@ -76,6 +88,7 @@ const AdminLayout = () => {
             </svg>
           </button>
         </div>
+        {/* 2026-02-26: support two-level sidebar navigation */}
         <nav className="flex-1 overflow-y-auto py-3">
           {adminNavConfig.map((group) => (
             <div key={group.groupLabel} className="mb-4">
@@ -84,23 +97,81 @@ const AdminLayout = () => {
                   {group.groupLabel}
                 </div>
               )}
-              {group.items.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
-                      isActive
-                        ? "border-l-2 border-[#f5f5f5] bg-[#262626] text-[#f5f5f5]"
-                        : "border-l-2 border-transparent text-[#ababab] hover:bg-[#262626] hover:text-[#f5f5f5]"
-                    }`
-                  }
-                  end
-                >
-                  <item.icon className="h-5 w-5 shrink-0" />
-                  {!sidebarCollapsed && <span>{item.label}</span>}
-                </NavLink>
-              ))}
+              {group.items.map((item) => {
+                const itemKey = `${group.groupLabel}-${item.label}`;
+                const hasChildren = item.children && item.children.length > 0;
+                const hasActiveChild =
+                  hasChildren &&
+                  item.children.some(
+                    (c) =>
+                      location.pathname === c.path ||
+                      location.pathname.startsWith(c.path + "/")
+                  );
+                const isExpanded = expandedKeys.has(itemKey) || hasActiveChild;
+
+                if (hasChildren) {
+                  return (
+                    <div key={itemKey}>
+                      <button
+                        type="button"
+                        onClick={() => toggleExpanded(itemKey)}
+                        className={`flex w-full items-center gap-3 px-3 py-2.5 text-sm transition-colors border-l-2 ${
+                          hasActiveChild
+                            ? "border-[#f5f5f5] bg-[#262626] text-[#f5f5f5]"
+                            : "border-transparent text-[#ababab] hover:bg-[#262626] hover:text-[#f5f5f5]"
+                        }`}
+                      >
+                        <item.icon className="h-5 w-5 shrink-0" />
+                        {!sidebarCollapsed && (
+                          <>
+                            <span className="flex-1 text-left">{item.label}</span>
+                            <span className="text-xs shrink-0">
+                              {isExpanded ? "▼" : "▶"}
+                            </span>
+                          </>
+                        )}
+                      </button>
+                      {!sidebarCollapsed && isExpanded && (
+                        <div className="pl-8">
+                          {item.children.map((child) => (
+                            <NavLink
+                              key={child.path}
+                              to={child.path}
+                              className={({ isActive }) =>
+                                `flex items-center gap-2 py-2 pl-2 text-xs transition-colors border-l-2 ${
+                                  isActive
+                                    ? "border-[#f5f5f5] bg-[#262626] text-[#f5f5f5]"
+                                    : "border-transparent text-[#ababab] hover:bg-[#262626] hover:text-[#f5f5f5]"
+                                }`
+                              }
+                            >
+                              {child.label}
+                            </NavLink>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-3 py-2.5 text-sm transition-colors ${
+                        isActive
+                          ? "border-l-2 border-[#f5f5f5] bg-[#262626] text-[#f5f5f5]"
+                          : "border-l-2 border-transparent text-[#ababab] hover:bg-[#262626] hover:text-[#f5f5f5]"
+                      }`
+                    }
+                    end
+                  >
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    {!sidebarCollapsed && <span>{item.label}</span>}
+                  </NavLink>
+                );
+              })}
             </div>
           ))}
         </nav>

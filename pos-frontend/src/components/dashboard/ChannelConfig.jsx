@@ -27,8 +27,10 @@ const inputClass =
 
 const getRows = (response) => (Array.isArray(response?.data?.data) ? response.data.data : []);
 
-const ChannelConfig = () => {
+/** 2026-02-26: initialSection for sub-page filtered view (providers|markets|connections|mappings) */
+const ChannelConfig = ({ initialSection }) => {
   const queryClient = useQueryClient();
+  const showSection = (key) => !initialSection || initialSection === key;
 
   const [providerForm, setProviderForm] = useState({
     providerCode: "",
@@ -341,6 +343,7 @@ const ChannelConfig = () => {
 
   return (
     <div className="container mx-auto py-2 px-6 md:px-4 space-y-4">
+      {showSection("providers") && (
       <div className={cardClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Channel Providers</h2>
         <form className="grid grid-cols-5 gap-3 mb-4" onSubmit={handleCreateProvider}>
@@ -416,7 +419,9 @@ const ChannelConfig = () => {
           {providers.length === 0 && <p className="text-[#ababab] text-sm">No providers yet.</p>}
         </div>
       </div>
+      )}
 
+      {showSection("markets") && (
       <div className={cardClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Market Profiles</h2>
         <form className="grid grid-cols-4 gap-3 mb-4" onSubmit={handleCreateMarket}>
@@ -510,7 +515,9 @@ const ChannelConfig = () => {
           {markets.length === 0 && <p className="text-[#ababab] text-sm">No market profiles yet.</p>}
         </div>
       </div>
+      )}
 
+      {showSection("connections") && (
       <div className={cardClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Store Channel Connections</h2>
         <form className="grid grid-cols-4 gap-3 mb-4" onSubmit={handleCreateConnection}>
@@ -603,7 +610,9 @@ const ChannelConfig = () => {
           {connections.length === 0 && <p className="text-[#ababab] text-sm">No connections yet.</p>}
         </div>
       </div>
+      )}
 
+      {showSection("mappings") && (
       <div className={cardClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Mapping Rules</h2>
         <form className="grid grid-cols-5 gap-3 mb-4" onSubmit={handleCreateMapping}>
@@ -675,7 +684,10 @@ const ChannelConfig = () => {
           {mappingRules.length === 0 && <p className="text-[#ababab] text-sm">No mapping rules yet.</p>}
         </div>
       </div>
+      )}
 
+      {!initialSection && (
+      <>
       <div className={cardClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Channel Order Ingress Tester</h2>
         <form className="grid grid-cols-4 gap-3" onSubmit={handleIngressSubmit}>
@@ -904,6 +916,8 @@ const ChannelConfig = () => {
           )}
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 };

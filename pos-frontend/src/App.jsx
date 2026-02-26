@@ -21,6 +21,20 @@ import {
   SettingsPage,
   AuditPage,
 } from "./pages/admin";
+import {
+  PaymentLedgerPage,
+  PaymentRefundsPage,
+  PaymentReconciliationPage,
+  KitchenStationsPage,
+  KitchenTicketsPage,
+  KitchenReplayPage,
+  ChannelProvidersPage,
+  ChannelMarketsPage,
+  ChannelConnectionsPage,
+  ChannelMappingsPage,
+  MenuItemsPage,
+  MenuVersionsPage,
+} from "./pages/dashboard/index.js";
 import Header from "./components/shared/Header";
 import NotFound from "./components/shared/NotFound";
 import AdminLayout from "./layouts/AdminLayout";
@@ -90,10 +104,22 @@ function Layout() {
           <Route path="overview" element={<Overview />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="payments" element={<PaymentsPage />} />
+          <Route path="payments/ledger" element={<PaymentLedgerPage />} />
+          <Route path="payments/refunds" element={<PaymentRefundsPage />} />
+          <Route path="payments/reconciliation" element={<PaymentReconciliationPage />} />
           <Route path="kitchen" element={<KitchenPage />} />
+          <Route path="kitchen/stations" element={<KitchenStationsPage />} />
+          <Route path="kitchen/tickets" element={<KitchenTicketsPage />} />
+          <Route path="kitchen/replay" element={<KitchenReplayPage />} />
+          <Route path="menu/items" element={<MenuItemsPage />} />
+          <Route path="menu/versions" element={<MenuVersionsPage />} />
           <Route path="ops" element={<OpsPage />} />
           <Route path="slo" element={<SLOPage />} />
           <Route path="channels" element={<ChannelsPage />} />
+          <Route path="channels/providers" element={<ChannelProvidersPage />} />
+          <Route path="channels/markets" element={<ChannelMarketsPage />} />
+          <Route path="channels/connections" element={<ChannelConnectionsPage />} />
+          <Route path="channels/mappings" element={<ChannelMappingsPage />} />
           <Route path="hardware" element={<HardwarePage />} />
           <Route path="templates" element={<TemplatesPage />} />
           <Route path="stores" element={<StoresPage />} />

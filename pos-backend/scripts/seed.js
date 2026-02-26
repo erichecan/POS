@@ -1,3 +1,4 @@
+// 2026-02-26: seed data for organization, stores, and workforce
 const mongoose = require("mongoose");
 const config = require("../config/config");
 const User = require("../models/userModel");
@@ -8,6 +9,10 @@ const DeveloperApiKey = require("../models/developerApiKeyModel");
 const DeveloperApiUsage = require("../models/developerApiUsageModel");
 const StoreHardwareProfile = require("../models/storeHardwareProfileModel");
 const StoreVerticalProfile = require("../models/storeVerticalProfileModel");
+const Organization = require("../models/organizationModel");
+const Region = require("../models/regionModel");
+const Store = require("../models/storeModel");
+const WorkforceShift = require("../models/workforceShiftModel");
 const { calculateOrderSummary } = require("../utils/orderPricing");
 const { hashApiKey, deriveKeyPrefix } = require("../utils/developerAuthService");
 const { resolveMongoUri } = require("../utils/resolveMongoUri");
@@ -165,6 +170,137 @@ const seedUsers = async () => {
   return savedUsers;
 };
 
+const seedOrganization = async () => {
+  const org = await Organization.create({
+    code: "RESTRO",
+    name: "Restro Group",
+    status: "ACTIVE"
+  });
+  return org;
+};
+
+const seedRegions = async (orgId) => {
+  const regions = await Region.insertMany([
+    {
+      organizationId: orgId,
+      code: "NA",
+      name: "North America",
+      countryCode: "US",
+      currency: "USD",
+      timezone: "America/New_York",
+      status: "ACTIVE"
+    },
+    {
+      organizationId: orgId,
+      code: "AP",
+      name: "Asia Pacific",
+      countryCode: "JP",
+      currency: "JPY",
+      timezone: "Asia/Tokyo",
+      status: "ACTIVE"
+    }
+  ]);
+  return regions;
+};
+
+const seedStores = async (orgId, regions) => {
+  const naRegion = regions.find((r) => r.code === "NA");
+  const apRegion = regions.find((r) => r.code === "AP");
+  const stores = await Store.insertMany([
+    {
+      organizationId: orgId,
+      regionId: naRegion._id,
+      locationId: "LOC-001",
+      code: "NYC-01",
+      name: "Restro NYC Downtown",
+      status: "ACTIVE",
+      timezone: "America/New_York",
+      overrideSettings: { countryCode: "US", currency: "USD" }
+    },
+    {
+      organizationId: orgId,
+      regionId: naRegion._id,
+      locationId: "LOC-002",
+      code: "LA-01",
+      name: "Restro Los Angeles",
+      status: "ACTIVE",
+      timezone: "America/Los_Angeles",
+      overrideSettings: { countryCode: "US", currency: "USD" }
+    },
+    {
+      organizationId: orgId,
+      regionId: apRegion._id,
+      locationId: "LOC-003",
+      code: "TKY-01",
+      name: "Restro Tokyo",
+      status: "ACTIVE",
+      timezone: "Asia/Tokyo",
+      overrideSettings: { countryCode: "JP", currency: "JPY" }
+    }
+  ]);
+  return stores;
+};
+
+const seedWorkforceShifts = async (users, stores, createdBy) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const adminUser = users.find((u) => u.role === "Admin");
+  const cashierUser = users.find((u) => u.role === "Cashier");
+  const waiterUser = users.find((u) => u.role === "Waiter");
+  const nycStore = stores.find((s) => s.locationId === "LOC-001");
+  const laStore = stores.find((s) => s.locationId === "LOC-002");
+  const tkyStore = stores.find((s) => s.locationId === "LOC-003");
+
+  const shifts = await WorkforceShift.insertMany([
+    {
+      locationId: nycStore.locationId,
+      employeeId: adminUser._id,
+      role: "Admin",
+      startAt: new Date(today.getTime() + 6 * 60 * 60 * 1000),
+      endAt: new Date(today.getTime() + 14 * 60 * 60 * 1000),
+      status: "SCHEDULED",
+      createdBy
+    },
+    {
+      locationId: nycStore.locationId,
+      employeeId: cashierUser._id,
+      role: "Cashier",
+      startAt: new Date(today.getTime() + 14 * 60 * 60 * 1000),
+      endAt: new Date(today.getTime() + 22 * 60 * 60 * 1000),
+      status: "SCHEDULED",
+      createdBy
+    },
+    {
+      locationId: laStore.locationId,
+      employeeId: waiterUser._id,
+      role: "Waiter",
+      startAt: new Date(today.getTime() + 17 * 60 * 60 * 1000),
+      endAt: new Date(today.getTime() + 23 * 60 * 60 * 1000),
+      status: "SCHEDULED",
+      createdBy
+    },
+    {
+      locationId: laStore.locationId,
+      employeeId: adminUser._id,
+      role: "Admin",
+      startAt: new Date(today.getTime() + 6 * 60 * 60 * 1000),
+      endAt: new Date(today.getTime() + 14 * 60 * 60 * 1000),
+      status: "SCHEDULED",
+      createdBy
+    },
+    {
+      locationId: tkyStore.locationId,
+      employeeId: waiterUser._id,
+      role: "Waiter",
+      startAt: new Date(today.getTime() + 17 * 60 * 60 * 1000),
+      endAt: new Date(today.getTime() + 23 * 60 * 60 * 1000),
+      status: "SCHEDULED",
+      createdBy
+    }
+  ]);
+  return shifts;
+};
+
 const seedTables = async () => {
   const tables = await Table.insertMany(TABLES);
   return new Map(tables.map((table) => [table.tableNo, table]));
@@ -267,6 +403,10 @@ const seedPartnerApiKeys = async ({ createdBy }) => {
 };
 
 const resetCollections = async () => {
+  await WorkforceShift.deleteMany({});
+  await Store.deleteMany({});
+  await Region.deleteMany({});
+  await Organization.deleteMany({});
   await StoreVerticalProfile.deleteMany({});
   await StoreHardwareProfile.deleteMany({});
   await DeveloperApiUsage.deleteMany({});
@@ -280,7 +420,11 @@ const resetCollections = async () => {
 const printSummary = (result) => {
   console.log("\nSeed completed successfully.");
   console.log("Database:", config.databaseURI);
+  console.log("Organizations:", result.organizationsCount);
+  console.log("Regions:", result.regionsCount);
+  console.log("Stores:", result.storesCount);
   console.log("Users:", result.users.length);
+  console.log("Workforce Shifts:", result.workforceShiftsCount);
   console.log("Tables:", result.tablesCount);
   console.log("Orders:", result.orders.length);
   console.log("Payments:", result.payments.length);
@@ -303,14 +447,22 @@ const run = async () => {
     await resetCollections();
 
     const users = await seedUsers();
+    const org = await seedOrganization();
+    const regions = await seedRegions(org._id);
+    const stores = await seedStores(org._id, regions);
     const tableByNo = await seedTables();
     const { orders, payments } = await seedOrdersAndPayments(tableByNo);
     const { keys: partnerKeys, plainKeys: partnerPlainKeys } = await seedPartnerApiKeys({
       createdBy: users[0]?._id
     });
+    const workforceShifts = await seedWorkforceShifts(users, stores, users[0]?._id);
 
     printSummary({
       users,
+      organizationsCount: 1,
+      regionsCount: regions.length,
+      storesCount: stores.length,
+      workforceShiftsCount: workforceShifts.length,
       tablesCount: tableByNo.size,
       orders,
       payments,

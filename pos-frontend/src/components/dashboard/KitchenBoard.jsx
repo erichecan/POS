@@ -54,8 +54,10 @@ const compactPayload = (payload) => {
   return `${text.slice(0, 117)}...`;
 };
 
-const KitchenBoard = () => {
+/** 2026-02-26: initialSection for sub-page filtered view (stations|tickets|replay) */
+const KitchenBoard = ({ initialSection }) => {
   const queryClient = useQueryClient();
+  const showSection = (key) => !initialSection || initialSection === key;
   const [filter, setFilter] = useState({
     locationId: "default",
     status: "",
@@ -194,6 +196,7 @@ const KitchenBoard = () => {
 
   return (
     <div className="container mx-auto py-2 px-6 md:px-4 space-y-4">
+      {showSection("stations") && (
       <div className={panelClass}>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[#f5f5f5] text-lg font-semibold">Kitchen Stations</h2>
@@ -274,7 +277,9 @@ const KitchenBoard = () => {
           {stations.length === 0 && <p className="text-[#ababab] text-sm">No stations available.</p>}
         </div>
       </div>
+      )}
 
+      {showSection("tickets") && (
       <div className={panelClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Kitchen Tickets</h2>
         <div className="space-y-3 max-h-[680px] overflow-auto">
@@ -388,7 +393,9 @@ const KitchenBoard = () => {
           {tickets.length === 0 && <p className="text-[#ababab] text-sm">No kitchen tickets.</p>}
         </div>
       </div>
+      )}
 
+      {showSection("replay") && (
       <div className={panelClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Ticket Event Replay</h2>
         <div className="grid grid-cols-4 gap-3 mb-3">
@@ -452,6 +459,7 @@ const KitchenBoard = () => {
           )}
         </div>
       </div>
+      )}
     </div>
   );
 };
