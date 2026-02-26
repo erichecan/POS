@@ -179,6 +179,15 @@ const VerticalTemplateCenter = () => {
 
   return (
     <div className="container mx-auto py-2 px-6 md:px-4 space-y-4">
+      {/* 2026-02-26: Vertical templates description section */}
+      <div className="mb-6 rounded-lg border border-[#333] bg-[#262626] p-4">
+        <h2 className="text-lg font-semibold text-[#f5f5f5] mb-2">Vertical Templates</h2>
+        <p className="text-sm text-[#ababab] leading-relaxed">
+          Templates are pre-configured setups for different business types (milk tea shop, sushi restaurant, hotpot, etc.). Each template defines the required hardware capabilities, operating modes, and default settings.<br/><br/>
+          <strong className="text-[#f5f5f5]">How to use:</strong> Select a template that matches your business type → Preview what it configures → Apply it to a store location. The template automatically sets up hardware requirements, kitchen workflows, and POS configurations for that business type. You can override specific settings after applying.
+        </p>
+      </div>
+
       <div className={cardClass}>
         <div className="flex items-center justify-between">
           <div>

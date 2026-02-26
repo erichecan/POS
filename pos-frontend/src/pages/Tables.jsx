@@ -3,7 +3,7 @@ import BottomNav from "../components/shared/BottomNav";
 import BackButton from "../components/shared/BackButton";
 import TableCard from "../components/tables/TableCard";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getTables, settleOrder } from "../https";
+import { getTables, settleOrder, transferTableOrder } from "../https";
 import { enqueueSnackbar } from "notistack";
 import Modal from "../components/shared/Modal";
 import { useDispatch } from "react-redux";
@@ -28,6 +28,9 @@ const Tables = () => {
   const [mergeWithTableId, setMergeWithTableId] = useState("");
   const [settleTarget, setSettleTarget] = useState(null);
   const [settlePaymentMethod, setSettlePaymentMethod] = useState("Cash");
+  // 2026-02-26T00:00:03Z: Transfer Table state
+  const [showTransferUI, setShowTransferUI] = useState(false);
+  const [transferTargetId, setTransferTargetId] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -55,6 +58,23 @@ const Tables = () => {
     },
     onError: (error) => {
       const message = error.response?.data?.message || "Failed to settle payment.";
+      enqueueSnackbar(message, { variant: "error" });
+    },
+  });
+
+  // 2026-02-26T00:00:04Z: Transfer Table mutation
+  const transferMutation = useMutation({
+    mutationFn: (data) => transferTableOrder(data),
+    onSuccess: () => {
+      enqueueSnackbar("Table transferred successfully.", { variant: "success" });
+      setShowTransferUI(false);
+      setTransferTargetId("");
+      setBookedTableTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["tables"] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+    },
+    onError: (error) => {
+      const message = error.response?.data?.message || "Failed to transfer table.";
       enqueueSnackbar(message, { variant: "error" });
     },
   });
@@ -91,6 +111,22 @@ const Tables = () => {
     );
   }, [tablesData, openTableTarget]);
 
+  // 2026-02-26T00:00:05Z: Available tables for transfer (exclude current booked table)
+  const transferCandidateTables = useMemo(() => {
+    if (!bookedTableTarget?._id) return [];
+    return tablesData.filter(
+      (t) => t.status === "Available" && `${t._id}` !== `${bookedTableTarget._id}`
+    );
+  }, [tablesData, bookedTableTarget]);
+
+  const handleTransfer = () => {
+    if (!transferTargetId || !bookedTableTarget?._id) return;
+    transferMutation.mutate({
+      sourceTableId: bookedTableTarget._id,
+      targetTableId: transferTargetId,
+    });
+  };
+
   useEffect(() => {
     if (isError) {
       enqueueSnackbar("Something went wrong!", { variant: "error" });
@@ -121,6 +157,8 @@ const Tables = () => {
 
   const closeBookedDetailModal = () => {
     setBookedTableTarget(null);
+    setShowTransferUI(false);
+    setTransferTargetId("");
   };
 
   const proceedToMenu = () => {
@@ -458,6 +496,61 @@ const Tables = () => {
             >
               Checkout
             </button>
+          </div>
+
+          {/* 2026-02-26T00:00:06Z: Transfer Table UI */}
+          <div className="pt-3 border-t border-[#333] mt-3">
+            {!showTransferUI ? (
+              <button
+                onClick={() => setShowTransferUI(true)}
+                className="w-full bg-[#333] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm"
+              >
+                Transfer Table / 转台
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <label className="block text-[#ababab] text-sm font-medium">
+                  Transfer to Table
+                </label>
+                <select
+                  value={transferTargetId}
+                  onChange={(e) => setTransferTargetId(e.target.value)}
+                  className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
+                >
+                  <option value="">Select available table</option>
+                  {transferCandidateTables.map((t) => (
+                    <option key={t._id} value={t._id}>
+                      Table #{t.tableNo} · {t.seats} seats
+                    </option>
+                  ))}
+                </select>
+                {transferCandidateTables.length === 0 && (
+                  <p className="text-xs text-red-400">No available tables to transfer to.</p>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      setShowTransferUI(false);
+                      setTransferTargetId("");
+                    }}
+                    className="flex-1 bg-[#333] text-[#ababab] py-2 rounded-lg font-semibold text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleTransfer}
+                    disabled={!transferTargetId || transferMutation.isPending}
+                    className={`flex-1 bg-[#025cca] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm ${
+                      !transferTargetId || transferMutation.isPending
+                        ? "opacity-60 cursor-not-allowed"
+                        : ""
+                    }`}
+                  >
+                    {transferMutation.isPending ? "Transferring..." : "Confirm Transfer"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </Modal>

@@ -1,3 +1,4 @@
+// 2026-02-26T00:00:00: added useTranslation for i18n support
 import React from "react";
 import { FaSearch } from "react-icons/fa";
 import { FaUserCircle } from "react-icons/fa";
@@ -10,12 +11,19 @@ import { logout } from "../../https";
 import { removeUser } from "../../redux/slices/userSlice";
 import { useNavigate } from "react-router-dom";
 import { MdDashboard } from "react-icons/md";
+import { useTranslation } from "react-i18next";
 
 const Header = () => {
+  const { t, i18n } = useTranslation();
   const userData = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const isAdmin = `${userData.role || ""}`.trim().toLowerCase() === "admin";
+
+  // 2026-02-26T00:00:00: toggle between en/zh
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === "zh" ? "en" : "zh");
+  };
 
   const logoutMutation = useMutation({
     mutationFn: () => logout(),
@@ -52,7 +60,7 @@ const Header = () => {
         <FaSearch className="text-[#f5f5f5]" />
         <input
           type="text"
-          placeholder="Search"
+          placeholder={t("common.search")}
           className="bg-[#1f1f1f] outline-none text-[#f5f5f5] w-full"
         />
       </div>
@@ -70,6 +78,14 @@ const Header = () => {
             <MdDashboard className="text-[#f5f5f5] text-xl md:text-2xl" />
           </button>
         )}
+        {/* 2026-02-26T00:00:00: language toggle button */}
+        <button
+          type="button"
+          onClick={toggleLanguage}
+          className="bg-[#1f1f1f] rounded-[15px] min-h-[44px] px-3 flex items-center justify-center text-[#f5f5f5] text-sm font-medium"
+        >
+          {t("common.switchLang")}
+        </button>
         <button
           type="button"
           className="bg-[#1f1f1f] rounded-[15px] min-h-[44px] min-w-[44px] px-3 flex items-center justify-center"

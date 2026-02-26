@@ -1,9 +1,12 @@
+// 2026-02-26T00:00:00: added useTranslation for i18n support
 import React, { useState } from "react";
 import { register } from "../../https";
 import { useMutation } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
+import { useTranslation } from "react-i18next";
 
 const Register = ({ setIsRegister }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -53,7 +56,7 @@ const Register = ({ setIsRegister }) => {
       <form onSubmit={handleSubmit}>
         <div>
           <label className="block text-[#ababab] mb-2 text-sm font-medium">
-            Employee Name
+            {t("auth.name")}
           </label>
           <div className="flex item-center rounded-lg p-5 px-4 bg-[#1f1f1f]">
             <input
@@ -61,7 +64,7 @@ const Register = ({ setIsRegister }) => {
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="Enter employee name"
+              placeholder={t("auth.namePlaceholder")}
               className="bg-transparent flex-1 text-white focus:outline-none"
               required
             />
@@ -69,7 +72,7 @@ const Register = ({ setIsRegister }) => {
         </div>
         <div>
           <label className="block text-[#ababab] mb-2 mt-3 text-sm font-medium">
-            Employee Email
+            {t("auth.email")}
           </label>
           <div className="flex item-center rounded-lg p-5 px-4 bg-[#1f1f1f]">
             <input
@@ -77,7 +80,7 @@ const Register = ({ setIsRegister }) => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Enter employee email"
+              placeholder={t("auth.emailPlaceholder")}
               className="bg-transparent flex-1 text-white focus:outline-none"
               required
             />
@@ -85,7 +88,7 @@ const Register = ({ setIsRegister }) => {
         </div>
         <div>
           <label className="block text-[#ababab] mb-2 mt-3 text-sm font-medium">
-            Employee Phone
+            {t("auth.phone")}
           </label>
           <div className="flex item-center rounded-lg p-5 px-4 bg-[#1f1f1f]">
             <input
@@ -93,7 +96,7 @@ const Register = ({ setIsRegister }) => {
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              placeholder="Enter employee phone"
+              placeholder={t("auth.phonePlaceholder")}
               className="bg-transparent flex-1 text-white focus:outline-none"
               required
             />
@@ -101,7 +104,7 @@ const Register = ({ setIsRegister }) => {
         </div>
         <div>
           <label className="block text-[#ababab] mb-2 mt-3 text-sm font-medium">
-            Password
+            {t("auth.password")}
           </label>
           <div className="flex item-center rounded-lg p-5 px-4 bg-[#1f1f1f]">
             <input
@@ -109,7 +112,7 @@ const Register = ({ setIsRegister }) => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Enter password"
+              placeholder={t("auth.passwordPlaceholder")}
               className="bg-transparent flex-1 text-white focus:outline-none"
               required
             />
@@ -117,7 +120,7 @@ const Register = ({ setIsRegister }) => {
         </div>
         <div>
           <label className="block text-[#ababab] mb-2 mt-3 text-sm font-medium">
-            Choose your role
+            {t("auth.role")}
           </label>
 
           <div className="flex item-center gap-3 mt-4">
@@ -141,7 +144,7 @@ const Register = ({ setIsRegister }) => {
           type="submit"
           className="w-full rounded-lg mt-6 py-3 text-lg bg-yellow-400 text-gray-900 font-bold"
         >
-          Sign up
+          {t("auth.signUp")}
         </button>
       </form>
     </div>

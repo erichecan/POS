@@ -1,10 +1,13 @@
+// 2026-02-26T00:00:00: added useTranslation for i18n support
 import React, { useEffect, useState } from "react";
 import restaurant from "../assets/images/restaurant-img.jpg"
 import logo from "../assets/images/logo.png"
 import Register from "../components/auth/Register";
 import Login from "../components/auth/Login";
+import { useTranslation } from "react-i18next";
 
 const Auth = () => {
+  const { t } = useTranslation();
 
   useEffect(() => {
     document.title = "POS | Auth"
@@ -39,7 +42,7 @@ const Auth = () => {
         </div>
 
         <h2 className="text-4xl text-center mt-10 font-semibold text-yellow-400 mb-10">
-          {isRegister ? "Employee Registration" : "Employee Login"}
+          {isRegister ? t("auth.registerTitle") : t("auth.loginTitle")}
         </h2>
 
         {/* Components */}  
@@ -48,9 +51,9 @@ const Auth = () => {
 
         <div className="flex justify-center mt-6">
           <p className="text-sm text-[#ababab]">
-            {isRegister ? "Already have an account?" : "Don't have an account?"}
+            {isRegister ? t("auth.hasAccount") : t("auth.noAccount")}
             <a onClick={() => setIsRegister(!isRegister)} className="text-yellow-400 font-semibold hover:underline" href="#">
-              {isRegister ? "Sign in" : "Sign up"}
+              {isRegister ? t("auth.signIn") : t("auth.signUp")}
             </a>
           </p>
         </div>

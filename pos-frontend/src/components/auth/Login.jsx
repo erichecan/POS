@@ -1,3 +1,4 @@
+// 2026-02-26T00:00:00: added useTranslation for i18n support
 import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query"
 import { login } from "../../https/index"
@@ -5,8 +6,10 @@ import { enqueueSnackbar } from "notistack";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../redux/slices/userSlice";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const Login = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({
@@ -47,7 +50,7 @@ const Login = () => {
       <form onSubmit={handleSubmit}>
         <div>
           <label className="block text-[#ababab] mb-2 mt-3 text-sm font-medium">
-            Employee Email
+            {t("auth.email")}
           </label>
           <div className="flex item-center rounded-lg p-5 px-4 bg-[#1f1f1f]">
             <input
@@ -55,7 +58,7 @@ const Login = () => {
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Enter employee email"
+              placeholder={t("auth.emailPlaceholder")}
               className="bg-transparent flex-1 text-white focus:outline-none"
               required
             />
@@ -63,7 +66,7 @@ const Login = () => {
         </div>
         <div>
           <label className="block text-[#ababab] mb-2 mt-3 text-sm font-medium">
-            Password
+            {t("auth.password")}
           </label>
           <div className="flex item-center rounded-lg p-5 px-4 bg-[#1f1f1f]">
             <input
@@ -71,7 +74,7 @@ const Login = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Enter password"
+              placeholder={t("auth.passwordPlaceholder")}
               className="bg-transparent flex-1 text-white focus:outline-none"
               required
             />
@@ -82,7 +85,7 @@ const Login = () => {
           type="submit"
           className="w-full rounded-lg mt-6 py-3 text-lg bg-yellow-400 text-gray-900 font-bold"
         >
-          Sign in
+          {t("auth.signIn")}
         </button>
       </form>
     </div>

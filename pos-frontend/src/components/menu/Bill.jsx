@@ -82,6 +82,10 @@ const validateCartItemOptions = (items = []) => {
   return "";
 };
 
+// 2026-02-26T00:00:00Z: Split Bill (AA制) functionality
+const SPLIT_MODE_EVEN = "even";
+const SPLIT_MODE_ITEM = "item";
+
 const Bill = () => {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
@@ -95,6 +99,14 @@ const Bill = () => {
 
   const [showInvoice, setShowInvoice] = useState(false);
   const [orderInfo, setOrderInfo] = useState();
+
+  const [showSplitPanel, setShowSplitPanel] = useState(false);
+  const [splitMode, setSplitMode] = useState(SPLIT_MODE_EVEN);
+  const [splitPeople, setSplitPeople] = useState(2);
+  const [splitGroups, setSplitGroups] = useState([
+    { name: "Guest 1", itemIndices: [] },
+    { name: "Guest 2", itemIndices: [] },
+  ]);
 
   const receiptTemplateQuery = useQuery({
     queryKey: ["receipt-template"],
@@ -343,6 +355,60 @@ const Bill = () => {
     }, 250);
   };
 
+  // 2026-02-26T00:00:01Z: Split Bill helpers
+  const handleToggleSplitPanel = () => {
+    setShowSplitPanel((prev) => !prev);
+    if (!showSplitPanel) {
+      setSplitMode(SPLIT_MODE_EVEN);
+      setSplitPeople(2);
+      setSplitGroups([
+        { name: "Guest 1", itemIndices: [] },
+        { name: "Guest 2", itemIndices: [] },
+      ]);
+    }
+  };
+
+  const addSplitGroup = () => {
+    setSplitGroups((prev) => [
+      ...prev,
+      { name: `Guest ${prev.length + 1}`, itemIndices: [] },
+    ]);
+  };
+
+  const removeSplitGroup = (groupIdx) => {
+    if (splitGroups.length <= 2) return;
+    setSplitGroups((prev) => prev.filter((_, i) => i !== groupIdx));
+  };
+
+  const toggleItemInGroup = (groupIdx, itemIdx) => {
+    setSplitGroups((prev) =>
+      prev.map((group, gi) => {
+        if (gi !== groupIdx) return group;
+        const exists = group.itemIndices.includes(itemIdx);
+        return {
+          ...group,
+          itemIndices: exists
+            ? group.itemIndices.filter((i) => i !== itemIdx)
+            : [...group.itemIndices, itemIdx],
+        };
+      })
+    );
+  };
+
+  const getGroupSubtotal = (group) => {
+    const items = Array.isArray(cartData) ? cartData : [];
+    return group.itemIndices.reduce((sum, idx) => {
+      const item = items[idx];
+      if (!item) return sum;
+      return sum + Number(item.price || 0);
+    }, 0);
+  };
+
+  const getGroupTax = (group) => (getGroupSubtotal(group) * taxRate) / 100;
+  const getGroupTotal = (group) => getGroupSubtotal(group) + getGroupTax(group);
+
+  const perPersonAmount = splitPeople > 0 ? totalPriceWithTax / splitPeople : 0;
+
   const handlePrintReceipt = () => {
     const draftOrder = orderInfo || {
       orderId: customerData.activeOrderId || customerData.orderId,
@@ -409,7 +475,156 @@ const Bill = () => {
         </p>
       </div>
 
+      {/* 2026-02-26T00:00:02Z: Split Bill Panel */}
+      {showSplitPanel && (
+        <div className="mx-5 mt-3 mb-2 bg-[#262626] border border-[#333] rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-[#f5f5f5] font-semibold text-sm">Split Bill / AA制</h3>
+            <button
+              onClick={handleToggleSplitPanel}
+              className="text-[#ababab] hover:text-[#f5f5f5] text-lg leading-none"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="flex gap-2 mb-3">
+            <button
+              onClick={() => setSplitMode(SPLIT_MODE_EVEN)}
+              className={`flex-1 py-2 rounded-lg text-xs font-semibold ${
+                splitMode === SPLIT_MODE_EVEN
+                  ? "bg-[#f6b100] text-[#1f1f1f]"
+                  : "bg-[#333] text-[#ababab]"
+              }`}
+            >
+              Even Split / 平均分摊
+            </button>
+            <button
+              onClick={() => setSplitMode(SPLIT_MODE_ITEM)}
+              className={`flex-1 py-2 rounded-lg text-xs font-semibold ${
+                splitMode === SPLIT_MODE_ITEM
+                  ? "bg-[#f6b100] text-[#1f1f1f]"
+                  : "bg-[#333] text-[#ababab]"
+              }`}
+            >
+              By Item / 按菜品分
+            </button>
+          </div>
+
+          {splitMode === SPLIT_MODE_EVEN && (
+            <div>
+              <label className="block text-[#ababab] text-xs mb-2">Number of People</label>
+              <div className="flex items-center justify-between bg-[#1f1f1f] px-4 py-2 rounded-lg mb-3">
+                <button
+                  onClick={() => setSplitPeople((p) => Math.max(2, p - 1))}
+                  className="text-yellow-400 text-xl font-bold"
+                >
+                  −
+                </button>
+                <span className="text-[#f5f5f5] font-semibold">{splitPeople}</span>
+                <button
+                  onClick={() => setSplitPeople((p) => Math.min(20, p + 1))}
+                  className="text-yellow-400 text-xl font-bold"
+                >
+                  +
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                {Array.from({ length: splitPeople }, (_, i) => (
+                  <div key={i} className="bg-[#1f1f1f] rounded-lg p-3 text-center">
+                    <p className="text-[#ababab] text-xs mb-1">Guest {i + 1}</p>
+                    <p className="text-[#f5f5f5] font-bold text-sm">€{perPersonAmount.toFixed(2)}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2 text-[#ababab] text-xs text-center">
+                €{totalPriceWithTax.toFixed(2)} ÷ {splitPeople} = €{perPersonAmount.toFixed(2)} / person
+              </div>
+            </div>
+          )}
+
+          {splitMode === SPLIT_MODE_ITEM && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[#ababab] text-xs">Groups ({splitGroups.length})</span>
+                <button
+                  onClick={addSplitGroup}
+                  className="text-xs bg-[#025cca] text-[#f5f5f5] px-3 py-1 rounded-lg"
+                >
+                  + Add Guest
+                </button>
+              </div>
+              <div className="space-y-3 max-h-60 overflow-y-auto">
+                {splitGroups.map((group, gi) => (
+                  <div key={gi} className="bg-[#1f1f1f] rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[#f5f5f5] text-xs font-semibold">{group.name}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-yellow-400 text-xs font-bold">
+                          €{getGroupTotal(group).toFixed(2)}
+                        </span>
+                        {splitGroups.length > 2 && (
+                          <button
+                            onClick={() => removeSplitGroup(gi)}
+                            className="text-red-400 text-xs hover:text-red-300"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      {(Array.isArray(cartData) ? cartData : []).map((item, idx) => {
+                        const checked = group.itemIndices.includes(idx);
+                        const assignedElsewhere = splitGroups.some(
+                          (g, gIdx) => gIdx !== gi && g.itemIndices.includes(idx)
+                        );
+                        return (
+                          <label
+                            key={idx}
+                            className={`flex items-center gap-2 text-xs cursor-pointer ${
+                              assignedElsewhere ? "opacity-40" : ""
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              disabled={assignedElsewhere && !checked}
+                              onChange={() => toggleItemInGroup(gi, idx)}
+                              className="accent-yellow-400"
+                            />
+                            <span className="text-[#ababab] flex-1 truncate">
+                              {item.name} x{item.quantity}
+                            </span>
+                            <span className="text-[#f5f5f5]">€{Number(item.price || 0).toFixed(2)}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <div className="mt-1 text-[#ababab] text-xs flex justify-between border-t border-[#333] pt-1">
+                      <span>Subtotal: €{getGroupSubtotal(group).toFixed(2)}</span>
+                      <span>Tax: €{getGroupTax(group).toFixed(2)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="sticky bottom-0 z-10 bg-[#1a1a1a] border-t border-t-[#2a2a2a] flex items-center gap-3 px-5 pt-4 pb-4">
+        <button
+          onClick={handleToggleSplitPanel}
+          className={`px-4 py-3 rounded-lg font-semibold text-lg ${
+            showSplitPanel
+              ? "bg-[#333] text-[#f5f5f5]"
+              : "bg-[#025cca] text-[#f5f5f5]"
+          }`}
+          title="Split Bill / AA制"
+        >
+          Split
+        </button>
         <button
           onClick={handlePrintReceipt}
           className="bg-[#025cca] px-4 py-3 w-full rounded-lg text-[#f5f5f5] font-semibold text-lg"

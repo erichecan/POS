@@ -12,10 +12,13 @@ import { FaUserCircle } from "react-icons/fa";
 import { logout } from "../https";
 import { removeUser } from "../redux/slices/userSlice";
 import { adminNavConfig, pathSegmentToLabel } from "../config/adminNavConfig";
+// 2026-02-26T00:00:00: added useTranslation for i18n support
+import { useTranslation } from "react-i18next";
 
 const SIDEBAR_COLLAPSED_KEY = "pos-admin-sidebar-collapsed";
 
 const AdminLayout = () => {
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -201,17 +204,25 @@ const AdminLayout = () => {
               href="/"
               className="shrink-0 text-sm text-[#ababab] hover:text-[#f5f5f5]"
             >
-              Back to POS
+              {t("nav.backToPOS")}
             </a>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            {/* 2026-02-26T00:00:00: language toggle button */}
+            <button
+              type="button"
+              onClick={() => i18n.changeLanguage(i18n.language === "zh" ? "en" : "zh")}
+              className="rounded px-2 py-1 text-sm text-[#ababab] hover:bg-[#333] hover:text-[#f5f5f5]"
+            >
+              {t("common.switchLang")}
+            </button>
             <FaUserCircle className="text-2xl text-[#ababab]" />
             <span className="hidden md:inline text-sm text-[#ababab]">{userData?.name}</span>
             <button
               type="button"
               onClick={() => logoutMutation.mutate()}
               className="rounded p-2 text-[#ababab] hover:bg-[#333] hover:text-[#f5f5f5]"
-              aria-label="Logout"
+              aria-label={t("nav.logout")}
             >
               <IoLogOut size={20} />
             </button>

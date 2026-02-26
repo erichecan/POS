@@ -1,3 +1,5 @@
+// 2026-02-26T00:00:00: import i18n before React to ensure translations are ready
+import "./i18n";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";

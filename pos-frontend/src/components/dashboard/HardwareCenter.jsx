@@ -238,6 +238,15 @@ const HardwareCenter = () => {
 
   return (
     <div className="container mx-auto py-2 px-6 md:px-4 space-y-4">
+      {/* 2026-02-26: Hardware description section */}
+      <div className="mb-6 rounded-lg border border-[#333] bg-[#262626] p-4">
+        <h2 className="text-lg font-semibold text-[#f5f5f5] mb-2">Hardware Management</h2>
+        <p className="text-sm text-[#ababab] leading-relaxed">
+          <strong className="text-[#f5f5f5]">Hardware Catalog</strong> lists all compatible POS devices (terminals, printers, scanners, cash drawers, kiosks) filtered by country, provider, and capabilities. These are reference models — not yet connected to your store.<br/><br/>
+          <strong className="text-[#f5f5f5]">Store Hardware Profile</strong> is your store's specific hardware setup. Select which devices each store location uses, assign roles (e.g. counter POS, kitchen printer), and save the configuration. This determines what hardware is expected at each store for operational readiness checks.
+        </p>
+      </div>
+
       <div className={cardClass}>
         <div className="flex items-center justify-between">
           <div>

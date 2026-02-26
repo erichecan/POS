@@ -2,6 +2,7 @@
  * Admin sidebar navigation config (SaaS-style grouped).
  * 2026-02-24 SaaS admin layout.
  * 2026-02-26: sidebar restructure with sub-menus
+ * 2026-02-26: add Table Layout in Organization group
  */
 import {
   MdDashboard,
@@ -16,6 +17,7 @@ import {
   MdBuild,
   MdHistory,
   MdMenuBook,
+  MdGridOn,
 } from "react-icons/md";
 import { IoBarChartSharp } from "react-icons/io5";
 
@@ -81,6 +83,7 @@ export const adminNavConfig = [
     groupLabel: "Organization",
     items: [
       { label: "Stores", path: "/dashboard/stores", icon: MdStore },
+      { label: "Table Layout", path: "/tables/layout", icon: MdGridOn },
       { label: "Team", path: "/dashboard/team", icon: MdPeople },
     ],
   },
@@ -126,6 +129,7 @@ export const pathSegmentToLabel = {
   hardware: "Hardware",
   templates: "Templates",
   stores: "Stores",
+  layout: "Table Layout",
   team: "Team",
   settings: "Settings",
   audit: "Activity log",

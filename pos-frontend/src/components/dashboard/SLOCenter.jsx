@@ -177,6 +177,20 @@ const SLOCenter = () => {
 
   return (
     <div className="container mx-auto py-2 px-6 md:px-4 space-y-4">
+      {/* 2026-02-26: SLO description section */}
+      <div className="mb-6 rounded-lg border border-[#333] bg-[#262626] p-4">
+        <h2 className="text-lg font-semibold text-[#f5f5f5] mb-2">Service Level Objectives (SLO)</h2>
+        <p className="text-sm text-[#ababab] leading-relaxed">
+          SLO Dashboard monitors your store's operational health in real-time. It tracks key metrics across five areas:
+          <strong className="text-[#f5f5f5]"> Inventory</strong> (out-of-stock & low stock rates),
+          <strong className="text-[#f5f5f5]"> Kitchen</strong> (overdue tickets & average completion time),
+          <strong className="text-[#f5f5f5]"> Payments</strong> (failure rates & unverified transactions),
+          <strong className="text-[#f5f5f5]"> Refunds</strong> (pending approvals), and
+          <strong className="text-[#f5f5f5]"> Cash</strong> (variance alerts from cash shifts).
+          Green = healthy, Yellow = warning, Red = critical action needed.
+        </p>
+      </div>
+
       <div className={panelClass}>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[#f5f5f5] text-lg font-semibold">Ops SLO Snapshot</h2>
