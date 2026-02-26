@@ -25,6 +25,11 @@ const globalErrorHandler = (err, req, res, next) => {
         response.conflictEventId = err.conflictEventId;
     }
 
+    // 2026-02-24: 错误响应显式带 CORS，与请求 Origin 一致（若在允许列表）
+    const reqOrigin = req.get("Origin");
+    const allowOrigin = (reqOrigin && config.isOriginAllowed(reqOrigin)) ? reqOrigin : config.frontendUrl;
+    res.setHeader("Access-Control-Allow-Origin", allowOrigin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
     return res.status(statusCode).json(response);
 };
 

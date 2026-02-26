@@ -6,18 +6,42 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const app = express();
 
-
 const PORT = config.port;
 connectDB();
 
-// Middlewares — 2026-02-24 22:15:00 CORS 使用 config.frontendUrl，多环境一致（CODE_REVIEW I1）
+// 2026-02-24: CORS 支持多 origin + 生产环境 *.run.app 回退，避免 Cloud Run 前端被拒
 app.use(cors({
     credentials: true,
-    origin: config.frontendUrl ? [config.frontendUrl] : ["http://localhost:5173"],
+    origin: (origin, cb) => {
+        if (!origin) return cb(null, true);
+        if (config.isOriginAllowed(origin)) return cb(null, true);
+        return cb(null, false);
+    },
 }));
 app.use("/api/payment/webhook-verification", express.raw({ type: "application/json" }));
-app.use(express.json()); // parse incoming request in json format
-app.use(cookieParser())
+app.use(express.json());
+app.use(cookieParser());
+
+// 2026-02-24: OPTIONS 预检必须 2xx+CORS，否则浏览器报 CORS；503 时也显式带 CORS
+app.use("/api", (req, res, next) => {
+    const setCors = () => {
+        const origin = req.get("Origin");
+        const allowOrigin = (origin && config.isOriginAllowed(origin)) ? origin : config.frontendUrl;
+        res.setHeader("Access-Control-Allow-Origin", allowOrigin);
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+    };
+    if (req.method === "OPTIONS") {
+        setCors();
+        res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
+        return res.status(204).end();
+    }
+    if (!connectDB.isDbConnected()) {
+        setCors();
+        return res.status(503).json({ success: false, message: "Service temporarily unavailable (database)" });
+    }
+    next();
+});
 
 
 // Root Endpoint

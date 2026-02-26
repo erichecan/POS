@@ -33,7 +33,22 @@ const config = Object.freeze({
     port: process.env.PORT || 8000,
     databaseURI: process.env.MONGODB_URI || "mongodb://localhost:27017/pos-db",
     nodeEnv: process.env.NODE_ENV || "development",
-    frontendUrl: process.env.FRONTEND_URL || "http://localhost:5173",
+    // 2026-02-24: 支持逗号分隔多 origin；生产环境未配置时允许 *.run.app 避免 CORS 报错
+    frontendUrl: (() => {
+        const raw = process.env.FRONTEND_URL || "http://localhost:5173";
+        return raw.split(",")[0].trim();
+    })(),
+    frontendUrls: (() => {
+        const raw = process.env.FRONTEND_URL || "http://localhost:5173";
+        return raw.split(",").map((s) => s.trim()).filter(Boolean);
+    })(),
+    // 2026-02-24: *.run.app 始终允许，避免 Cloud Run 未设 NODE_ENV=production 时 CORS 拒掉
+    isOriginAllowed(origin) {
+        if (!origin) return false;
+        if (this.frontendUrls.includes(origin)) return true;
+        if (/^https:\/\/[a-z0-9.-]+\.run\.app$/.test(origin)) return true;
+        return false;
+    },
     accessTokenSecret: process.env.JWT_SECRET,
     stripeSecretKey: process.env.STRIPE_SECRET_KEY,
     stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,

@@ -67,18 +67,19 @@ const register = async (req, res, next) => {
 }
 
 
+// 2026-02-24: 登录邮箱小写规范化、JWT 校验、错误日志，配合 CORS 修复
 const login = async (req, res, next) => {
 
     try {
-        
-        const { email, password } = req.body;
+        const { email: rawEmail, password } = req.body || {};
+        const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
 
-        if(!email || !password) {
+        if (!email || !password) {
             const error = createHttpError(400, "All fields are required!");
             return next(error);
         }
 
-        const isUserPresent = await User.findOne({email}).select("+password");
+        const isUserPresent = await User.findOne({ email }).select("+password");
         if(!isUserPresent){
             const error = createHttpError(401, "Invalid Credentials");
             return next(error);
@@ -90,9 +91,15 @@ const login = async (req, res, next) => {
             return next(error);
         }
 
-        const accessToken = jwt.sign({_id: isUserPresent._id}, config.accessTokenSecret, {
-            expiresIn : '1d'
-        });
+        if (!config.accessTokenSecret) {
+            console.error("Login: JWT secret not configured");
+            return next(createHttpError(503, "Auth not configured"));
+        }
+        const accessToken = jwt.sign(
+            { _id: isUserPresent._id },
+            config.accessTokenSecret,
+            { expiresIn: "1d" }
+        );
 
         const isProduction = config.nodeEnv === "production";
 
@@ -105,55 +112,55 @@ const login = async (req, res, next) => {
 
         const safeUser = sanitizeUser(isUserPresent);
 
+        // 2026-02-24: 审计/会话日志与 save 失败不导致 500，先返回 200 再后台执行
         const nextFingerprint = buildSessionFingerprint(req);
         const previousFingerprint = `${isUserPresent.lastSessionFingerprint || ""}`.trim();
         const fingerprintChanged =
             Boolean(previousFingerprint) && previousFingerprint !== nextFingerprint;
 
-        if (fingerprintChanged) {
-            await logSessionSecurityEvent({
-                req,
-                userId: isUserPresent._id,
-                type: "LOGIN_FINGERPRINT_CHANGED",
-                details: {
-                    previousFingerprint,
-                    nextFingerprint,
-                },
-            });
-        }
-
-        await logSessionSecurityEvent({
-            req,
-            userId: isUserPresent._id,
-            type: "LOGIN_SUCCESS",
-            details: {
-                role: isUserPresent.role,
-                fingerprintChanged,
-            },
-        });
-
-        isUserPresent.lastLoginAt = new Date();
-        isUserPresent.lastSessionFingerprint = nextFingerprint;
-        await isUserPresent.save();
-
-        req.user = isUserPresent;
-        await logAuditEvent({
-            req,
-            action: "USER_LOGGED_IN",
-            resourceType: "User",
-            resourceId: isUserPresent._id,
-            statusCode: 200
-        });
-
-        res.status(200).json({success: true, message: "User login successfully!", 
+        res.status(200).json({
+            success: true,
+            message: "User login successfully!",
             data: safeUser
         });
 
+        (async () => {
+            try {
+                if (fingerprintChanged) {
+                    await logSessionSecurityEvent({
+                        req,
+                        userId: isUserPresent._id,
+                        type: "LOGIN_FINGERPRINT_CHANGED",
+                        details: { previousFingerprint, nextFingerprint },
+                    });
+                }
+                await logSessionSecurityEvent({
+                    req,
+                    userId: isUserPresent._id,
+                    type: "LOGIN_SUCCESS",
+                    details: { role: isUserPresent.role, fingerprintChanged },
+                });
+                isUserPresent.lastLoginAt = new Date();
+                isUserPresent.lastSessionFingerprint = nextFingerprint;
+                await isUserPresent.save();
+                req.user = isUserPresent;
+                await logAuditEvent({
+                    req,
+                    action: "USER_LOGGED_IN",
+                    resourceType: "User",
+                    resourceId: isUserPresent._id,
+                    statusCode: 200
+                });
+            } catch (e) {
+                console.error("Login post-response error:", e.message);
+            }
+        })();
+
 
     } catch (error) {
+        console.error("Login error:", error.message, error.stack);
         next(error);
     }
-
 }
 
 const getUserData = async (req, res, next) => {

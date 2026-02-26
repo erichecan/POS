@@ -13,6 +13,14 @@ const { hashApiKey, deriveKeyPrefix } = require("../utils/developerAuthService")
 const { resolveMongoUri } = require("../utils/resolveMongoUri");
 
 const USERS = [
+  // 2026-02-24: 测试管理员，登录邮箱 testadmin@restro.local，密码 12345678（schema 要求至少 8 位）
+  {
+    name: "Test Admin",
+    email: "testadmin@restro.local",
+    phone: "9000000000",
+    password: "12345678",
+    role: "Admin"
+  },
   {
     name: "System Admin",
     email: "admin@restro.local",
@@ -278,6 +286,7 @@ const printSummary = (result) => {
   console.log("Payments:", result.payments.length);
   console.log("Partner API Keys:", result.partnerKeys.length);
   console.log("\nLogin credentials:");
+  console.log("- TestAdmin: testadmin@restro.local / 12345678");
   console.log("- Admin   : admin@restro.local / Admin@12345");
   console.log("- Cashier : cashier@restro.local / Cashier@12345");
   console.log("- Waiter  : waiter@restro.local / Waiter@12345");

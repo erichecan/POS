@@ -36,15 +36,15 @@ axiosWrapper.interceptors.request.use((config) => {
   return config;
 });
 
-// 2026-02-24 22:15:00 401 全局处理：清除登录态并跳转登录页（CODE_REVIEW I3）
+// 2026-02-26: 401 时仅在非 /auth 页做整页跳转，避免在登录页 401 导致反复重定向闪屏
 axiosWrapper.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      const origin = typeof window !== "undefined" ? window.location.origin : "";
-      const authPath = "/auth";
-      if (origin) {
-        window.location.href = `${origin}${authPath}`;
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      const pathname = window.location.pathname || "";
+      if (pathname !== "/auth") {
+        const origin = window.location.origin || "";
+        if (origin) window.location.href = `${origin}/auth`;
       }
     }
     return Promise.reject(error);
