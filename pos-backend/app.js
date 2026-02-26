@@ -56,6 +56,8 @@ app.use("/api/table", require("./routes/tableRoute"));
 app.use("/api/payment", require("./routes/paymentRoute"));
 app.use("/api/access-control", require("./routes/accessControlRoute"));
 app.use("/api/channel-config", require("./routes/channelConfigRoute"));
+// 2026-02-26T19:56:00+08:00: Menu category management (must be before /api/menu to match first)
+app.use("/api/menu/categories", require("./routes/menuCategoryRoute"));
 app.use("/api/menu", require("./routes/menuRoute"));
 app.use("/api/member", require("./routes/memberRoute"));
 app.use("/api/promotion", require("./routes/promotionRoute"));

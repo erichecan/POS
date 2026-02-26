@@ -19,6 +19,7 @@ export { default as ChannelConnectionsPage } from "./ChannelConnectionsPage.jsx"
 export { default as ChannelMappingsPage } from "./ChannelMappingsPage.jsx";
 export { default as MenuItemsPage } from "./MenuItemsPage.jsx";
 export { default as MenuVersionsPage } from "./MenuVersionsPage.jsx";
+export { default as MenuCategoriesPage } from "./MenuCategoriesPage.jsx";
 export { default as HardwarePage } from "./HardwarePage.jsx";
 export { default as TemplatesPage } from "./TemplatesPage.jsx";
 export { default as StoresPage } from "./StoresPage.jsx";

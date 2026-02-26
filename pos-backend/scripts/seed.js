@@ -13,6 +13,10 @@ const Organization = require("../models/organizationModel");
 const Region = require("../models/regionModel");
 const Store = require("../models/storeModel");
 const WorkforceShift = require("../models/workforceShiftModel");
+// 2026-02-26T20:05:00+08:00: Menu category & catalog item seed data
+const MenuCategory = require("../models/menuCategoryModel");
+const MenuCatalogItem = require("../models/menuCatalogItemModel");
+const MenuVersion = require("../models/menuVersionModel");
 const { calculateOrderSummary } = require("../utils/orderPricing");
 const { hashApiKey, deriveKeyPrefix } = require("../utils/developerAuthService");
 const { resolveMongoUri } = require("../utils/resolveMongoUri");
@@ -402,7 +406,94 @@ const seedPartnerApiKeys = async ({ createdBy }) => {
   };
 };
 
+// 2026-02-26T20:06:00+08:00: Seed menu categories and items for HQ master menu
+const seedMenuData = async () => {
+  await MenuCategory.deleteMany({});
+  await MenuCatalogItem.deleteMany({});
+  await MenuVersion.deleteMany({});
+
+  const catDefs = [
+    { name: "Appetizers", icon: "🥗", color: "#22c55e", sortOrder: 0, description: "Starters and small plates" },
+    { name: "Main Course", icon: "🍖", color: "#ef4444", sortOrder: 1, description: "Main dishes" },
+    { name: "Pizza", icon: "🍕", color: "#f97316", sortOrder: 2, description: "Freshly baked pizzas" },
+    { name: "Pasta", icon: "🍝", color: "#eab308", sortOrder: 3, description: "Italian pasta dishes" },
+    { name: "Seafood", icon: "🦐", color: "#06b6d4", sortOrder: 4, description: "Fresh seafood" },
+    { name: "Desserts", icon: "🍰", color: "#ec4899", sortOrder: 5, description: "Sweet treats" },
+    { name: "Beverages", icon: "🍺", color: "#3b82f6", sortOrder: 6, description: "Drinks and beverages" },
+    { name: "Kids Menu", icon: "🧒", color: "#8b5cf6", sortOrder: 7, description: "For little ones" },
+  ];
+
+  const cats = await MenuCategory.insertMany(
+    catDefs.map((c) => ({
+      ...c,
+      locationId: "default",
+      normalizedName: c.name.toLowerCase(),
+      status: "ACTIVE",
+    }))
+  );
+  console.log(`  MenuCategories: ${cats.length}`);
+
+  const itemDefs = [
+    { name: "Caesar Salad", category: "Appetizers", basePrice: 12.99 },
+    { name: "Bruschetta", category: "Appetizers", basePrice: 9.99 },
+    { name: "Garlic Bread", category: "Appetizers", basePrice: 6.99 },
+    { name: "Soup of the Day", category: "Appetizers", basePrice: 8.99 },
+    { name: "Grilled Chicken", category: "Main Course", basePrice: 18.99 },
+    { name: "Beef Steak", category: "Main Course", basePrice: 28.99 },
+    { name: "Lamb Chops", category: "Main Course", basePrice: 32.99 },
+    { name: "Roasted Duck", category: "Main Course", basePrice: 26.99 },
+    { name: "Margherita Pizza", category: "Pizza", basePrice: 14.99 },
+    { name: "Pepperoni Pizza", category: "Pizza", basePrice: 16.99 },
+    { name: "BBQ Chicken Pizza", category: "Pizza", basePrice: 17.99 },
+    { name: "Spaghetti Bolognese", category: "Pasta", basePrice: 15.99 },
+    { name: "Fettuccine Alfredo", category: "Pasta", basePrice: 14.99 },
+    { name: "Penne Arrabiata", category: "Pasta", basePrice: 13.99 },
+    { name: "Grilled Salmon", category: "Seafood", basePrice: 24.99 },
+    { name: "Shrimp Scampi", category: "Seafood", basePrice: 22.99 },
+    { name: "Fish & Chips", category: "Seafood", basePrice: 16.99 },
+    { name: "Tiramisu", category: "Desserts", basePrice: 10.99 },
+    { name: "Chocolate Lava Cake", category: "Desserts", basePrice: 11.99 },
+    { name: "Ice Cream Sundae", category: "Desserts", basePrice: 8.99 },
+    { name: "Coca Cola", category: "Beverages", basePrice: 3.99 },
+    { name: "Fresh Orange Juice", category: "Beverages", basePrice: 5.99 },
+    { name: "House Wine (Glass)", category: "Beverages", basePrice: 9.99 },
+    { name: "Craft Beer", category: "Beverages", basePrice: 7.99 },
+    { name: "Espresso", category: "Beverages", basePrice: 3.49 },
+    { name: "Chicken Nuggets", category: "Kids Menu", basePrice: 8.99 },
+    { name: "Mini Burger", category: "Kids Menu", basePrice: 9.99 },
+  ];
+
+  const menuItems = await MenuCatalogItem.insertMany(
+    itemDefs.map((item) => ({
+      locationId: "default",
+      channelCode: "ALL",
+      versionTag: "v1",
+      category: item.category,
+      name: item.name,
+      normalizedName: item.name.toLowerCase(),
+      basePrice: item.basePrice,
+      status: "ACTIVE",
+    }))
+  );
+  console.log(`  MenuCatalogItems: ${menuItems.length}`);
+
+  await MenuVersion.create({
+    locationId: "default",
+    versionTag: "v1",
+    status: "PUBLISHED",
+    effectiveFrom: new Date(),
+    publishedAt: new Date(),
+    notes: "Initial HQ master menu v1",
+  });
+  console.log("  MenuVersion: v1 (PUBLISHED)");
+
+  return { categoriesCount: cats.length, itemsCount: menuItems.length };
+};
+
 const resetCollections = async () => {
+  await MenuVersion.deleteMany({});
+  await MenuCatalogItem.deleteMany({});
+  await MenuCategory.deleteMany({});
   await WorkforceShift.deleteMany({});
   await Store.deleteMany({});
   await Region.deleteMany({});
@@ -429,6 +520,8 @@ const printSummary = (result) => {
   console.log("Orders:", result.orders.length);
   console.log("Payments:", result.payments.length);
   console.log("Partner API Keys:", result.partnerKeys.length);
+  console.log("Menu Categories:", result.menuCategoriesCount);
+  console.log("Menu Items:", result.menuItemsCount);
   console.log("\nLogin credentials:");
   console.log("- TestAdmin: testadmin@restro.local / 12345678");
   console.log("- Admin   : admin@restro.local / Admin@12345");
@@ -456,6 +549,7 @@ const run = async () => {
       createdBy: users[0]?._id
     });
     const workforceShifts = await seedWorkforceShifts(users, stores, users[0]?._id);
+    const menuSeed = await seedMenuData();
 
     printSummary({
       users,
@@ -467,7 +561,9 @@ const run = async () => {
       orders,
       payments,
       partnerKeys,
-      partnerPlainKeys
+      partnerPlainKeys,
+      menuCategoriesCount: menuSeed.categoriesCount,
+      menuItemsCount: menuSeed.itemsCount,
     });
   } catch (error) {
     console.error("Seed failed:", error);

@@ -55,6 +55,7 @@ export const adminNavConfig = [
         icon: MdMenuBook,
         children: [
           { label: "Items", path: "/dashboard/menu/items" },
+          { label: "Categories", path: "/dashboard/menu/categories" },
           { label: "Versions", path: "/dashboard/menu/versions" },
         ],
       },
@@ -118,6 +119,7 @@ export const pathSegmentToLabel = {
   replay: "Event Replay",
   menu: "Menu",
   items: "Items",
+  categories: "Categories",
   versions: "Versions",
   ops: "Ops",
   slo: "SLO",

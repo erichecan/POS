@@ -34,6 +34,7 @@ import {
   ChannelMappingsPage,
   MenuItemsPage,
   MenuVersionsPage,
+  MenuCategoriesPage,
 } from "./pages/dashboard/index.js";
 import Header from "./components/shared/Header";
 import NotFound from "./components/shared/NotFound";
@@ -112,6 +113,7 @@ function Layout() {
           <Route path="kitchen/tickets" element={<KitchenTicketsPage />} />
           <Route path="kitchen/replay" element={<KitchenReplayPage />} />
           <Route path="menu/items" element={<MenuItemsPage />} />
+          <Route path="menu/categories" element={<MenuCategoriesPage />} />
           <Route path="menu/versions" element={<MenuVersionsPage />} />
           <Route path="ops" element={<OpsPage />} />
           <Route path="slo" element={<SLOPage />} />

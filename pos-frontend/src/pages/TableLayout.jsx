@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import BackButton from "../components/shared/BackButton";
 import BottomNav from "../components/shared/BottomNav";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { getTables } from "../https";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { addTable, getTables, updateTable } from "../https";
 import { enqueueSnackbar } from "notistack";
+
+// 2026-02-26T12:00:00+08:00: Table Layout editor enhancements - add table, shape, seats
 
 const LAYOUT_STORAGE_KEY = "pos_table_layout_v2";
 const ZONES = [
@@ -38,6 +40,21 @@ const getShapeSizeBySeats = (seats) => {
   return { width: 220, height: 96, radius: "20px" };
 };
 
+const getTableSize = (seats, shape) => {
+  const seatCount = Number(seats || 1);
+  const base = seatCount <= 2 ? 92 : seatCount <= 4 ? 110 : seatCount <= 6 ? 130 : 150;
+  switch (shape) {
+    case "round":
+      return { width: base, height: base, radius: "999px" };
+    case "square":
+      return { width: base, height: base, radius: "14px" };
+    case "long":
+      return { width: Math.round(base * 1.7), height: base - 4, radius: "14px" };
+    default:
+      return getShapeSizeBySeats(seats);
+  }
+};
+
 const TableLayout = () => {
   const floorRef = useRef(null);
   const [layoutMap, setLayoutMap] = useState({});
@@ -45,6 +62,9 @@ const TableLayout = () => {
   const [selectedTableId, setSelectedTableId] = useState("");
   const [draggingTableId, setDraggingTableId] = useState("");
   const [touchPlacementMode, setTouchPlacementMode] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addFormData, setAddFormData] = useState({ tableNo: "", seats: "4", shape: "round", zone: "MAIN" });
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     document.title = "POS | Table Layout";
@@ -73,10 +93,38 @@ const TableLayout = () => {
     }
   }, [isError]);
 
+  const addTableMutation = useMutation({
+    mutationFn: (data) => addTable(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tables-layout"] });
+      enqueueSnackbar("Table created successfully.", { variant: "success" });
+    },
+    onError: () => {
+      enqueueSnackbar("Failed to create table.", { variant: "error" });
+    },
+  });
+
+  const updateTableMutation = useMutation({
+    mutationFn: (data) => updateTable(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tables-layout"] });
+      enqueueSnackbar("Table updated.", { variant: "success" });
+    },
+    onError: () => {
+      enqueueSnackbar("Failed to update table.", { variant: "error" });
+    },
+  });
+
   const tables = useMemo(() => {
     const rows = Array.isArray(resData?.data?.data) ? resData.data.data : [];
     return [...rows].sort((a, b) => Number(a.tableNo || 0) - Number(b.tableNo || 0));
   }, [resData]);
+
+  const nextTableNo = useMemo(() => {
+    if (!tables.length) return "1";
+    const maxNo = Math.max(...tables.map((t) => Number(t.tableNo || 0)));
+    return String(maxNo + 1);
+  }, [tables]);
 
   useEffect(() => {
     const raw = localStorage.getItem(LAYOUT_STORAGE_KEY);
@@ -181,7 +229,7 @@ const TableLayout = () => {
     if (!selectedRow) {
       return;
     }
-    const size = getShapeSizeBySeats(selectedRow.table?.seats);
+    const size = getTableSize(selectedRow.table?.seats, selectedRow.layout?.shape);
     const rect = floorRef.current.getBoundingClientRect();
     const x = event.clientX - rect.left - size.width / 2;
     const y = event.clientY - rect.top - size.height / 2;
@@ -211,6 +259,48 @@ const TableLayout = () => {
     });
     setLayoutMap(resetMap);
     enqueueSnackbar("Layout reset to default grid.", { variant: "info" });
+  };
+
+  const openAddForm = () => {
+    setAddFormData({ tableNo: nextTableNo, seats: "4", shape: "round", zone: activeZone === "ALL" ? "MAIN" : activeZone });
+    setShowAddForm(true);
+  };
+
+  const handleCreateTable = async () => {
+    const { tableNo, seats, shape, zone } = addFormData;
+    if (!tableNo) {
+      enqueueSnackbar("Please enter a table number.", { variant: "warning" });
+      return;
+    }
+    try {
+      const res = await addTableMutation.mutateAsync({ tableNo: Number(tableNo), seats: Number(seats) });
+      const newTableId = res?.data?.data?._id;
+      if (newTableId) {
+        setLayoutMap((prev) => ({
+          ...prev,
+          [newTableId]: { ...getDefaultPosition(tables.length), zone, shape },
+        }));
+      }
+      setShowAddForm(false);
+    } catch (_) {
+      // handled by mutation onError
+    }
+  };
+
+  const updateSelectedShape = (shape) => {
+    if (!selectedTable?._id) return;
+    setLayoutMap((prev) => ({
+      ...prev,
+      [selectedTable._id]: {
+        ...(prev[selectedTable._id] || getDefaultPosition(0)),
+        shape,
+      },
+    }));
+  };
+
+  const handleUpdateSeats = (newSeats) => {
+    if (!selectedTable?._id) return;
+    updateTableMutation.mutate({ tableId: selectedTable._id, seats: Number(newSeats) });
   };
 
   return (
@@ -252,6 +342,83 @@ const TableLayout = () => {
             ))}
           </div>
 
+          <div className="mt-3">
+            <button
+              onClick={openAddForm}
+              className="w-full bg-[#f6b100] hover:bg-[#d99e00] text-[#1f1f1f] font-semibold px-3 py-2 rounded-lg text-sm min-h-[44px]"
+            >
+              + Add Table
+            </button>
+          </div>
+
+          {showAddForm && (
+            <div className="mt-3 p-3 bg-[#1f1f1f] rounded-lg border border-[#333] space-y-2">
+              <h3 className="text-[#f5f5f5] text-sm font-semibold">New Table</h3>
+              <div>
+                <label className="block text-xs text-[#ababab] mb-1">Table Number</label>
+                <input
+                  type="number"
+                  value={addFormData.tableNo}
+                  onChange={(e) => setAddFormData((prev) => ({ ...prev, tableNo: e.target.value }))}
+                  className="w-full bg-[#252525] text-[#f5f5f5] px-3 py-2 rounded-lg outline-none text-sm"
+                  min="1"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-[#ababab] mb-1">Seats</label>
+                <select
+                  value={addFormData.seats}
+                  onChange={(e) => setAddFormData((prev) => ({ ...prev, seats: e.target.value }))}
+                  className="w-full bg-[#252525] text-[#f5f5f5] px-3 py-2 rounded-lg outline-none text-sm"
+                >
+                  <option value="2">2</option>
+                  <option value="4">4</option>
+                  <option value="6">6</option>
+                  <option value="8">8</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-[#ababab] mb-1">Shape</label>
+                <select
+                  value={addFormData.shape}
+                  onChange={(e) => setAddFormData((prev) => ({ ...prev, shape: e.target.value }))}
+                  className="w-full bg-[#252525] text-[#f5f5f5] px-3 py-2 rounded-lg outline-none text-sm"
+                >
+                  <option value="round">Round</option>
+                  <option value="square">Square</option>
+                  <option value="long">Rectangle</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-[#ababab] mb-1">Zone</label>
+                <select
+                  value={addFormData.zone}
+                  onChange={(e) => setAddFormData((prev) => ({ ...prev, zone: e.target.value }))}
+                  className="w-full bg-[#252525] text-[#f5f5f5] px-3 py-2 rounded-lg outline-none text-sm"
+                >
+                  {ZONES.filter((z) => z.id !== "ALL").map((z) => (
+                    <option key={z.id} value={z.id}>{z.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={handleCreateTable}
+                  disabled={addTableMutation.isPending}
+                  className="flex-1 bg-[#f6b100] hover:bg-[#d99e00] text-[#1f1f1f] font-semibold px-3 py-2 rounded-lg text-sm min-h-[44px] disabled:opacity-50"
+                >
+                  {addTableMutation.isPending ? "Creating..." : "Create"}
+                </button>
+                <button
+                  onClick={() => setShowAddForm(false)}
+                  className="flex-1 bg-[#353535] hover:bg-[#414141] text-[#f5f5f5] px-3 py-2 rounded-lg text-sm min-h-[44px]"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="mt-4 pt-4 border-t border-t-[#333]">
             <h3 className="text-[#f5f5f5] text-sm font-semibold mb-2">Selected Table</h3>
             {!selectedTable ? (
@@ -259,7 +426,33 @@ const TableLayout = () => {
             ) : (
               <div className="space-y-2 text-sm">
                 <p className="text-[#d8e6ff]">Table #{selectedTable.tableNo}</p>
-                <p className="text-[#ababab]">Seats: {selectedTable.seats}</p>
+                <div>
+                  <label className="block text-xs text-[#ababab] mb-1">Seats</label>
+                  <select
+                    value={selectedTable.seats}
+                    onChange={(e) => handleUpdateSeats(e.target.value)}
+                    className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-3 py-2 rounded-lg outline-none text-sm"
+                    disabled={updateTableMutation.isPending}
+                  >
+                    <option value="2">2</option>
+                    <option value="4">4</option>
+                    <option value="6">6</option>
+                    <option value="8">8</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-[#ababab] mb-1">Shape</label>
+                  <select
+                    value={layoutMap[selectedTable._id]?.shape || ""}
+                    onChange={(e) => updateSelectedShape(e.target.value)}
+                    className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-3 py-2 rounded-lg outline-none text-sm"
+                  >
+                    <option value="">Auto</option>
+                    <option value="round">Round</option>
+                    <option value="square">Square</option>
+                    <option value="long">Rectangle</option>
+                  </select>
+                </div>
                 <label className="block text-xs text-[#ababab]">Assign Zone</label>
                 <select
                   value={layoutMap[selectedTable._id]?.zone || "MAIN"}
@@ -337,8 +530,17 @@ const TableLayout = () => {
             <div className="w-full h-full bg-[linear-gradient(to_right,#666_1px,transparent_1px),linear-gradient(to_bottom,#666_1px,transparent_1px)] bg-[size:40px_40px]" />
           </div>
 
+          {activeZone !== "ALL" && tableRows.length === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+              <div className="text-center p-6">
+                <p className="text-[#ababab] text-lg mb-2">No tables in this zone.</p>
+                <p className="text-[#8a8a8a] text-sm">Click &quot;Add Table&quot; to create one.</p>
+              </div>
+            </div>
+          )}
+
           {tableRows.map(({ table, layout }) => {
-            const size = getShapeSizeBySeats(table.seats);
+            const size = getTableSize(table.seats, layout.shape);
             const isBooked = table.status === "Booked";
             const isSelected = `${selectedTableId}` === `${table._id}`;
             const zoneLabel = ZONES.find((zone) => zone.id === layout.zone)?.name || "Main Hall";
