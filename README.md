@@ -1,134 +1,153 @@
-# 🍽️ **Restaurant POS System**  
+# Global POS System
 
-A full-featured **Restaurant POS System** built using the **MERN Stack** to streamline restaurant operations, enhance customer experience, and manage orders, payments, and inventory with ease.
+可全球化部署的餐饮 POS 平台，覆盖堂食、外卖、自营线上、第三方配送、连锁总部运营，支持按国家/区域进行能力配置。
 
-## ✨ **Features**
-
-- 🍽️ **Order Management**  
-  Efficiently manage customer orders with real-time updates and status tracking.
-
-- 🪑 **Table Reservations**  
-  Simplify table bookings and manage reservations directly from the POS.
-
-- 🔐 **Authentication**  
-  Secure login and role-based access control for admins, staff, and users.
-
-- 💸 **Payment Integration**  
-  Integrated with **Stripe** (or other gateways) for seamless online payments.
-
-- 🧾 **Billing & Invoicing**  
-  Automatically generate detailed bills and invoices for every order.
-
-
-## 🏗️ **Tech Stack**
-
-| **Category**             | **Technology**                |
-|--------------------------|-------------------------------|
-| 🖥️ **Frontend**          | React.js, Redux, Tailwind CSS  |
-| 🔙 **Backend**           | Node.js, Express.js           |
-| 🗄️ **Database**          | MongoDB                       |
-| 🔐 **Authentication**    | JWT, bcrypt                   |
-| 💳 **Payment Integration**| Stripe    |
-| 📊 **State Management**   | Redux Toolkit                 |
-| ⚡ **Data Fetching & Caching** | React Query            |
-| 🔗 **APIs**              | RESTful APIs                   |
+**Live Demo**: https://pos-web-380253139402.us-central1.run.app
 
 ---
 
-## 📄 **产品与文档**（2026-02-24 CODE_REVIEW I4）
+## 核心业务模块（22 个，全部 v1 完成）
 
-开发与排期以产品需求文档（PRD）为准，请勿在未查阅需求的情况下自行创造需求。
+| 编号 | 模块 | 功能清单 |
+|---|---|---|
+| M01 | 身份与权限 | JWT Cookie 认证、登录/注册、角色权限矩阵（Admin/Cashier/Waiter）、数据范围策略、字段级授权与脱敏、会话安全事件记录 |
+| M02 | 桌台与堂食流程 | 桌台 CRUD、转台、并台、拆单、按席位分单、反并台；**桌台可视化编辑器**（拖拽布局、区域划分 Main Hall/Terrace/Bar/Corner、桌型选择 Round/Square/Rectangle、添加新桌子、座位数编辑、空区域引导、触摸/桌面双模式） |
+| M03 | 订单中心 | 订单创建/编辑/结算、状态机约束（In Progress→Ready→Completed/Cancelled）、版本冲突检测与人工解决、小票模板管理、发票弹窗与浏览器打印 |
+| M04 | 全渠道订单聚合 | 可配置渠道接入、签名校验、限流配额、死信队列（回放/丢弃）、Provider / Market / Connection / Mapping Rules 四维管理页面 |
+| M05 | 菜单中心 | 菜品 CRUD（名称/分类/基价/状态/有效期/渠道/描述）、**分类管理**（层级树、拖拽排序、颜色标记、emoji 图标、CRUD）、版本发布（草稿→预发布→正式）、时段价（Day Parts：时间段+星期+价格）、同步状态跟踪；**HQ-门店架构**（总部统一母版 default、门店继承+局部覆盖、Inherited from HQ 标记、一键创建门店级 Override、门店分类从 HQ 导入） |
+| M06 | 库存与沽清 | 库存扣减（按订单行）、库存调整、自动 86（沽清停售）、渠道可用性同步任务队列（PENDING/SYNCED/FAILED）、从菜单引导创建库存 |
+| M07 | 厨房生产/KDS | 工位路由（冷菜/热菜/酒水/甜品）、备餐计时与超时告警、催单、交接确认、事件回放、负载均衡；工作站 / 工单 / 事件回放三个管理子页面 |
+| M08 | 支付中台 | Stripe + Mock 多通道路由与失败切换、支付重试、全额/部分退款、双人复核审批、Webhook 验签入库、对账差异追踪；支付账本 / 退款审批 / 对账三个管理子页面 |
+| M09 | 现金管理 | 开班/交班、现金抽屉流水（存入/取出）、盘点、差异分析（应收 vs 实收） |
+| M10 | 会员与储值 | 会员账户（档案/等级/标签）、积分累计与兑换、钱包余额、会员流水账本 |
+| M11 | 优惠营销 | 促销规则 CRUD（折扣/满减/套餐）、优惠券 CRUD、优惠预览、下单自动应用（互斥/叠加/优先级）、核销计数 |
+| M12 | 员工与劳动力 | 排班管理、打卡上下班、班次查询、团队成员管理页面 |
+| M13 | 财务结算与对账 | 结算批次生成、核心财务指标、CSV 导出 |
+| M14 | 组织与连锁 | 总部 / 区域 / 门店三级组织模型、配置继承解析、**垂直行业模板**（7 种预置：奶茶店 / 寿司 / 广式早茶 / 西餐 / 中式快餐 / 美甲店 / 火锅店；每种模板预配硬件需求、运营模式、菜单选项模型、桌台服务策略；门店绑定模板 + JSON Overrides 覆盖；门店自动配置预览） |
+| M15 | 经营分析 | 概览指标仪表盘、菜品销售排行分析、订单 CSV 导出 |
+| M16 | 离线与容灾 | 离线操作入队、操作列表、重放接口、状态追踪 |
+| M17 | 设备生态 | 设备注册、心跳上报、在线状态查询、硬件目录（打印/KDS/扫码/客显/PDA）、门店硬件档案管理 |
+| M18 | 合作方对接平台 | 合作方 API Key（Scope / IP 白名单 / 限流配额）、Webhook 签名预览、公共订单 API |
+| M19 | 自助点餐/二维码 | 桌码会话生成、公开菜单接口、扫码下单 |
+| M20 | 合规与安全 | 审计日志查询与管理页面、PII 脱敏视图、合规导出请求、高风险审批（策略+请求）、合规策略包、关键动作闸门（退款/导出/配置变更） |
+| M21 | 国际化（i18n） | 中英文实时切换、浏览器语言自动检测（localStorage + navigator）、Header / AdminLayout 均有切换按钮、登录/注册/导航/桌台/菜单/购物车/订单/支付/厨房/管理后台全页面文案国际化 |
+| M22 | 分账与结账增强 | AA 制分账（平均分模式：按人数均分；按菜品分模式：勾选分配到客人组）、Split Bill 独立面板、转桌弹窗（选择目标桌台一键迁移订单） |
+
+---
+
+## 技术架构
+
+| 层级 | 技术 |
+|---|---|
+| 前端 | React + Vite + Redux + React Query + Tailwind CSS + react-i18next |
+| 后端 | Node.js + Express + Mongoose |
+| 数据库 | MongoDB Atlas |
+| 部署 | GCP Cloud Run（前端 pos-web、后端 pos-api） |
+| 认证 | JWT Cookie + bcrypt |
+| 支付 | Stripe + Mock Provider |
+
+**规模**：49 个数据模型、23 个 API 路由、8 个 POS 操作页面、26 个 Dashboard 管理页面
+
+---
+
+## 快速开始
+
+### 环境要求
+
+- Node.js >= 18
+- MongoDB（本地或 Atlas）
+- npm
+
+### 本地运行
+
+```bash
+# 后端
+cd pos-backend
+cp .env.example .env   # 配置 MONGODB_URI, JWT_SECRET 等
+npm install
+npm start
+
+# 前端（新终端）
+cd pos-frontend
+cp .env.example .env   # 配置 VITE_BACKEND_URL
+npm install
+npm run dev
+```
+
+### 种子数据
+
+```bash
+cd pos-backend
+node scripts/seed.js
+```
+
+初始化：4 用户 + 1 组织 + 2 区域 + 3 门店 + 12 桌台 + 8 订单 + 8 菜品分类 + 27 菜品 + 5 排班
+
+登录凭据：
+- Admin: `testadmin@restro.local` / `12345678`
+- Admin: `admin@restro.local` / `Admin@12345`
+- Cashier: `cashier@restro.local` / `Cashier@12345`
+- Waiter: `waiter@restro.local` / `Waiter@12345`
+
+---
+
+## GCP 部署
+
+### 后端（Cloud Run）
+
+```bash
+cd pos-backend
+gcloud run deploy pos-api --source . --region us-central1 --allow-unauthenticated
+```
+
+环境变量：`NODE_ENV=production`、`PORT=8080`、`MONGODB_URI`、`JWT_SECRET`、`FRONTEND_URL`
+
+### 前端（Cloud Run）
+
+```bash
+cd pos-frontend
+gcloud run deploy pos-web --source . --region us-central1 --allow-unauthenticated
+```
+
+构建时设置 `VITE_BACKEND_URL` 指向后端 URL。
+
+---
+
+## 项目结构
+
+```
+POS/
+├── pos-backend/          # Express API 服务
+│   ├── config/           # 数据库、CORS、硬件目录、行业模板配置
+│   ├── controllers/      # 业务控制器（23 个）
+│   ├── middlewares/       # 认证、权限、幂等性、错误处理
+│   ├── models/           # Mongoose 数据模型（49 个）
+│   ├── routes/           # API 路由（23 个）
+│   ├── scripts/          # 种子数据、迁移脚本
+│   └── utils/            # 工具函数（审计、定价、厨房路由等）
+├── pos-frontend/         # React SPA
+│   ├── src/components/   # UI 组件（auth/dashboard/home/menu/orders/tables/shared）
+│   ├── src/pages/        # 页面（8 POS + 26 Dashboard）
+│   ├── src/locales/      # i18n 翻译文件（en.json / zh.json）
+│   └── src/config/       # 导航配置
+└── docs/                 # 产品文档、部署文档
+```
+
+---
+
+## 文档
 
 | 文档 | 说明 |
-|------|------|
-| [docs/PRD_Global_POS_2026.md](docs/PRD_Global_POS_2026.md) | 产品需求文档（能力基线、目标能力、模块说明） |
+|---|---|
+| [docs/PRD_Global_POS_2026.md](docs/PRD_Global_POS_2026.md) | 产品需求文档 |
+| [docs/MODULE20_PROGRESS_2026-02-21.md](docs/MODULE20_PROGRESS_2026-02-21.md) | 模块进度盘点 |
+| [docs/POS_Core_Module_Features_2026-02-26.pdf](docs/POS_Core_Module_Features_2026-02-26.pdf) | 核心模块功能清单（PDF） |
 | [docs/EXPERIENCE_GUIDE_FULL_2026-02-21.md](docs/EXPERIENCE_GUIDE_FULL_2026-02-21.md) | 体验与主流程指南 |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | 贡献指南（Fork/Clone、PR、需求基准） |
-| [docs/PHASE2_E2E_RUNBOOK.md](docs/PHASE2_E2E_RUNBOOK.md) | Phase2 E2E 测试与运维 |
-| [docs/OPS_ONCALL_ESCALATION.md](docs/OPS_ONCALL_ESCALATION.md) | 值班与升级 |
-| [SECURITY_KEY_ROTATION.md](SECURITY_KEY_ROTATION.md) | 密钥轮换清单 |
-| [docs/SECURITY.md](docs/SECURITY.md) | 安全与合规说明（审计、高风险审批、错误脱敏） |
+| [docs/SECURITY.md](docs/SECURITY.md) | 安全与合规说明 |
+| [docs/DEPLOY_GCP_2026-02-24.md](docs/DEPLOY_GCP_2026-02-24.md) | GCP 部署指南 |
 
 ---
 
-## 🚀 部署（GCP）
+## License
 
-要保证 **页面可访问** 且 **数据库可访问**，建议在 GCP 上前后端分开部署：
-
-- **前端**：Firebase Hosting 或 Cloud Storage + CDN，托管 `pos-frontend` 的 Vite 构建产物（`dist/`）。
-- **后端**：Cloud Run 运行 `pos-backend`（Node.js），连接 MongoDB（建议 MongoDB Atlas）。
-
-### 1. 部署后端（pos-backend）到 Cloud Run
-
-- **代码目录**：`pos-backend/`
-- **构建与运行**：使用 Dockerfile 或直接 `gcloud run deploy` 指定 Node 运行时；启动命令为 `node app.js` 或 `npm start`。
-- **必要环境变量**（在 Cloud Run 服务中配置）：
-  - `NODE_ENV=production`
-  - `PORT=8080`（Cloud Run 默认 8080，或按控制台要求）
-  - `MONGODB_URI=<MongoDB 连接串，如 Atlas URI>`
-  - `JWT_SECRET=<随机安全字符串>`
-  - `FRONTEND_URL=https://你的前端域名`  
-    （后端 CORS 使用 `config.frontendUrl`，须与前端实际域名一致）
-  - 如需支付：`STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET` 等。
-
-部署后得到后端 URL，例如：`https://pos-api-xxxx.run.app`，其下提供 `/api/...`。验证：请求根路径或登录接口返回合理状态码，且日志无 MongoDB 连接错误。
-
-### 2. 部署前端（pos-frontend）到 GCP
-
-- **构建**：在 `pos-frontend/` 下执行 `npm run build`，产出在 `dist/`。
-- **托管方式示例**：
-  - **Firebase Hosting**：在项目根或 `pos-frontend` 配置 `firebase.json`（`public` 指向 `pos-frontend/dist`），并配置 **rewrites**：`"source": "**", "destination": "/index.html"`，保证 SPA 路由刷新不 404。
-  - **Cloud Storage + Load Balancer**：将 `dist/` 上传到 Bucket，并配置 404 回退到 `index.html`（或通过 CDN 配置）。
-- **环境变量**：构建前设置 `VITE_BACKEND_URL=https://pos-api-xxxx.run.app`（即上一步的后端 URL），再执行 `npm run build`，前端会把所有 API 请求发往该地址。
-
-部署完成后访问前端 URL，在浏览器中确认：页面加载正常、API 请求指向后端且无 CORS/5xx、登录与下单等操作在数据库中可见。
-
-只要后端环境变量（含 `MONGODB_URI`、`FRONTEND_URL`）正确，前端构建时 `VITE_BACKEND_URL` 指向该后端，页面与数据库即可在 GCP 上稳定联通。
-
-<br>
-
-## 📺 **YouTube Playlist**
-
-🎬 Follow the complete tutorial series on building this Restaurant POS System on YouTube:  
-👉 [Watch the Playlist](https://www.youtube.com/playlist?list=PL9OdiypqS7Nk0DHnSNFIi8RgEFJCIWB6X)  
-
-## 📁 **Assets**
-
-- 📦 **Project Assets:** [Google Drive](https://drive.google.com/drive/folders/193N-F1jpzyfPCRCLc9wCyaxjYu2K6PC_)
-
----
-
-## 📋 **Flow Chart for Project Structure**
-
-- 🗺️ **Visualize the Project Structure:** [View Flow Chart](https://app.eraser.io/workspace/IcU1b6EHu9ZyS9JKi0aY?origin=share)
-
----
-
-## 🎨 **Design Inspiration**
-
-- 💡 **UI/UX Design Reference:** [Behance Design](https://www.behance.net/gallery/210280099/Restaurant-POS-System-Point-of-Sale-UIUX-Design)
-
----
-
-## 🖼️ **Project Screenshots**
-
-<table>
-  <tr>
-    <td><img src="https://res.cloudinary.com/amritrajmaurya/image/upload/v1740502772/ibjxvy5o1ikbsdebrjky.png" alt="Screenshot 1" width="300"/></td>
-    <td><img src="https://res.cloudinary.com/amritrajmaurya/image/upload/v1740502773/ietao6dnw6yjsh4f71zn.png" alt="Screenshot 2" width="300"/></td>
-  </tr>
-  <tr>
-    <td><img src="https://res.cloudinary.com/amritrajmaurya/image/upload/v1740502772/vesokdfpa1jb7ytm9abi.png" alt="Screenshot 3" width="300"/></td>
-    <td><img src="https://res.cloudinary.com/amritrajmaurya/image/upload/v1740502772/setoqzhzbwbp9udpri1f.png" alt="Screenshot 4" width="300"/></td>
-  </tr>
-  <tr>
-    <td><img src="https://res.cloudinary.com/amritrajmaurya/image/upload/v1740502772/fc4tiwzdoisqwac1j01y.png" alt="Screenshot 5" width="300"/></td>
-  </tr>
-</table>
-
-
-✨ Feel free to explore, contribute, and enhance the project! 🚀
-
-💡 To contribute, please check out the **CONTRIBUTING.md** for guidelines.
-
-⭐ If you find this project helpful, don't forget to **star** the repository! 🌟
+MIT
