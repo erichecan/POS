@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import BackButton from "../components/shared/BackButton";
 import BottomNav from "../components/shared/BottomNav";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +29,8 @@ const DEFAULT_RECEIPT_TEMPLATE = {
 };
 
 const More = () => {
+  // 2026-02-26T21:00:00+08:00: i18n internationalization
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { role } = useSelector((state) => state.user);
   const normalizedRole = `${role || ""}`.trim().toLowerCase();
@@ -38,7 +41,7 @@ const More = () => {
   const [templateDraft, setTemplateDraft] = useState(DEFAULT_RECEIPT_TEMPLATE);
 
   useEffect(() => {
-    document.title = "POS | More";
+    document.title = `POS | ${t("more.title")}`;
   }, []);
 
   const receiptTemplateQuery = useQuery({
@@ -79,22 +82,22 @@ const More = () => {
     const baseItems = [
       {
         key: "tables",
-        label: "Tables",
-        description: "View table status, open table, and booked details.",
+        label: t("nav.tables"),
+        description: t("more.tablesDesc"),
         icon: <MdTableBar size={22} />,
         route: "/tables",
       },
       {
         key: "orders",
-        label: "Orders",
-        description: "Track orders and open order detail cards.",
+        label: t("nav.orders"),
+        description: t("more.ordersDesc"),
         icon: <MdOutlineReorder size={22} />,
         route: "/orders",
       },
       {
         key: "layout",
-        label: "Table Layout",
-        description: "Visualize seating map by table and seat capacity.",
+        label: t("nav.tableLayout"),
+        description: t("more.tableLayoutDesc"),
         icon: <LuLayoutGrid size={22} />,
         route: "/tables/layout",
       },
@@ -103,36 +106,36 @@ const More = () => {
     if (isAdmin) {
       baseItems.unshift({
         key: "vertical-templates",
-        label: "Vertical Templates",
-        description: "Apply and override store template profile by business type.",
+        label: t("more.verticalTemplates"),
+        description: t("more.verticalTemplatesDesc"),
         icon: <MdStorefront size={22} />,
         route: "/dashboard/templates",
       });
       baseItems.unshift({
         key: "hardware-center",
-        label: "Hardware Center",
-        description: "Configure hardware catalog and per-store hardware bundles.",
+        label: t("more.hardwareCenter"),
+        description: t("more.hardwareCenterDesc"),
         icon: <MdDevices size={22} />,
         route: "/dashboard/hardware",
       });
       baseItems.unshift({
         key: "backend-config",
-        label: "Backend Config",
-        description: "Manage channels, market profiles, and partner/store mappings.",
+        label: t("more.backendConfig"),
+        description: t("more.backendConfigDesc"),
         icon: <MdSettings size={22} />,
         route: "/dashboard/channels",
       });
       baseItems.unshift({
         key: "dashboard",
-        label: "Dashboard",
-        description: "Operational KPI and kitchen/payment monitoring.",
+        label: t("nav.dashboard"),
+        description: t("more.dashboardDesc"),
         icon: <MdDashboard size={22} />,
         route: "/dashboard/overview",
       });
     }
 
     return baseItems;
-  }, [isAdmin]);
+  }, [isAdmin, t]);
 
   const toggleField = (fieldKey) => {
     setTemplateDraft((prev) => ({
@@ -148,7 +151,7 @@ const More = () => {
     <section className="bg-[#1f1f1f] h-[calc(100vh-5rem)] overflow-hidden">
       <div className="flex items-center gap-4 px-10 py-4">
         <BackButton />
-        <h1 className="text-[#f5f5f5] text-2xl font-bold tracking-wider">More</h1>
+        <h1 className="text-[#f5f5f5] text-2xl font-bold tracking-wider">{t("more.title")}</h1>
       </div>
 
       <div className="px-10 py-4 overflow-y-auto h-[calc(100%-7rem)] pb-28 space-y-5">
@@ -171,8 +174,8 @@ const More = () => {
         <div className="bg-[#262626] border border-[#343434] rounded-xl p-5">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-[#f5f5f5] text-lg font-semibold">Receipt Template</h2>
-              <p className="text-[#ababab] text-sm mt-1">Configure which fields appear in printed receipts.</p>
+              <h2 className="text-[#f5f5f5] text-lg font-semibold">{t("more.receiptTemplate")}</h2>
+              <p className="text-[#ababab] text-sm mt-1">{t("more.receiptTemplateDesc")}</p>
             </div>
             {canEditReceiptTemplate && (
               <button
@@ -184,14 +187,14 @@ const More = () => {
                     : "bg-[#F6B100] text-[#1f1f1f]"
                 }`}
               >
-                {saveTemplateMutation.isPending ? "Saving..." : "Save Template"}
+                {saveTemplateMutation.isPending ? t("common.saving") : t("more.saveTemplate")}
               </button>
             )}
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 mt-4">
             <label className="text-sm text-[#ababab]">
-              Store Name
+              {t("more.storeName")}
               <input
                 disabled={!canEditReceiptTemplate}
                 value={templateDraft.storeName || ""}
@@ -202,7 +205,7 @@ const More = () => {
               />
             </label>
             <label className="text-sm text-[#ababab]">
-              Header Title
+              {t("more.headerTitle")}
               <input
                 disabled={!canEditReceiptTemplate}
                 value={templateDraft.headerTitle || ""}
@@ -213,7 +216,7 @@ const More = () => {
               />
             </label>
             <label className="text-sm text-[#ababab]">
-              Footer Message
+              {t("more.footerMessage")}
               <input
                 disabled={!canEditReceiptTemplate}
                 value={templateDraft.footerMessage || ""}
@@ -227,16 +230,16 @@ const More = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2 mt-4">
             {[
-              ["showOrderId", "Show Order ID"],
-              ["showOrderDate", "Show Date"],
-              ["showTableNo", "Show Table"],
-              ["showCustomerName", "Show Customer"],
-              ["showCustomerPhone", "Show Phone"],
-              ["showGuests", "Show Guests"],
-              ["showItemNotes", "Show Item Notes"],
-              ["showItemModifiers", "Show Item Options"],
-              ["showTaxBreakdown", "Show Tax"],
-              ["showPaymentMethod", "Show Payment Method"],
+              ["showOrderId", t("more.showOrderId")],
+              ["showOrderDate", t("more.showDate")],
+              ["showTableNo", t("more.showTable")],
+              ["showCustomerName", t("more.showCustomer")],
+              ["showCustomerPhone", t("more.showPhone")],
+              ["showGuests", t("more.showGuests")],
+              ["showItemNotes", t("more.showItemNotes")],
+              ["showItemModifiers", t("more.showItemOptions")],
+              ["showTaxBreakdown", t("more.showTax")],
+              ["showPaymentMethod", t("more.showPaymentMethod")],
             ].map(([fieldKey, label]) => (
               <label key={fieldKey} className="flex items-center gap-2 text-sm text-[#d8d8d8] bg-[#1f1f1f] rounded px-3 py-2">
                 <input
@@ -250,7 +253,7 @@ const More = () => {
             ))}
           </div>
           {!canEditReceiptTemplate && (
-            <p className="text-xs text-[#9f9f9f] mt-3">Read-only for current role.</p>
+            <p className="text-xs text-[#9f9f9f] mt-3">{t("common.readOnly")}</p>
           )}
         </div>
       </div>

@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import {
@@ -29,6 +31,7 @@ const getRows = (response) => (Array.isArray(response?.data?.data) ? response.da
 
 /** 2026-02-26: initialSection for sub-page filtered view (providers|markets|connections|mappings) */
 const ChannelConfig = ({ initialSection }) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const showSection = (key) => !initialSection || initialSection === key;
 
@@ -345,17 +348,17 @@ const ChannelConfig = ({ initialSection }) => {
     <div className="container mx-auto py-2 px-6 md:px-4 space-y-4">
       {showSection("providers") && (
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Channel Providers</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("channel.channelProviders")}</h2>
         <form className="grid grid-cols-5 gap-3 mb-4" onSubmit={handleCreateProvider}>
           <input
             className={inputClass}
-            placeholder="Provider Code (e.g. UBER_EATS)"
+            placeholder={t("channel.providerCodePlaceholder")}
             value={providerForm.providerCode}
             onChange={(e) => setProviderForm((prev) => ({ ...prev, providerCode: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Display Name"
+            placeholder={t("channel.displayName")}
             value={providerForm.displayName}
             onChange={(e) => setProviderForm((prev) => ({ ...prev, displayName: e.target.value }))}
           />
@@ -383,7 +386,7 @@ const ChannelConfig = ({ initialSection }) => {
           </select>
           <input
             className={inputClass}
-            placeholder="Regions (US,CA,IE)"
+            placeholder={t("channel.regions")}
             value={providerForm.regionSupport}
             onChange={(e) => setProviderForm((prev) => ({ ...prev, regionSupport: e.target.value }))}
           />
@@ -391,7 +394,7 @@ const ChannelConfig = ({ initialSection }) => {
             type="submit"
             className="col-span-5 bg-[#025cca] text-white rounded-md py-2 font-semibold"
           >
-            Add Provider
+            {t("channel.addProvider")}
           </button>
         </form>
         <div className="space-y-2">
@@ -412,40 +415,40 @@ const ChannelConfig = ({ initialSection }) => {
                   })
                 }
               >
-                {provider.status === "active" ? "Disable" : "Enable"}
+                {provider.status === "active" ? t("channel.disable") : t("channel.enable")}
               </button>
             </div>
           ))}
-          {providers.length === 0 && <p className="text-[#ababab] text-sm">No providers yet.</p>}
+          {providers.length === 0 && <p className="text-[#ababab] text-sm">{t("channel.noProviders")}</p>}
         </div>
       </div>
       )}
 
       {showSection("markets") && (
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Market Profiles</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("channel.marketProfiles")}</h2>
         <form className="grid grid-cols-4 gap-3 mb-4" onSubmit={handleCreateMarket}>
           <input
             className={inputClass}
-            placeholder="Country Code (US)"
+            placeholder={t("channel.countryCode")}
             value={marketForm.countryCode}
             onChange={(e) => setMarketForm((prev) => ({ ...prev, countryCode: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Market Name"
+            placeholder={t("channel.marketName")}
             value={marketForm.name}
             onChange={(e) => setMarketForm((prev) => ({ ...prev, name: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Currency (USD)"
+            placeholder={t("channel.currency")}
             value={marketForm.currency}
             onChange={(e) => setMarketForm((prev) => ({ ...prev, currency: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Timezone"
+            placeholder={t("channel.timezone")}
             value={marketForm.timezone}
             onChange={(e) => setMarketForm((prev) => ({ ...prev, timezone: e.target.value }))}
           />
@@ -460,7 +463,7 @@ const ChannelConfig = ({ initialSection }) => {
           </select>
           <input
             className={inputClass}
-            placeholder="Tax Rate (%)"
+            placeholder={t("channel.taxRate")}
             value={marketForm.defaultTaxRate}
             onChange={(e) => setMarketForm((prev) => ({ ...prev, defaultTaxRate: e.target.value }))}
           />
@@ -478,7 +481,7 @@ const ChannelConfig = ({ initialSection }) => {
           </select>
           <input
             className={inputClass}
-            placeholder="Default Providers (UBER_EATS,DOORDASH)"
+            placeholder={t("channel.defaultProviders")}
             value={marketForm.defaultChannelSet}
             onChange={(e) => setMarketForm((prev) => ({ ...prev, defaultChannelSet: e.target.value }))}
           />
@@ -486,7 +489,7 @@ const ChannelConfig = ({ initialSection }) => {
             type="submit"
             className="col-span-4 bg-[#025cca] text-white rounded-md py-2 font-semibold"
           >
-            Add Market Profile
+            {t("channel.addMarketProfile")}
           </button>
         </form>
         <div className="space-y-2">
@@ -508,34 +511,34 @@ const ChannelConfig = ({ initialSection }) => {
                   })
                 }
               >
-                {market.status === "active" ? "Disable" : "Enable"}
+                {market.status === "active" ? t("channel.disable") : t("channel.enable")}
               </button>
             </div>
           ))}
-          {markets.length === 0 && <p className="text-[#ababab] text-sm">No market profiles yet.</p>}
+          {markets.length === 0 && <p className="text-[#ababab] text-sm">{t("channel.noMarketProfiles")}</p>}
         </div>
       </div>
       )}
 
       {showSection("connections") && (
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Store Channel Connections</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("channel.storeConnections")}</h2>
         <form className="grid grid-cols-4 gap-3 mb-4" onSubmit={handleCreateConnection}>
           <input
             className={inputClass}
-            placeholder="Location ID"
+            placeholder={t("channel.locationId")}
             value={connectionForm.locationId}
             onChange={(e) => setConnectionForm((prev) => ({ ...prev, locationId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Provider Code"
+            placeholder={t("channel.providerCode")}
             value={connectionForm.providerCode}
             onChange={(e) => setConnectionForm((prev) => ({ ...prev, providerCode: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="External Store ID"
+            placeholder={t("channel.externalStoreId")}
             value={connectionForm.externalStoreId}
             onChange={(e) =>
               setConnectionForm((prev) => ({ ...prev, externalStoreId: e.target.value }))
@@ -543,7 +546,7 @@ const ChannelConfig = ({ initialSection }) => {
           />
           <input
             className={inputClass}
-            placeholder="Credential Ref"
+            placeholder={t("channel.credentialRef")}
             value={connectionForm.credentialRef}
             onChange={(e) =>
               setConnectionForm((prev) => ({ ...prev, credentialRef: e.target.value }))
@@ -575,13 +578,13 @@ const ChannelConfig = ({ initialSection }) => {
               checked={connectionForm.enabled}
               onChange={(e) => setConnectionForm((prev) => ({ ...prev, enabled: e.target.checked }))}
             />
-            Enabled
+            {t("channel.enabled")}
           </label>
           <button
             type="submit"
             className="bg-[#025cca] text-white rounded-md py-2 font-semibold"
           >
-            Add Connection
+            {t("channel.addConnection")}
           </button>
         </form>
         <div className="space-y-2">
@@ -603,28 +606,28 @@ const ChannelConfig = ({ initialSection }) => {
                   })
                 }
               >
-                {connection.enabled ? "Disable" : "Enable"}
+                {connection.enabled ? t("channel.disable") : t("channel.enable")}
               </button>
             </div>
           ))}
-          {connections.length === 0 && <p className="text-[#ababab] text-sm">No connections yet.</p>}
+          {connections.length === 0 && <p className="text-[#ababab] text-sm">{t("channel.noConnections")}</p>}
         </div>
       </div>
       )}
 
       {showSection("mappings") && (
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Mapping Rules</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("channel.mappingRules")}</h2>
         <form className="grid grid-cols-5 gap-3 mb-4" onSubmit={handleCreateMapping}>
           <input
             className={inputClass}
-            placeholder="Location ID"
+            placeholder={t("channel.locationId")}
             value={mappingForm.locationId}
             onChange={(e) => setMappingForm((prev) => ({ ...prev, locationId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Provider Code"
+            placeholder={t("channel.providerCode")}
             value={mappingForm.providerCode}
             onChange={(e) => setMappingForm((prev) => ({ ...prev, providerCode: e.target.value }))}
           />
@@ -642,13 +645,13 @@ const ChannelConfig = ({ initialSection }) => {
           </select>
           <input
             className={inputClass}
-            placeholder="Internal Code"
+            placeholder={t("channel.internalCode")}
             value={mappingForm.internalCode}
             onChange={(e) => setMappingForm((prev) => ({ ...prev, internalCode: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="External Code"
+            placeholder={t("channel.externalCode")}
             value={mappingForm.externalCode}
             onChange={(e) => setMappingForm((prev) => ({ ...prev, externalCode: e.target.value }))}
           />
@@ -656,7 +659,7 @@ const ChannelConfig = ({ initialSection }) => {
             type="submit"
             className="col-span-5 bg-[#025cca] text-white rounded-md py-2 font-semibold"
           >
-            Add Mapping Rule
+            {t("channel.addMappingRule")}
           </button>
         </form>
         <div className="space-y-2">
@@ -677,11 +680,11 @@ const ChannelConfig = ({ initialSection }) => {
                   })
                 }
               >
-                {rule.active ? "Deactivate" : "Activate"}
+                {rule.active ? t("channel.deactivate") : t("channel.activate")}
               </button>
             </div>
           ))}
-          {mappingRules.length === 0 && <p className="text-[#ababab] text-sm">No mapping rules yet.</p>}
+          {mappingRules.length === 0 && <p className="text-[#ababab] text-sm">{t("channel.noMappingRules")}</p>}
         </div>
       </div>
       )}
@@ -689,23 +692,23 @@ const ChannelConfig = ({ initialSection }) => {
       {!initialSection && (
       <>
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Channel Order Ingress Tester</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("channel.ingressTester")}</h2>
         <form className="grid grid-cols-4 gap-3" onSubmit={handleIngressSubmit}>
           <input
             className={inputClass}
-            placeholder="Location ID"
+            placeholder={t("channel.locationId")}
             value={ingressForm.locationId}
             onChange={(e) => setIngressForm((prev) => ({ ...prev, locationId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Provider Code"
+            placeholder={t("channel.providerCode")}
             value={ingressForm.providerCode}
             onChange={(e) => setIngressForm((prev) => ({ ...prev, providerCode: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="External Order ID"
+            placeholder={t("channel.externalOrderId")}
             value={ingressForm.externalOrderId}
             onChange={(e) =>
               setIngressForm((prev) => ({ ...prev, externalOrderId: e.target.value }))
@@ -725,19 +728,19 @@ const ChannelConfig = ({ initialSection }) => {
           </select>
           <input
             className={inputClass}
-            placeholder="Customer Name"
+            placeholder={t("channel.customerName")}
             value={ingressForm.customerName}
             onChange={(e) => setIngressForm((prev) => ({ ...prev, customerName: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Customer Phone"
+            placeholder={t("channel.customerPhone")}
             value={ingressForm.customerPhone}
             onChange={(e) => setIngressForm((prev) => ({ ...prev, customerPhone: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Guests"
+            placeholder={t("channel.guests")}
             value={ingressForm.guests}
             onChange={(e) => setIngressForm((prev) => ({ ...prev, guests: e.target.value }))}
           />
@@ -751,13 +754,13 @@ const ChannelConfig = ({ initialSection }) => {
           </select>
           <input
             className={inputClass}
-            placeholder="Item Name (optional if mapped by external code)"
+            placeholder={t("channel.itemName")}
             value={ingressForm.itemName}
             onChange={(e) => setIngressForm((prev) => ({ ...prev, itemName: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Item External Code"
+            placeholder={t("channel.itemExternalCode")}
             value={ingressForm.itemExternalCode}
             onChange={(e) =>
               setIngressForm((prev) => ({ ...prev, itemExternalCode: e.target.value }))
@@ -765,7 +768,7 @@ const ChannelConfig = ({ initialSection }) => {
           />
           <input
             className={inputClass}
-            placeholder="Quantity"
+            placeholder={t("channel.quantity")}
             value={ingressForm.itemQuantity}
             onChange={(e) => setIngressForm((prev) => ({ ...prev, itemQuantity: e.target.value }))}
           />
@@ -773,23 +776,23 @@ const ChannelConfig = ({ initialSection }) => {
             type="submit"
             className="bg-[#f6b100] text-[#1f1f1f] rounded-md py-2 font-semibold"
           >
-            Ingest Order
+            {t("channel.ingestOrder")}
           </button>
         </form>
       </div>
 
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Channel Governance (DLQ & Retry)</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("channel.dlqGovernance")}</h2>
         <div className="grid grid-cols-5 gap-3 mb-4">
           <input
             className={inputClass}
-            placeholder="Location ID"
+            placeholder={t("channel.locationId")}
             value={dlqFilter.locationId}
             onChange={(e) => setDlqFilter((prev) => ({ ...prev, locationId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Provider Code"
+            placeholder={t("channel.providerCode")}
             value={dlqFilter.providerCode}
             onChange={(e) => setDlqFilter((prev) => ({ ...prev, providerCode: e.target.value }))}
           />
@@ -798,7 +801,7 @@ const ChannelConfig = ({ initialSection }) => {
             value={dlqFilter.status}
             onChange={(e) => setDlqFilter((prev) => ({ ...prev, status: e.target.value }))}
           >
-            <option value="">All Status</option>
+            <option value="">{t("channel.allStatus")}</option>
             <option value="OPEN">OPEN</option>
             <option value="REPLAYED">REPLAYED</option>
             <option value="DISCARDED">DISCARDED</option>
@@ -808,7 +811,7 @@ const ChannelConfig = ({ initialSection }) => {
             value={dlqFilter.failureCategory}
             onChange={(e) => setDlqFilter((prev) => ({ ...prev, failureCategory: e.target.value }))}
           >
-            <option value="">All Categories</option>
+            <option value="">{t("channel.allCategories")}</option>
             {[
               "AUTH",
               "SIGNATURE",
@@ -828,7 +831,7 @@ const ChannelConfig = ({ initialSection }) => {
           </select>
           <input
             className={inputClass}
-            placeholder="Window Hours"
+            placeholder={t("channel.windowHours")}
             value={dlqFilter.windowHours}
             onChange={(e) => setDlqFilter((prev) => ({ ...prev, windowHours: e.target.value }))}
           />
@@ -836,25 +839,25 @@ const ChannelConfig = ({ initialSection }) => {
 
         <div className="grid grid-cols-5 gap-3 mb-4">
           <div className="bg-[#1f1f1f] rounded-md px-3 py-2">
-            <p className="text-xs text-[#ababab]">DLQ Total</p>
+            <p className="text-xs text-[#ababab]">{t("channel.dlqTotal")}</p>
             <p className="text-[#f5f5f5] font-semibold">{Number(dlqInsights.total || 0)}</p>
           </div>
           <div className="bg-[#1f1f1f] rounded-md px-3 py-2">
-            <p className="text-xs text-[#ababab]">Retry Window Open</p>
+            <p className="text-xs text-[#ababab]">{t("channel.retryWindowOpen")}</p>
             <p className="text-[#7ce2a8] font-semibold">{Number(dlqInsights.retryWindowOpenCount || 0)}</p>
           </div>
           <div className="bg-[#1f1f1f] rounded-md px-3 py-2">
-            <p className="text-xs text-[#ababab]">Retry Blocked</p>
+            <p className="text-xs text-[#ababab]">{t("channel.retryBlocked")}</p>
             <p className="text-[#ffd38a] font-semibold">{Number(dlqInsights.retryBlockedCount || 0)}</p>
           </div>
           <div className="bg-[#1f1f1f] rounded-md px-3 py-2">
-            <p className="text-xs text-[#ababab]">AUTH Errors</p>
+            <p className="text-xs text-[#ababab]">{t("channel.authErrors")}</p>
             <p className="text-[#ffb3b3] font-semibold">
               {Number((dlqInsights.byCategory || {}).AUTH || 0)}
             </p>
           </div>
           <div className="bg-[#1f1f1f] rounded-md px-3 py-2">
-            <p className="text-xs text-[#ababab]">MAPPING Errors</p>
+            <p className="text-xs text-[#ababab]">{t("channel.mappingErrors")}</p>
             <p className="text-[#9ac7ff] font-semibold">
               {Number((dlqInsights.byCategory || {}).MAPPING || 0)}
             </p>
@@ -880,13 +883,13 @@ const ChannelConfig = ({ initialSection }) => {
                   {event.failureMessage || "-"}
                 </div>
                 <div className="text-xs text-[#ababab] mt-1">
-                  Replay {Number(event.replayCount || 0)} / {Number(retryWindow.maxRetries || 0)} ·
+                  {t("channel.replay")} {Number(event.replayCount || 0)} / {Number(retryWindow.maxRetries || 0)} ·
                   {" "}
                   {retryWindow.retryable
                     ? retryWindow.windowOpen
-                      ? "Retry window OPEN"
+                      ? t("channel.retryWindowOpenLabel")
                       : `Wait ${Number(retryWindow.waitSeconds || 0)}s`
-                    : "Not retryable"}
+                    : t("channel.notRetryable")}
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <button
@@ -898,21 +901,21 @@ const ChannelConfig = ({ initialSection }) => {
                     }
                     onClick={() => replayDlqMutation.mutate({ id: event._id })}
                   >
-                    Replay
+                    {t("channel.replay")}
                   </button>
                   <button
                     className="text-xs px-3 py-1 rounded-md bg-[#5a2f2f] text-[#ffd8d8] disabled:opacity-50"
                     disabled={discardDlqMutation.isPending || event.status === "DISCARDED"}
                     onClick={() => discardDlqMutation.mutate({ id: event._id })}
                   >
-                    Discard
+                    {t("channel.discard")}
                   </button>
                 </div>
               </div>
             );
           })}
           {deadLetters.length === 0 && (
-            <p className="text-[#ababab] text-sm">No dead-letter events in current filter.</p>
+            <p className="text-[#ababab] text-sm">{t("channel.noDeadLetters")}</p>
           )}
         </div>
       </div>

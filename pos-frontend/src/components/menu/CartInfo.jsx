@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useEffect, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { RiDeleteBin2Fill } from "react-icons/ri";
 import { FaRegCopy } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,6 +29,7 @@ const getSelectedOptionIdsByGroup = (modifiers = []) => {
 };
 
 const CartInfo = () => {
+  const { t } = useTranslation();
   const cartData = useSelector((state) => state.cart);
   const scrolLRef = useRef();
   const dispatch = useDispatch();
@@ -96,11 +99,11 @@ const CartInfo = () => {
 
   return (
     <div className="px-4 py-2">
-      <h1 className="text-lg text-[#e4e4e4] font-semibold tracking-wide">Order Details</h1>
+      <h1 className="text-lg text-[#e4e4e4] font-semibold tracking-wide">{t("cart.orderDetails")}</h1>
       <div className="mt-4 overflow-y-scroll scrollbar-hide h-[380px]" ref={scrolLRef}>
         {cartData.length === 0 ? (
           <p className="text-[#ababab] text-sm flex justify-center items-center h-[380px]">
-            Your cart is empty. Start adding items!
+            {t("cart.empty")}
           </p>
         ) : (
           cartData.map((item, index) => {
@@ -197,7 +200,7 @@ const CartInfo = () => {
                             }}
                             className="w-full bg-[#2a2a2a] text-[#f5f5f5] rounded px-2 py-1 text-xs outline-none"
                           >
-                            {!group.required && <option value="">默认</option>}
+                            {!group.required && <option value="">{t("cart.defaultNote")}</option>}
                             {options.map((option) => (
                               <option key={`${option?.id || ""}`} value={`${option?.id || ""}`}>
                                 {option.name}
@@ -214,11 +217,11 @@ const CartInfo = () => {
                 )}
 
                 <div>
-                  <p className="text-xs text-[#8aa2d6] mb-1">备注</p>
+                  <p className="text-xs text-[#8aa2d6] mb-1">{t("cart.remarkLabel")}</p>
                   <input
                     value={item.note || ""}
                     onChange={(event) => handleNoteChange(rowId, event.target.value)}
-                    placeholder="例如：少辣、少油、不要香菜"
+                    placeholder={t("cart.remarkPlaceholder")}
                     className="w-full bg-[#2a2a2a] text-[#f5f5f5] rounded px-2 py-1 text-xs outline-none"
                   />
                 </div>
@@ -229,7 +232,7 @@ const CartInfo = () => {
                       type="button"
                       onClick={() => handleRemove(rowId)}
                       className="min-h-[40px] min-w-[40px] rounded bg-[#2a2a2a] text-[#ababab] flex items-center justify-center"
-                      title="Delete row"
+                      title={t("cart.deleteRow")}
                     >
                       <RiDeleteBin2Fill size={18} />
                     </button>
@@ -237,10 +240,10 @@ const CartInfo = () => {
                       type="button"
                       onClick={() => handleDuplicate(rowId)}
                       className="text-[#c8d5ee] text-xs bg-[#2a2a2a] rounded min-h-[40px] px-3 py-1 inline-flex items-center gap-1"
-                      title="Duplicate row"
+                      title={t("cart.duplicateRow")}
                     >
                       <FaRegCopy size={13} />
-                      复制
+                      {t("cart.copy")}
                     </button>
                   </div>
                   <p className="text-[#f5f5f5] text-md font-bold">€{Number(item.price || 0).toFixed(2)}</p>

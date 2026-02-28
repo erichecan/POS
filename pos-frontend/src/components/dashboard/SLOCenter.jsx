@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import {
@@ -49,6 +51,7 @@ const getIncidentStatusClass = (status) => {
 };
 
 const SLOCenter = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState({
     locationId: "default",
@@ -144,31 +147,31 @@ const SLOCenter = () => {
 
   const cards = [
     {
-      label: "Inventory OOS",
+      label: t("slo.inventoryOOS"),
       value: inventory.outOfStockCount ?? 0,
       sub: `Low ${inventory.lowStockCount ?? 0} (${inventory.lowStockRate ?? 0}%)`,
       color: "bg-[#1f2f4f] text-[#9ac7ff]",
     },
     {
-      label: "Kitchen Overdue",
+      label: t("slo.kitchenOverdue"),
       value: kitchen.overdueCount ?? 0,
       sub: `Open ${kitchen.openTickets ?? 0} · Avg ${kitchen.avgReadyMinutes ?? 0}m`,
       color: "bg-[#4e1f1f] text-[#ff8f8f]",
     },
     {
-      label: "Payment Failure",
+      label: t("slo.paymentFailure"),
       value: `${payment.failureRate ?? 0}%`,
       sub: `Unverified ${payment.unverifiedAgingCount ?? 0}`,
       color: "bg-[#4f431e] text-[#ffd36a]",
     },
     {
-      label: "Pending Refund Reviews",
+      label: t("slo.pendingRefundReviews"),
       value: payment.pendingRefundApprovals ?? 0,
       sub: `Verified ${payment.verificationRate ?? 0}%`,
       color: "bg-[#2a1f4f] text-[#c8b5ff]",
     },
     {
-      label: "Cash Variance Alerts",
+      label: t("slo.cashVarianceAlerts"),
       value: cash.highVarianceShiftCount ?? 0,
       sub: `Open Shift ${cash.openShiftCount ?? 0}`,
       color: "bg-[#1f3d2f] text-[#8fe6b2]",
@@ -179,21 +182,21 @@ const SLOCenter = () => {
     <div className="container mx-auto py-2 px-6 md:px-4 space-y-4">
       {/* 2026-02-26: SLO description section */}
       <div className="mb-6 rounded-lg border border-[#333] bg-[#262626] p-4">
-        <h2 className="text-lg font-semibold text-[#f5f5f5] mb-2">Service Level Objectives (SLO)</h2>
+        <h2 className="text-lg font-semibold text-[#f5f5f5] mb-2">{t("slo.title")}</h2>
         <p className="text-sm text-[#ababab] leading-relaxed">
-          SLO Dashboard monitors your store's operational health in real-time. It tracks key metrics across five areas:
+          {t("slo.description")}
           <strong className="text-[#f5f5f5]"> Inventory</strong> (out-of-stock & low stock rates),
           <strong className="text-[#f5f5f5]"> Kitchen</strong> (overdue tickets & average completion time),
           <strong className="text-[#f5f5f5]"> Payments</strong> (failure rates & unverified transactions),
           <strong className="text-[#f5f5f5]"> Refunds</strong> (pending approvals), and
           <strong className="text-[#f5f5f5]"> Cash</strong> (variance alerts from cash shifts).
-          Green = healthy, Yellow = warning, Red = critical action needed.
+          {t("slo.descLegend")}
         </p>
       </div>
 
       <div className={panelClass}>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[#f5f5f5] text-lg font-semibold">Ops SLO Snapshot</h2>
+          <h2 className="text-[#f5f5f5] text-lg font-semibold">{t("slo.opsSloSnapshot")}</h2>
           <span
             className={`text-xs font-semibold px-3 py-1 rounded ${getHealthClass(
               data.healthStatus || "OK"
@@ -206,7 +209,7 @@ const SLOCenter = () => {
         <div className="grid grid-cols-4 gap-3 mb-3">
           <input
             className={inputClass}
-            placeholder="Location ID"
+            placeholder={t("kitchen.locationId")}
             value={filter.locationId}
             onChange={(e) => setFilter((prev) => ({ ...prev, locationId: e.target.value }))}
           />
@@ -215,13 +218,13 @@ const SLOCenter = () => {
             value={filter.windowMinutes}
             onChange={(e) => setFilter((prev) => ({ ...prev, windowMinutes: e.target.value }))}
           >
-            <option value="60">Last 60 Minutes</option>
-            <option value="240">Last 4 Hours</option>
-            <option value="720">Last 12 Hours</option>
-            <option value="1440">Last 24 Hours</option>
+            <option value="60">{t("slo.last60Min")}</option>
+            <option value="240">{t("slo.last4Hours")}</option>
+            <option value="720">{t("slo.last12Hours")}</option>
+            <option value="1440">{t("slo.last24Hours")}</option>
           </select>
           <div className="bg-[#1f1f1f] rounded-md px-3 py-2 text-xs text-[#f5f5f5] border border-[#333]">
-            Generated: {toDateTime(data.generatedAt)}
+            {t("slo.generated")} {toDateTime(data.generatedAt)}
           </div>
           <button
             className="bg-[#025cca] text-white rounded-md py-2 px-3 text-sm font-semibold disabled:opacity-60"
@@ -233,12 +236,12 @@ const SLOCenter = () => {
               })
             }
           >
-            Run On-call Escalation
+            {t("slo.runEscalation")}
           </button>
         </div>
 
         <div className="text-xs text-[#ababab]">
-          Alerts: {alertSummary.total ?? 0} · Critical {alertSummary.critical ?? 0} · Warn{" "}
+          {t("slo.alerts")} {alertSummary.total ?? 0} · Critical {alertSummary.critical ?? 0} · Warn{" "}
           {alertSummary.warn ?? 0}
         </div>
         {lastSweep?.policy && (
@@ -251,7 +254,7 @@ const SLOCenter = () => {
       </div>
 
       <div className={panelClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">SLO Key Metrics</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("slo.sloKeyMetrics")}</h2>
         <div className="grid grid-cols-5 gap-3">
           {cards.map((card) => (
             <div key={card.label} className={`rounded-md px-3 py-2 ${card.color}`}>
@@ -265,9 +268,9 @@ const SLOCenter = () => {
 
       <div className={panelClass}>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[#f5f5f5] text-lg font-semibold">On-call Incident Pool</h2>
+          <h2 className="text-[#f5f5f5] text-lg font-semibold">{t("slo.onCallIncidentPool")}</h2>
           <p className="text-xs text-[#ababab]">
-            {incidentPagination.total ?? incidents.length} incident(s)
+            {incidentPagination.total ?? incidents.length} {t("slo.incidents")}
           </p>
         </div>
 
@@ -277,18 +280,18 @@ const SLOCenter = () => {
             value={incidentFilter.status}
             onChange={(e) => setIncidentFilter((prev) => ({ ...prev, status: e.target.value }))}
           >
-            <option value="OPEN,ACKED">Open + Acked</option>
-            <option value="OPEN">Open Only</option>
-            <option value="ACKED">Acked Only</option>
-            <option value="RESOLVED">Resolved Only</option>
-            <option value="OPEN,ACKED,RESOLVED">All</option>
+            <option value="OPEN,ACKED">{t("slo.openAcked")}</option>
+            <option value="OPEN">{t("slo.openOnly")}</option>
+            <option value="ACKED">{t("slo.ackedOnly")}</option>
+            <option value="RESOLVED">{t("slo.resolvedOnly")}</option>
+            <option value="OPEN,ACKED,RESOLVED">{t("slo.all")}</option>
           </select>
           <select
             className={inputClass}
             value={incidentFilter.severity}
             onChange={(e) => setIncidentFilter((prev) => ({ ...prev, severity: e.target.value }))}
           >
-            <option value="">All Severity</option>
+            <option value="">{t("slo.allSeverity")}</option>
             <option value="CRITICAL">CRITICAL</option>
             <option value="WARN">WARN</option>
           </select>
@@ -340,7 +343,7 @@ const SLOCenter = () => {
                         ackIncidentMutation.mutate({ id: incident._id, note });
                       }}
                     >
-                      ACK Incident
+                      {t("slo.ackIncident")}
                     </button>
                   )}
                   <button
@@ -351,20 +354,20 @@ const SLOCenter = () => {
                       resolveIncidentMutation.mutate({ id: incident._id, note });
                     }}
                   >
-                    Resolve
+                    {t("slo.resolve")}
                   </button>
                 </div>
               )}
             </div>
           ))}
           {incidents.length === 0 && (
-            <p className="text-[#ababab] text-sm">No incidents for current filter.</p>
+            <p className="text-[#ababab] text-sm">{t("slo.noIncidents")}</p>
           )}
         </div>
       </div>
 
       <div className={panelClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Alert Feed</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("slo.alertFeed")}</h2>
         <div className="space-y-2 max-h-[420px] overflow-auto">
           {alerts.map((alert, index) => (
             <div
@@ -388,7 +391,7 @@ const SLOCenter = () => {
             </div>
           ))}
           {alerts.length === 0 && (
-            <p className="text-[#ababab] text-sm">No active SLO alerts in current window.</p>
+            <p className="text-[#ababab] text-sm">{t("slo.noAlerts")}</p>
           )}
         </div>
       </div>

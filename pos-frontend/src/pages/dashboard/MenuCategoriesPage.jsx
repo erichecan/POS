@@ -1,5 +1,7 @@
 // 2026-02-26T19:58:00+08:00: Menu category management page with hierarchical CRUD, drag reorder
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { axiosWrapper } from "../../https/axiosWrapper";
 
 const LOCATIONS = [
@@ -21,6 +23,7 @@ const PRESET_COLORS = [
 ];
 
 const MenuCategoriesPage = () => {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
   const [hqCategories, setHqCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,7 +64,7 @@ const MenuCategoriesPage = () => {
         setHqCategories([]);
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Failed to load categories");
+      setError(err.response?.data?.message || err.message || t("menu.failedToLoad"));
     } finally {
       setLoading(false);
     }
@@ -133,19 +136,19 @@ const MenuCategoriesPage = () => {
       closeForm();
       fetchCategories();
     } catch (err) {
-      setError(err.response?.data?.message || "Save failed");
+      setError(err.response?.data?.message || t("menu.saveFailed"));
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this category?")) return;
+    if (!window.confirm(t("menu.deleteCategory"))) return;
     try {
       await axiosWrapper.delete(`/api/menu/categories/${id}`);
       fetchCategories();
     } catch (err) {
-      setError(err.response?.data?.message || "Delete failed");
+      setError(err.response?.data?.message || t("menu.deleteFailed"));
     }
   };
 
@@ -182,7 +185,7 @@ const MenuCategoriesPage = () => {
       });
       fetchCategories();
     } catch (err) {
-      setError("Reorder failed");
+      setError(t("menu.reorderFailed"));
     }
 
     setDragItem(null);
@@ -209,7 +212,7 @@ const MenuCategoriesPage = () => {
       });
       fetchCategories();
     } catch (err) {
-      setError(err.response?.data?.message || "Import failed");
+      setError(err.response?.data?.message || t("menu.importFailed"));
     }
   };
 
@@ -271,7 +274,7 @@ const MenuCategoriesPage = () => {
               onClick={() => openForm(cat)}
               className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1 rounded hover:bg-[#333]"
             >
-              Edit
+              {t("common.edit")}
             </button>
             <button
               onClick={() => {
@@ -281,13 +284,13 @@ const MenuCategoriesPage = () => {
               }}
               className="text-xs text-green-400 hover:text-green-300 px-2 py-1 rounded hover:bg-[#333]"
             >
-              +Sub
+              {t("menu.sub")}
             </button>
             <button
               onClick={() => handleDelete(cat._id)}
               className="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-[#333]"
             >
-              Del
+              {t("menu.del")}
             </button>
           </div>
         </div>
@@ -301,7 +304,7 @@ const MenuCategoriesPage = () => {
     <div className="h-full flex flex-col bg-[#1a1a1a] text-[#f5f5f5]">
       {/* Top toolbar */}
       <div className="flex flex-wrap items-center gap-3 px-6 py-4 border-b border-[#333] bg-[#1f1f1f]">
-        <h1 className="text-xl font-bold mr-4">Menu Categories</h1>
+        <h1 className="text-xl font-bold mr-4">{t("menu.menuCategories")}</h1>
 
         <select
           value={locationId}
@@ -316,14 +319,14 @@ const MenuCategoriesPage = () => {
         <div className="flex-1" />
 
         <span className="text-sm text-[#8a8a8a]">
-          {categories.length} categories
+          {categories.length} {t("menu.categories")}
         </span>
 
         <button
           onClick={() => openForm()}
           className="bg-[#f6b100] hover:bg-[#d49a00] text-black font-semibold px-4 py-2 rounded-lg text-sm"
         >
-          + Add Category
+          {t("menu.addCategory")}
         </button>
       </div>
 
@@ -336,16 +339,16 @@ const MenuCategoriesPage = () => {
 
       <div className="flex-1 overflow-y-auto p-6">
         {loading ? (
-          <div className="flex items-center justify-center h-40 text-[#8a8a8a]">Loading...</div>
+          <div className="flex items-center justify-center h-40 text-[#8a8a8a]">{t("common.loading")}</div>
         ) : categories.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-40 text-[#8a8a8a]">
-            <p className="text-lg mb-2">No categories yet</p>
-            <p className="text-sm mb-4">Create your first category to organize menu items.</p>
+            <p className="text-lg mb-2">{t("menu.noCategoriesYet")}</p>
+            <p className="text-sm mb-4">{t("menu.createFirstCategory")}</p>
             <button
               onClick={() => openForm()}
               className="bg-[#f6b100] hover:bg-[#d49a00] text-black font-semibold px-4 py-2 rounded-lg text-sm"
             >
-              + Add Category
+              {t("menu.addCategory")}
             </button>
           </div>
         ) : (
@@ -353,11 +356,11 @@ const MenuCategoriesPage = () => {
             {/* Header */}
             <div className="flex items-center gap-3 px-4 py-2 border-b border-[#444] bg-[#262626] text-xs text-[#8a8a8a] font-semibold uppercase tracking-wider">
               <span className="w-5" />
-              <span className="flex-1">Name</span>
-              <span className="hidden md:inline w-[200px]">Description</span>
-              <span className="w-16 text-center">Status</span>
-              <span className="w-8 text-right">Sort</span>
-              <span className="w-[130px] text-right">Actions</span>
+              <span className="flex-1">{t("common.name")}</span>
+              <span className="hidden md:inline w-[200px]">{t("common.description")}</span>
+              <span className="w-16 text-center">{t("common.status")}</span>
+              <span className="w-8 text-right">{t("menu.sortOrder")}</span>
+              <span className="w-[130px] text-right">{t("common.actions")}</span>
             </div>
             {tree.map((cat) => renderCatRow(cat, 0))}
           </div>
@@ -367,7 +370,7 @@ const MenuCategoriesPage = () => {
         {locationId !== "default" && hqTree.length > 0 && (
           <div className="mt-6">
             <h2 className="text-sm font-semibold text-[#8a8a8a] uppercase tracking-wider mb-3">
-              HQ Categories (available for import)
+              {t("menu.hqCategories")}
             </h2>
             <div className="bg-[#1f1f1f] border border-[#333] rounded-xl overflow-hidden">
               {hqTree.map((hqCat) => {
@@ -388,13 +391,13 @@ const MenuCategoriesPage = () => {
                     <span className="text-[#ababab] flex-1">{hqCat.name}</span>
                     <span className="text-xs bg-blue-900/40 text-blue-300 px-2 py-0.5 rounded">HQ</span>
                     {alreadyImported ? (
-                      <span className="text-xs text-green-400">Imported</span>
+                      <span className="text-xs text-green-400">{t("menu.imported")}</span>
                     ) : (
                       <button
                         onClick={() => importFromHq(hqCat)}
                         className="text-xs bg-blue-600 hover:bg-blue-500 text-white px-3 py-1 rounded"
                       >
-                        Import
+                        {t("common.import")}
                       </button>
                     )}
                   </div>
@@ -410,12 +413,12 @@ const MenuCategoriesPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
           <div className="bg-[#1f1f1f] border border-[#444] rounded-2xl w-full max-w-lg p-6 mx-4">
             <h2 className="text-lg font-bold mb-4">
-              {editCat ? "Edit Category" : "New Category"}
+              {editCat ? t("menu.editCategory") : t("menu.newCategory")}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs text-[#ababab] mb-1">Name *</label>
+                <label className="block text-xs text-[#ababab] mb-1">{t("common.name")} *</label>
                 <input
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -425,7 +428,7 @@ const MenuCategoriesPage = () => {
               </div>
 
               <div>
-                <label className="block text-xs text-[#ababab] mb-1">Description</label>
+                <label className="block text-xs text-[#ababab] mb-1">{t("common.description")}</label>
                 <input
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -436,13 +439,13 @@ const MenuCategoriesPage = () => {
 
               {!editCat && (
                 <div>
-                  <label className="block text-xs text-[#ababab] mb-1">Parent Category</label>
+                  <label className="block text-xs text-[#ababab] mb-1">{t("menu.parentCategory")}</label>
                   <select
                     value={form.parentId}
                     onChange={(e) => setForm({ ...form, parentId: e.target.value })}
                     className="w-full bg-[#262626] border border-[#444] text-[#f5f5f5] rounded-lg px-3 py-2 text-sm"
                   >
-                    <option value="">— None (top level) —</option>
+                    <option value="">{t("menu.noneTopLevel")}</option>
                     {allCatsForParent.map((c) => (
                       <option key={c._id} value={c._id}>{c.name}</option>
                     ))}
@@ -451,7 +454,7 @@ const MenuCategoriesPage = () => {
               )}
 
               <div>
-                <label className="block text-xs text-[#ababab] mb-1">Icon (emoji)</label>
+                <label className="block text-xs text-[#ababab] mb-1">{t("menu.icon")}</label>
                 <input
                   value={form.icon}
                   onChange={(e) => setForm({ ...form, icon: e.target.value })}
@@ -461,7 +464,7 @@ const MenuCategoriesPage = () => {
               </div>
 
               <div>
-                <label className="block text-xs text-[#ababab] mb-1">Color</label>
+                <label className="block text-xs text-[#ababab] mb-1">{t("menu.color")}</label>
                 <div className="flex items-center gap-2 flex-wrap">
                   {PRESET_COLORS.map((c) => (
                     <button
@@ -483,15 +486,15 @@ const MenuCategoriesPage = () => {
               </div>
 
               <div>
-                <label className="block text-xs text-[#ababab] mb-1">Status</label>
+                <label className="block text-xs text-[#ababab] mb-1">{t("common.status")}</label>
                 <select
                   value={form.status}
                   onChange={(e) => setForm({ ...form, status: e.target.value })}
                   className="w-full bg-[#262626] border border-[#444] text-[#f5f5f5] rounded-lg px-3 py-2 text-sm"
                 >
-                  <option value="ACTIVE">Active</option>
-                  <option value="INACTIVE">Inactive</option>
-                  <option value="ARCHIVED">Archived</option>
+                  <option value="ACTIVE">{t("common.active")}</option>
+                  <option value="INACTIVE">{t("common.inactive")}</option>
+                  <option value="ARCHIVED">{t("common.archive")}</option>
                 </select>
               </div>
             </div>
@@ -501,14 +504,14 @@ const MenuCategoriesPage = () => {
                 onClick={closeForm}
                 className="px-4 py-2 rounded-lg text-sm text-[#ababab] hover:text-[#f5f5f5] hover:bg-[#333]"
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving || !form.name.trim()}
                 className="bg-[#f6b100] hover:bg-[#d49a00] disabled:opacity-50 text-black font-semibold px-6 py-2 rounded-lg text-sm"
               >
-                {saving ? "Saving..." : editCat ? "Update" : "Create"}
+                {saving ? t("common.saving") : editCat ? t("common.update") : t("common.create")}
               </button>
             </div>
           </div>

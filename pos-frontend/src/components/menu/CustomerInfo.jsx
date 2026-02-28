@@ -1,9 +1,12 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDate, getAvatarName } from "../../utils";
 import { updateCustomerDraft } from "../../redux/slices/customerSlice";
 
 const CustomerInfo = () => {
+  const { t } = useTranslation();
   const [dateTime, setDateTime] = useState(new Date());
   const [isEditing, setIsEditing] = useState(false);
   const customerData = useSelector((state) => state.customer);
@@ -39,23 +42,23 @@ const CustomerInfo = () => {
       <div className="flex flex-col items-start">
         {!isEditing ? (
           <h1 className="text-md text-[#f5f5f5] font-semibold tracking-wide">
-            {customerData.customerName || "Customer Name"}
+            {customerData.customerName || t("customerInfo.customerName")}
           </h1>
         ) : (
           <input
             value={draft.name}
             onChange={(event) => setDraft((prev) => ({ ...prev, name: event.target.value }))}
-            placeholder="Customer Name"
+            placeholder={t("customerInfo.customerName")}
             className="bg-[#1f1f1f] text-[#f5f5f5] text-sm rounded px-2 py-1 focus:outline-none"
           />
         )}
         <p className="text-xs text-[#ababab] font-medium mt-1">
-          #{customerData.orderId || "N/A"} / Dine in
+          #{customerData.orderId || t("customerInfo.na")} / {t("customerInfo.dineIn")}
         </p>
         {!isEditing ? (
           <>
             <p className="text-xs text-[#ababab] font-medium mt-1">
-              {customerData.customerPhone || "Phone N/A"} · {customerData.guests || 0} Guests
+              {customerData.customerPhone || t("customerInfo.phoneNA")} · {customerData.guests || 0} {t("customerInfo.guests")}
             </p>
             <button
               onClick={() => {
@@ -68,7 +71,7 @@ const CustomerInfo = () => {
               }}
               className="text-xs text-[#7eb4ff] mt-1"
             >
-              Edit Customer
+              {t("customerInfo.editCustomer")}
             </button>
           </>
         ) : (
@@ -76,18 +79,18 @@ const CustomerInfo = () => {
             <input
               value={draft.phone}
               onChange={(event) => setDraft((prev) => ({ ...prev, phone: event.target.value }))}
-              placeholder="Customer Phone"
+              placeholder={t("customerInfo.customerPhone")}
               className="bg-[#1f1f1f] text-[#f5f5f5] text-xs rounded px-2 py-1 focus:outline-none"
             />
             <input
               value={draft.guests}
               onChange={(event) => setDraft((prev) => ({ ...prev, guests: event.target.value }))}
-              placeholder="Guests"
+              placeholder={t("customerInfo.guests")}
               className="bg-[#1f1f1f] text-[#f5f5f5] text-xs rounded px-2 py-1 focus:outline-none w-[100px]"
             />
             <div className="flex items-center gap-2">
-              <button onClick={saveDraft} className="text-xs text-[#8de8ad]">Save</button>
-              <button onClick={() => setIsEditing(false)} className="text-xs text-[#f0a5a5]">Cancel</button>
+              <button onClick={saveDraft} className="text-xs text-[#8de8ad]">{t("customerInfo.save")}</button>
+              <button onClick={() => setIsEditing(false)} className="text-xs text-[#f0a5a5]">{t("customerInfo.cancel")}</button>
             </div>
           </div>
         )}
@@ -96,7 +99,7 @@ const CustomerInfo = () => {
         </p>
       </div>
       <button className="bg-[#f6b100] p-3 text-xl font-bold rounded-lg">
-        {getAvatarName(customerData.customerName) || "CN"}
+        {getAvatarName(customerData.customerName) || t("customerInfo.cn")}
       </button>
     </div>
   );

@@ -1,10 +1,13 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import { getOrders, updateOrderStatus } from "../../https/index";
 import { formatDateAndTime } from "../../utils";
 
 const RecentOrders = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const handleStatusChange = ({orderId, orderStatus}) => {
     orderStatusUpdateMutation.mutate({orderId, orderStatus});
@@ -43,29 +46,29 @@ const RecentOrders = () => {
   return (
     <div className="container mx-auto bg-[#262626] p-4 rounded-lg">
       <h2 className="text-[#f5f5f5] text-xl font-semibold mb-4">
-        Recent Orders
+        {t("dashboard.recentOrders")}
       </h2>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-[#f5f5f5]">
           <thead className="bg-[#333] text-[#ababab]">
             <tr>
-              <th className="p-3">Order ID</th>
-              <th className="p-3">Customer</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Date & Time</th>
-              <th className="p-3">Items</th>
-              <th className="p-3">Table No</th>
-              <th className="p-3">Total</th>
-              <th className="p-3">Source</th>
-              <th className="p-3">External ID</th>
-              <th className="p-3 text-center">Payment Method</th>
+              <th className="p-3">{t("dashboard.orderIdCol")}</th>
+              <th className="p-3">{t("dashboard.customerCol")}</th>
+              <th className="p-3">{t("dashboard.statusCol")}</th>
+              <th className="p-3">{t("dashboard.dateTimeCol")}</th>
+              <th className="p-3">{t("dashboard.itemsCol")}</th>
+              <th className="p-3">{t("dashboard.tableNoCol")}</th>
+              <th className="p-3">{t("dashboard.totalCol")}</th>
+              <th className="p-3">{t("dashboard.sourceCol")}</th>
+              <th className="p-3">{t("dashboard.externalIdCol")}</th>
+              <th className="p-3 text-center">{t("dashboard.paymentMethodCol")}</th>
             </tr>
           </thead>
           <tbody>
             {orders.length === 0 ? (
               <tr>
                 <td colSpan={10} className="p-4 text-center text-[#ababab]">
-                  No orders available
+                  {t("dashboard.noOrders")}
                 </td>
               </tr>
             ) : (

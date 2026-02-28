@@ -1,12 +1,15 @@
 /**
  * Admin Stores: list stores (Organization). 2026-02-24 SaaS admin.
  * Uses organization listStores API.
+ * // 2026-02-26T21:00:00+08:00: i18n
  */
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { listStores } from "../../https";
 
 const StoresPage = () => {
+  const { t } = useTranslation();
   const [limit] = useState(20);
   const [offset, setOffset] = useState(0);
 
@@ -26,16 +29,16 @@ const StoresPage = () => {
 
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
-      <h1 className="text-xl font-semibold text-[#f5f5f5]">Stores</h1>
-      <p className="text-sm text-[#ababab] mt-1">Manage store locations and settings.</p>
+      <h1 className="text-xl font-semibold text-[#f5f5f5]">{t("admin.stores")}</h1>
+      <p className="text-sm text-[#ababab] mt-1">{t("admin.manageStores")}</p>
 
       <div className="mt-6 rounded-lg border border-[#333] bg-[#262626] overflow-hidden">
         {isLoading && (
-          <div className="p-6 text-[#ababab]">Loading stores…</div>
+          <div className="p-6 text-[#ababab]">{t("admin.loadingStores")}</div>
         )}
         {isError && (
           <div className="p-6 text-red-400">
-            {error?.response?.data?.message || error?.message || "Failed to load stores."}
+            {error?.response?.data?.message || error?.message || t("admin.failedLoadStores")}
           </div>
         )}
         {!isLoading && !isError && (
@@ -44,19 +47,19 @@ const StoresPage = () => {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-[#333] bg-[#1f1f1f]">
-                    <th className="px-4 py-3 font-medium text-[#ababab]">Location ID</th>
-                    <th className="px-4 py-3 font-medium text-[#ababab]">Code</th>
-                    <th className="px-4 py-3 font-medium text-[#ababab]">Name</th>
-                    <th className="px-4 py-3 font-medium text-[#ababab]">Status</th>
-                    <th className="px-4 py-3 font-medium text-[#ababab]">Organization</th>
-                    <th className="px-4 py-3 font-medium text-[#ababab]">Region</th>
+                    <th className="px-4 py-3 font-medium text-[#ababab]">{t("dashboard.locationId")}</th>
+                    <th className="px-4 py-3 font-medium text-[#ababab]">{t("common.code")}</th>
+                    <th className="px-4 py-3 font-medium text-[#ababab]">{t("common.name")}</th>
+                    <th className="px-4 py-3 font-medium text-[#ababab]">{t("common.status")}</th>
+                    <th className="px-4 py-3 font-medium text-[#ababab]">{t("admin.organization")}</th>
+                    <th className="px-4 py-3 font-medium text-[#ababab]">{t("common.region")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-4 py-8 text-center text-[#ababab]">
-                        No stores found.
+                        {t("admin.noStoresFound")}
                       </td>
                     </tr>
                   ) : (
@@ -100,7 +103,7 @@ const StoresPage = () => {
                     onClick={() => setOffset((o) => Math.max(0, o - pageSize))}
                     className="rounded px-3 py-1.5 text-sm bg-[#333] text-[#f5f5f5] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#444]"
                   >
-                    Previous
+                    {t("common.previous")}
                   </button>
                   <button
                     type="button"
@@ -108,7 +111,7 @@ const StoresPage = () => {
                     onClick={() => setOffset((o) => o + pageSize)}
                     className="rounded px-3 py-1.5 text-sm bg-[#333] text-[#f5f5f5] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#444]"
                   >
-                    Next
+                    {t("common.next")}
                   </button>
                 </div>
               </div>

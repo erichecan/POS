@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import {
@@ -56,6 +58,7 @@ const compactPayload = (payload) => {
 
 /** 2026-02-26: initialSection for sub-page filtered view (stations|tickets|replay) */
 const KitchenBoard = ({ initialSection }) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const showSection = (key) => !initialSection || initialSection === key;
   const [filter, setFilter] = useState({
@@ -173,22 +176,22 @@ const KitchenBoard = ({ initialSection }) => {
 
   const summaryCards = [
     {
-      label: "Open Tickets",
+      label: t("kitchen.openTickets"),
       value: stats.openTickets ?? 0,
       color: "bg-[#1f2f4f] text-[#9ac7ff]",
     },
     {
-      label: "Overdue",
+      label: t("kitchen.overdue"),
       value: stats.overdueCount ?? 0,
       color: "bg-[#4e1f1f] text-[#ff8f8f]",
     },
     {
-      label: "Warning",
+      label: t("kitchen.warning"),
       value: stats.warningCount ?? 0,
       color: "bg-[#4f431e] text-[#ffd36a]",
     },
     {
-      label: "Avg Ready (min)",
+      label: t("kitchen.avgReadyMin"),
       value: stats.avgReadyMinutes ?? 0,
       color: "bg-[#1f3d2f] text-[#8fe6b2]",
     },
@@ -199,19 +202,19 @@ const KitchenBoard = ({ initialSection }) => {
       {showSection("stations") && (
       <div className={panelClass}>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[#f5f5f5] text-lg font-semibold">Kitchen Stations</h2>
+          <h2 className="text-[#f5f5f5] text-lg font-semibold">{t("kitchen.stations")}</h2>
           <button
             className="bg-[#025cca] text-white rounded-md px-3 py-2 text-sm font-semibold"
             onClick={() => bootstrapMutation.mutate({ locationId: filter.locationId })}
           >
-            Bootstrap Default Stations
+            {t("kitchen.bootstrapStations")}
           </button>
         </div>
 
         <div className="grid grid-cols-4 gap-3 mb-3">
           <input
             className={inputClass}
-            placeholder="Location ID"
+            placeholder={t("kitchen.locationId")}
             value={filter.locationId}
             onChange={(e) => setFilter((prev) => ({ ...prev, locationId: e.target.value }))}
           />
@@ -220,7 +223,7 @@ const KitchenBoard = ({ initialSection }) => {
             value={filter.status}
             onChange={(e) => setFilter((prev) => ({ ...prev, status: e.target.value }))}
           >
-            <option value="">All Status</option>
+            <option value="">{t("kitchen.allStatus")}</option>
             {statusButtons.map((status) => (
               <option key={status} value={status}>
                 {status}
@@ -229,7 +232,7 @@ const KitchenBoard = ({ initialSection }) => {
           </select>
           <input
             className={inputClass}
-            placeholder="Station Code (HOT_LINE)"
+            placeholder={t("kitchen.stationCodePlaceholder")}
             value={filter.stationCode}
             onChange={(e) => setFilter((prev) => ({ ...prev, stationCode: e.target.value }))}
           />
@@ -246,14 +249,14 @@ const KitchenBoard = ({ initialSection }) => {
 
         {(stats.queueByStation || []).length > 0 && (
           <div className="text-xs text-[#ababab] mb-3">
-            Queue by Station:{" "}
+            {t("kitchen.queueByStation")}{" "}
             {stats.queueByStation.map((row) => `${row.stationCode}:${row.count}`).join(" · ")}
           </div>
         )}
 
         {(stats.stationLoad || []).length > 0 && (
           <div className="text-xs text-[#ababab] mb-3">
-            Utilization:{" "}
+            {t("kitchen.utilization")}{" "}
             {stats.stationLoad
               .map(
                 (row) =>
@@ -274,14 +277,14 @@ const KitchenBoard = ({ initialSection }) => {
               {station.code} · {station.displayName} · {station.type} · {station.status}
             </div>
           ))}
-          {stations.length === 0 && <p className="text-[#ababab] text-sm">No stations available.</p>}
+          {stations.length === 0 && <p className="text-[#ababab] text-sm">{t("kitchen.noStations")}</p>}
         </div>
       </div>
       )}
 
       {showSection("tickets") && (
       <div className={panelClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Kitchen Tickets</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("kitchen.tickets")}</h2>
         <div className="space-y-3 max-h-[680px] overflow-auto">
           {tickets.map((ticket) => (
             <div key={ticket._id} className="bg-[#1f1f1f] rounded-md p-3 border border-[#333]">
@@ -306,7 +309,7 @@ const KitchenBoard = ({ initialSection }) => {
                       })
                     }
                   >
-                    {ticket.priority === "RUSH" ? "Set Normal" : "Set Rush"}
+                    {ticket.priority === "RUSH" ? t("kitchen.setNormal") : t("kitchen.setRush")}
                   </button>
                 </div>
               </div>
@@ -373,47 +376,47 @@ const KitchenBoard = ({ initialSection }) => {
                   className="text-xs px-2 py-1 rounded bg-[#5a2f2f] text-[#ffd8d8]"
                   onClick={() => requestExpedite(ticket._id)}
                 >
-                  Expedite
+                  {t("kitchen.expedite")}
                 </button>
                 <button
                   className="text-xs px-2 py-1 rounded bg-[#2f4a5a] text-[#d0ecff]"
                   onClick={() => handoffMutation.mutate({ id: ticket._id, stage: "EXPO" })}
                 >
-                  Confirm Expo
+                  {t("kitchen.confirmExpo")}
                 </button>
                 <button
                   className="text-xs px-2 py-1 rounded bg-[#2f5a45] text-[#d0ffe8]"
                   onClick={() => handoffMutation.mutate({ id: ticket._id, stage: "SERVED" })}
                 >
-                  Confirm Served
+                  {t("kitchen.confirmServed")}
                 </button>
               </div>
             </div>
           ))}
-          {tickets.length === 0 && <p className="text-[#ababab] text-sm">No kitchen tickets.</p>}
+          {tickets.length === 0 && <p className="text-[#ababab] text-sm">{t("kitchen.noTickets")}</p>}
         </div>
       </div>
       )}
 
       {showSection("replay") && (
       <div className={panelClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Ticket Event Replay</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("kitchen.ticketEventReplay")}</h2>
         <div className="grid grid-cols-4 gap-3 mb-3">
           <input
             className={inputClass}
-            placeholder="Ticket ID"
+            placeholder={t("kitchen.ticketId")}
             value={replayFilter.ticketId}
             onChange={(e) => setReplayFilter((prev) => ({ ...prev, ticketId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Order ID"
+            placeholder={t("kitchen.orderId")}
             value={replayFilter.orderId}
             onChange={(e) => setReplayFilter((prev) => ({ ...prev, orderId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Event Types (comma)"
+            placeholder={t("kitchen.eventTypes")}
             value={replayFilter.eventType}
             onChange={(e) => setReplayFilter((prev) => ({ ...prev, eventType: e.target.value }))}
           />
@@ -431,7 +434,7 @@ const KitchenBoard = ({ initialSection }) => {
         </div>
 
         <p className="text-xs text-[#ababab] mb-2">
-          Replay Window: {toTime(replayMeta.firstEventAt)} ~ {toTime(replayMeta.lastEventAt)} · Has More:{" "}
+          {t("kitchen.replayWindow")} {toTime(replayMeta.firstEventAt)} ~ {toTime(replayMeta.lastEventAt)} · {t("kitchen.hasMore")}{" "}
           {replayMeta.hasMore ? "Yes" : "No"}
         </p>
 
@@ -455,7 +458,7 @@ const KitchenBoard = ({ initialSection }) => {
             </div>
           ))}
           {replayEvents.length === 0 && (
-            <p className="text-[#ababab] text-sm">No replay events for current filter.</p>
+            <p className="text-[#ababab] text-sm">{t("kitchen.noReplayEvents")}</p>
           )}
         </div>
       </div>

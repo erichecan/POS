@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import {
@@ -18,6 +20,7 @@ const COUNTRY_OPTIONS = ["US", "CA", "IE", "GB", "FR", "ES", "NL"];
 const getRows = (response) => (Array.isArray(response?.data?.data) ? response.data.data : []);
 
 const VerticalTemplateCenter = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [catalogFilter, setCatalogFilter] = useState({
     countryCode: "US",
@@ -181,19 +184,19 @@ const VerticalTemplateCenter = () => {
     <div className="container mx-auto py-2 px-6 md:px-4 space-y-4">
       {/* 2026-02-26: Vertical templates description section */}
       <div className="mb-6 rounded-lg border border-[#333] bg-[#262626] p-4">
-        <h2 className="text-lg font-semibold text-[#f5f5f5] mb-2">Vertical Templates</h2>
+        <h2 className="text-lg font-semibold text-[#f5f5f5] mb-2">{t("dashboard.verticalTemplates")}</h2>
         <p className="text-sm text-[#ababab] leading-relaxed">
-          Templates are pre-configured setups for different business types (milk tea shop, sushi restaurant, hotpot, etc.). Each template defines the required hardware capabilities, operating modes, and default settings.<br/><br/>
-          <strong className="text-[#f5f5f5]">How to use:</strong> Select a template that matches your business type → Preview what it configures → Apply it to a store location. The template automatically sets up hardware requirements, kitchen workflows, and POS configurations for that business type. You can override specific settings after applying.
+          {t("dashboard.verticalTemplatesDesc")}<br/><br/>
+          <strong className="text-[#f5f5f5]">{t("dashboard.howToUse")}</strong> {t("dashboard.howToUseDesc")}
         </p>
       </div>
 
       <div className={cardClass}>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-[#f5f5f5] text-lg font-semibold">Vertical Template Catalog</h2>
+            <h2 className="text-[#f5f5f5] text-lg font-semibold">{t("dashboard.verticalTemplateCatalog")}</h2>
             <p className="text-[#ababab] text-sm mt-1">
-              Industry presets for milk tea, sushi, dim sum, western dining, nail salon, and more.
+              {t("dashboard.industryPresets")}
             </p>
           </div>
           <p className="text-xs text-[#8fa7d6]">
@@ -217,7 +220,7 @@ const VerticalTemplateCenter = () => {
           </select>
           <input
             className={inputClass}
-            placeholder="Type Group (e.g. DINE_IN_FULL)"
+            placeholder={t("dashboard.typeGroup")}
             value={catalogFilter.typeGroup}
             onChange={(event) =>
               setCatalogFilter((prev) => ({
@@ -228,7 +231,7 @@ const VerticalTemplateCenter = () => {
           />
           <input
             className={inputClass}
-            placeholder="Keyword (中文/English)"
+            placeholder={t("dashboard.keyword")}
             value={catalogFilter.keyword}
             onChange={(event) =>
               setCatalogFilter((prev) => ({
@@ -258,7 +261,7 @@ const VerticalTemplateCenter = () => {
             </div>
           ))}
           {templates.length === 0 && (
-            <p className="text-sm text-[#ababab]">No template found for current filters.</p>
+            <p className="text-sm text-[#ababab]">{t("dashboard.noTemplateFound")}</p>
           )}
         </div>
       </div>
@@ -266,7 +269,7 @@ const VerticalTemplateCenter = () => {
       <div className={cardClass}>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-[#f5f5f5] text-lg font-semibold">Store Provisioning Preview</h2>
+            <h2 className="text-[#f5f5f5] text-lg font-semibold">{t("dashboard.storeProvisioningPreview")}</h2>
             <p className="text-[#ababab] text-sm mt-1">
               Preview template + hardware auto-provisioning plan before store initialization.
             </p>
@@ -277,7 +280,7 @@ const VerticalTemplateCenter = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
             <input
               className={inputClass}
-              placeholder="Preview Location ID"
+              placeholder={t("dashboard.previewLocationId")}
               value={provisioningForm.locationId}
               onChange={(event) =>
                 setProvisioningForm((prev) => ({ ...prev, locationId: event.target.value }))
@@ -323,14 +326,14 @@ const VerticalTemplateCenter = () => {
                   }))
                 }
               />
-              Auto Select Hardware
+              {t("dashboard.autoSelectHardware")}
             </label>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
             <input
               className={inputClass}
-              placeholder="Provider priority (comma-separated)"
+              placeholder={t("dashboard.providerPriority")}
               value={provisioningForm.providerPriorityText}
               onChange={(event) =>
                 setProvisioningForm((prev) => ({
@@ -341,7 +344,7 @@ const VerticalTemplateCenter = () => {
             />
             <input
               className={inputClass}
-              placeholder="Extra capability targets (comma-separated, optional)"
+              placeholder={t("dashboard.capabilityTargets")}
               value={provisioningForm.capabilityTargetsText}
               onChange={(event) =>
                 setProvisioningForm((prev) => ({
@@ -359,7 +362,7 @@ const VerticalTemplateCenter = () => {
             }`}
             disabled={previewProvisioningMutation.isPending}
           >
-            {previewProvisioningMutation.isPending ? "Previewing..." : "Generate Preview"}
+            {previewProvisioningMutation.isPending ? t("dashboard.previewing") : t("dashboard.generatePreview")}
           </button>
         </form>
 
@@ -382,7 +385,7 @@ const VerticalTemplateCenter = () => {
               {(provisioningResult.summary?.hardware?.missingCapabilities || []).join(", ") || "None"}
             </p>
             <p className="text-xs text-[#c5c5c5]">
-              Warnings: {(provisioningResult.summary?.hardware?.warnings || []).join(" | ") || "None"}
+              {t("dashboard.warnings")}: {(provisioningResult.summary?.hardware?.warnings || []).join(" | ") || "None"}
             </p>
             <div className="max-h-[180px] overflow-y-auto pr-1 space-y-2">
               {(provisioningResult.hardwareProfileDraft?.selections || []).map((selection, index) => (
@@ -396,7 +399,7 @@ const VerticalTemplateCenter = () => {
                 </div>
               ))}
               {(provisioningResult.hardwareProfileDraft?.selections || []).length === 0 && (
-                <p className="text-xs text-[#ababab]">No hardware selections generated.</p>
+                <p className="text-xs text-[#ababab]">{t("dashboard.noHardwareSelections")}</p>
               )}
             </div>
           </div>
@@ -406,7 +409,7 @@ const VerticalTemplateCenter = () => {
       <div className={cardClass}>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-[#f5f5f5] text-lg font-semibold">Store Vertical Profile</h2>
+            <h2 className="text-[#f5f5f5] text-lg font-semibold">{t("dashboard.storeVerticalProfile")}</h2>
             <p className="text-[#ababab] text-sm mt-1">
               Bind a store to a vertical template, with JSON overrides.
             </p>
@@ -417,7 +420,7 @@ const VerticalTemplateCenter = () => {
             onClick={() => loadProfileMutation.mutate(profileForm.locationId)}
             disabled={loadProfileMutation.isPending}
           >
-            {loadProfileMutation.isPending ? "Loading..." : "Load Profile"}
+            {loadProfileMutation.isPending ? t("common.loading") : t("dashboard.loadProfile")}
           </button>
         </div>
 
@@ -425,7 +428,7 @@ const VerticalTemplateCenter = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
             <input
               className={inputClass}
-              placeholder="Location ID"
+              placeholder={t("dashboard.locationId")}
               value={profileForm.locationId}
               onChange={(event) =>
                 setProfileForm((prev) => ({ ...prev, locationId: event.target.value }))
@@ -485,12 +488,12 @@ const VerticalTemplateCenter = () => {
             }`}
             disabled={saveProfileMutation.isPending}
           >
-            {saveProfileMutation.isPending ? "Saving..." : "Save Vertical Profile"}
+            {saveProfileMutation.isPending ? t("common.saving") : t("dashboard.saveVerticalProfile")}
           </button>
         </form>
 
         <div className="mt-4 border-t border-[#343434] pt-3">
-          <p className="text-[#d7d7d7] text-sm font-semibold mb-2">Existing Vertical Profiles</p>
+          <p className="text-[#d7d7d7] text-sm font-semibold mb-2">{t("dashboard.existingVerticalProfiles")}</p>
           <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
             {profiles.map((profile) => (
               <div key={profile._id} className="bg-[#1f1f1f] px-3 py-2 rounded-md border border-[#333]">
@@ -512,7 +515,7 @@ const VerticalTemplateCenter = () => {
               </div>
             ))}
             {profiles.length === 0 && (
-              <p className="text-sm text-[#ababab]">No vertical profiles created.</p>
+              <p className="text-sm text-[#ababab]">{t("dashboard.noVerticalProfiles")}</p>
             )}
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import BottomNav from "../components/shared/BottomNav";
 import Greetings from "../components/home/Greetings";
 import { BsCashCoin } from "react-icons/bs";
@@ -8,9 +9,11 @@ import RecentOrders from "../components/home/RecentOrders";
 import PopularDishes from "../components/home/PopularDishes";
 
 const Home = () => {
+  // 2026-02-26T21:00:00+08:00: i18n internationalization
+  const { t } = useTranslation();
 
     useEffect(() => {
-      document.title = "POS | Home"
+      document.title = `POS | ${t("home.title")}`
     }, [])
 
   return (
@@ -19,8 +22,8 @@ const Home = () => {
       <div className="flex-1 xl:flex-[3] min-h-0 overflow-y-auto pb-28 xl:pb-20">
         <Greetings />
         <div className="flex flex-col md:flex-row items-stretch w-full gap-3 px-4 md:px-8 mt-6">
-          <MiniCard title="Total Earnings" icon={<BsCashCoin />} number={512} footerNum={1.6} />
-          <MiniCard title="In Progress" icon={<GrInProgress />} number={16} footerNum={3.6} />
+          <MiniCard title={t("home.totalEarnings")} icon={<BsCashCoin />} number={512} footerNum={1.6} />
+          <MiniCard title={t("home.inProgress")} icon={<GrInProgress />} number={16} footerNum={3.6} />
         </div>
         <RecentOrders />
       </div>

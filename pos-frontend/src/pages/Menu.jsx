@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import BottomNav from "../components/shared/BottomNav";
 import BackButton from "../components/shared/BackButton";
 import { MdRestaurantMenu } from "react-icons/md";
@@ -9,10 +10,12 @@ import Bill from "../components/menu/Bill";
 import { useSelector } from "react-redux";
 
 const Menu = () => {
+  // 2026-02-26T21:00:00+08:00: i18n internationalization
+  const { t } = useTranslation();
   const [isCartPanelOpen, setIsCartPanelOpen] = useState(false);
 
   useEffect(() => {
-    document.title = "POS | Menu";
+    document.title = `POS | ${t("menu.title")}`;
   }, []);
 
   const customerData = useSelector((state) => state.customer);
@@ -26,7 +29,7 @@ const Menu = () => {
           <div className="flex items-center gap-3 md:gap-4">
             <BackButton />
             <h1 className="text-[#f5f5f5] text-xl md:text-2xl font-bold tracking-wider">
-              Menu
+              {t("menu.title")}
             </h1>
           </div>
           <div className="flex items-center gap-3 md:gap-4">
@@ -34,16 +37,16 @@ const Menu = () => {
               <MdRestaurantMenu className="text-[#f5f5f5] text-3xl md:text-4xl" />
               <div className="flex flex-col items-start">
                 <h1 className="text-sm md:text-md text-[#f5f5f5] font-semibold tracking-wide">
-                  {customerData.customerName || "Customer Name"}
+                  {customerData.customerName || t("tables.customerName")}
                 </h1>
-                <p className="text-xs text-[#ababab] font-medium">Table : {customerData.table?.tableNo || "N/A"}</p>
+                <p className="text-xs text-[#ababab] font-medium">{t("tables.table")} : {customerData.table?.tableNo || "N/A"}</p>
               </div>
             </div>
             <button
               onClick={() => setIsCartPanelOpen(true)}
               className="lg:hidden min-h-[44px] rounded-lg px-3 py-2 bg-[#2f4f7a] text-[#dfefff] text-sm font-semibold"
             >
-              Cart ({cartCount})
+              {t("cart.title")} ({cartCount})
             </button>
           </div>
         </div>
@@ -69,7 +72,7 @@ const Menu = () => {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 pb-2">
-              <h2 className="text-[#f5f5f5] text-lg font-semibold">Cart & Bill</h2>
+              <h2 className="text-[#f5f5f5] text-lg font-semibold">{t("cart.orderDetails")}</h2>
               <button
                 onClick={() => setIsCartPanelOpen(false)}
                 className="min-h-[44px] min-w-[44px] text-[#ababab] text-xl"

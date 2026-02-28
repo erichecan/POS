@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import BottomNav from "../components/shared/BottomNav";
 import BackButton from "../components/shared/BackButton";
 import TableCard from "../components/tables/TableCard";
@@ -19,6 +20,8 @@ import {
 } from "../utils";
 
 const Tables = () => {
+  // 2026-02-26T21:00:00+08:00: i18n internationalization
+  const { t } = useTranslation();
   const [status, setStatus] = useState("all");
   const [openTableTarget, setOpenTableTarget] = useState(null);
   const [bookedTableTarget, setBookedTableTarget] = useState(null);
@@ -36,7 +39,7 @@ const Tables = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    document.title = "POS | Tables";
+    document.title = `POS | ${t("tables.title")}`;
   }, []);
 
   const { data: resData, isError } = useQuery({
@@ -319,12 +322,12 @@ const Tables = () => {
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 md:px-8 xl:px-10 py-4">
         <div className="flex items-center gap-3 md:gap-4">
           <BackButton />
-          <h1 className="text-[#f5f5f5] text-xl md:text-2xl font-bold tracking-wider">Tables</h1>
+          <h1 className="text-[#f5f5f5] text-xl md:text-2xl font-bold tracking-wider">{t("tables.title")}</h1>
           <button
             onClick={() => navigate("/tables/layout")}
             className="bg-[#2f4f7a] text-[#dfefff] min-h-[44px] px-4 py-2 rounded-lg text-sm font-semibold"
           >
-            Layout Designer
+            {t("tables.layoutDesigner")}
           </button>
         </div>
         <div className="w-full md:w-auto overflow-x-auto">
@@ -335,7 +338,7 @@ const Tables = () => {
               status === "all" && "bg-[#383838] rounded-lg px-4 py-2"
             } rounded-lg px-4 py-2 font-semibold`}
           >
-            All
+            {t("tables.all")}
           </button>
           <button
             onClick={() => setStatus("booked")}
@@ -343,7 +346,7 @@ const Tables = () => {
               status === "booked" && "bg-[#383838] rounded-lg px-4 py-2"
             } rounded-lg px-4 py-2 font-semibold`}
           >
-            Booked
+            {t("tables.booked")}
           </button>
           </div>
         </div>
@@ -355,29 +358,29 @@ const Tables = () => {
             return <TableCard key={table._id} table={table} onOpen={openTableModal} />;
           })
         ) : (
-          <p className="col-span-5 text-gray-500">No tables available</p>
+          <p className="col-span-5 text-gray-500">{t("tables.noTables")}</p>
         )}
       </div>
 
-      <Modal isOpen={Boolean(openTableTarget)} onClose={closeOpenTableModal} title="Open Table">
+      <Modal isOpen={Boolean(openTableTarget)} onClose={closeOpenTableModal} title={t("tables.openTable")}>
         <div className="space-y-3">
           <div className="text-sm text-[#ababab]">
-            Table <span className="text-[#f5f5f5] font-semibold">#{openTableTarget?.tableNo}</span> · Seats{" "}
+            {t("tables.table")} <span className="text-[#f5f5f5] font-semibold">#{openTableTarget?.tableNo}</span> · {t("tables.seats")}{" "}
             <span className="text-[#f5f5f5] font-semibold">{openTableTarget?.seats}</span>
           </div>
           <div>
-            <label className="block text-[#ababab] mb-2 text-sm font-medium">Customer Name</label>
+            <label className="block text-[#ababab] mb-2 text-sm font-medium">{t("tables.customerName")}</label>
             <div className="flex items-center rounded-lg p-3 px-4 bg-[#1f1f1f]">
               <input
                 value={nameDraft}
                 onChange={(event) => setNameDraft(event.target.value)}
-                placeholder="Enter customer name"
+                placeholder={t("tables.enterCustomerName")}
                 className="bg-transparent flex-1 text-white focus:outline-none"
               />
             </div>
           </div>
           <div>
-            <label className="block text-[#ababab] mb-2 text-sm font-medium">Customer Phone</label>
+            <label className="block text-[#ababab] mb-2 text-sm font-medium">{t("tables.customerPhone")}</label>
             <div className="flex items-center rounded-lg p-3 px-4 bg-[#1f1f1f]">
               <input
                 value={phoneDraft}
@@ -388,7 +391,7 @@ const Tables = () => {
             </div>
           </div>
           <div>
-            <label className="block mb-2 text-sm font-medium text-[#ababab]">Guests</label>
+            <label className="block mb-2 text-sm font-medium text-[#ababab]">{t("tables.guests")}</label>
             <div className="flex items-center justify-between bg-[#1f1f1f] px-4 py-3 rounded-lg">
               <button
                 onClick={() => setGuestDraft((prev) => Math.max(1, Number(prev || 1) - 1))}
@@ -396,7 +399,7 @@ const Tables = () => {
               >
                 &minus;
               </button>
-              <span className="text-white">{guestDraft} Person</span>
+              <span className="text-white">{guestDraft} {t("common.person")}</span>
               <button
                 onClick={() => setGuestDraft((prev) => Math.min(20, Number(prev || 1) + 1))}
                 className="text-yellow-500 text-2xl"
@@ -406,32 +409,32 @@ const Tables = () => {
             </div>
             {Number(guestDraft) > Number(openTableTarget?.seats || 0) && (
               <p className="text-xs text-yellow-400 mt-2">
-                Guests exceed seat capacity. Please choose a table to merge.
+                {t("tables.guestsExceedCapacity")}
               </p>
             )}
           </div>
 
           {Number(guestDraft) > Number(openTableTarget?.seats || 0) && (
             <div>
-              <label className="block mb-2 text-sm font-medium text-[#ababab]">Merge With Table</label>
+              <label className="block mb-2 text-sm font-medium text-[#ababab]">{t("tables.mergeWithTable")}</label>
               <select
                 value={mergeWithTableId}
                 onChange={(event) => setMergeWithTableId(event.target.value)}
                 className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
               >
-                <option value="">Select available table</option>
+                <option value="">{t("tables.selectAvailableTable")}</option>
                 {mergeCandidateTables.map((table) => (
                   <option key={table._id} value={table._id}>
-                    Table #{table.tableNo} · {table.seats} seats
+                    {t("tables.table")} #{table.tableNo} · {table.seats} {t("tables.seats")}
                   </option>
                 ))}
               </select>
               {mergeCandidateTables.length === 0 && (
-                <p className="text-xs text-red-400 mt-2">No available table can be merged currently.</p>
+                <p className="text-xs text-red-400 mt-2">{t("tables.noMergeTable")}</p>
               )}
               {selectedMergeTable && (
                 <p className="text-xs text-[#9ed4ff] mt-2">
-                  Combined seats: {Number(openTableTarget?.seats || 0) + Number(selectedMergeTable.seats || 0)}
+                  {t("tables.combinedSeats")} {Number(openTableTarget?.seats || 0) + Number(selectedMergeTable.seats || 0)}
                 </p>
               )}
             </div>
@@ -440,7 +443,7 @@ const Tables = () => {
             onClick={proceedToMenu}
             className="w-full bg-[#F6B100] text-[#1f1f1f] rounded-lg py-3 mt-2 font-semibold"
           >
-            Open Table And Start Order
+            {t("tables.openTableAndStartOrder")}
           </button>
         </div>
       </Modal>
@@ -448,38 +451,38 @@ const Tables = () => {
       <Modal
         isOpen={Boolean(bookedTableTarget)}
         onClose={closeBookedDetailModal}
-        title="Booked Table Details"
+        title={t("tables.tableDetails")}
       >
         <div className="space-y-2 text-sm text-[#f5f5f5]">
-          <p>Table: #{bookedTableTarget?.tableNo}</p>
-          <p>Seats: {bookedTableTarget?.seats}</p>
+          <p>{t("tables.table")}: #{bookedTableTarget?.tableNo}</p>
+          <p>{t("tables.seats")}: {bookedTableTarget?.seats}</p>
           <p>
-            Order: {formatReadableOrderId(bookedTableTarget?.currentOrder?._id)}
+            {t("tables.order")} {formatReadableOrderId(bookedTableTarget?.currentOrder?._id)}
           </p>
           <p>
-            Customer:{" "}
+            {t("tables.customer")}{" "}
             {getReadableCustomerName(
               bookedTableTarget?.currentOrder?.customerDetails?.name,
               bookedTableTarget?.currentOrder?.customerDetails?.phone
             )}
           </p>
-          <p>Phone: {bookedTableTarget?.currentOrder?.customerDetails?.phone || "N/A"}</p>
-          <p>Guests: {bookedTableTarget?.currentOrder?.customerDetails?.guests || "N/A"}</p>
+          <p>{t("tables.phoneLabel")} {bookedTableTarget?.currentOrder?.customerDetails?.phone || "N/A"}</p>
+          <p>{t("tables.guestsLabel")} {bookedTableTarget?.currentOrder?.customerDetails?.guests || "N/A"}</p>
           <p>
-            Booked At:{" "}
+            {t("tables.bookedAt")}{" "}
             {bookedTableTarget?.currentOrder?.orderDate
               ? formatDateAndTime(bookedTableTarget.currentOrder.orderDate)
               : "N/A"}
           </p>
-          <p>Status: {bookedTableTarget?.currentOrder?.orderStatus || "N/A"}</p>
+          <p>{t("tables.statusLabel")} {bookedTableTarget?.currentOrder?.orderStatus || "N/A"}</p>
           <p>
-            Items:{" "}
+            {t("tables.itemsLabel")}{" "}
             {Array.isArray(bookedTableTarget?.currentOrder?.items)
               ? bookedTableTarget.currentOrder.items.length
               : 0}
           </p>
           <p>
-            Current Bill: €
+            {t("tables.currentBill")} €
             {Number(bookedTableTarget?.currentOrder?.bills?.totalWithTax || 0).toFixed(2)}
           </p>
 
@@ -488,13 +491,13 @@ const Tables = () => {
               onClick={enterBookedOrderMenu}
               className="flex-1 bg-[#2f4f7a] text-[#e6f0ff] py-2 rounded-lg font-semibold"
             >
-              Add/Edit Items
+              {t("tables.addEditItems")}
             </button>
             <button
               onClick={openSettlementModal}
               className="flex-1 bg-[#F6B100] text-[#1f1f1f] py-2 rounded-lg font-semibold"
             >
-              Checkout
+              {t("tables.checkout")}
             </button>
           </div>
 
@@ -505,27 +508,27 @@ const Tables = () => {
                 onClick={() => setShowTransferUI(true)}
                 className="w-full bg-[#333] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm"
               >
-                Transfer Table / 转台
+                {t("tables.transferTable")}
               </button>
             ) : (
               <div className="space-y-2">
                 <label className="block text-[#ababab] text-sm font-medium">
-                  Transfer to Table
+                  {t("tables.transferTo")}
                 </label>
                 <select
                   value={transferTargetId}
                   onChange={(e) => setTransferTargetId(e.target.value)}
                   className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
                 >
-                  <option value="">Select available table</option>
-                  {transferCandidateTables.map((t) => (
-                    <option key={t._id} value={t._id}>
-                      Table #{t.tableNo} · {t.seats} seats
+                  <option value="">{t("tables.selectAvailableTable")}</option>
+                  {transferCandidateTables.map((tbl) => (
+                    <option key={tbl._id} value={tbl._id}>
+                      {t("tables.table")} #{tbl.tableNo} · {tbl.seats} {t("tables.seats")}
                     </option>
                   ))}
                 </select>
                 {transferCandidateTables.length === 0 && (
-                  <p className="text-xs text-red-400">No available tables to transfer to.</p>
+                  <p className="text-xs text-red-400">{t("tables.noTransferTable")}</p>
                 )}
                 <div className="flex gap-2">
                   <button
@@ -535,7 +538,7 @@ const Tables = () => {
                     }}
                     className="flex-1 bg-[#333] text-[#ababab] py-2 rounded-lg font-semibold text-sm"
                   >
-                    Cancel
+                    {t("common.cancel")}
                   </button>
                   <button
                     onClick={handleTransfer}
@@ -546,7 +549,7 @@ const Tables = () => {
                         : ""
                     }`}
                   >
-                    {transferMutation.isPending ? "Transferring..." : "Confirm Transfer"}
+                    {transferMutation.isPending ? t("tables.transferring") : t("tables.confirmTransfer")}
                   </button>
                 </div>
               </div>
@@ -555,15 +558,15 @@ const Tables = () => {
         </div>
       </Modal>
 
-      <Modal isOpen={Boolean(settleTarget)} onClose={() => setSettleTarget(null)} title="Settle Payment">
+      <Modal isOpen={Boolean(settleTarget)} onClose={() => setSettleTarget(null)} title={t("tables.settlePayment")}>
         <div className="space-y-3 text-sm text-[#f5f5f5]">
-          <p>Order: {settleTarget?.readableOrderId}</p>
-          <p>Customer: {settleTarget?.customerName}</p>
-          <p>Table: #{settleTarget?.tableNo}</p>
-          <p>Total: €{Number(settleTarget?.totalWithTax || 0).toFixed(2)}</p>
+          <p>{t("tables.order")} {settleTarget?.readableOrderId}</p>
+          <p>{t("tables.customer")} {settleTarget?.customerName}</p>
+          <p>{t("tables.table")}: #{settleTarget?.tableNo}</p>
+          <p>{t("common.total")}: €{Number(settleTarget?.totalWithTax || 0).toFixed(2)}</p>
 
           <div>
-            <label className="block text-[#ababab] mb-2 text-sm font-medium">Payment Method</label>
+            <label className="block text-[#ababab] mb-2 text-sm font-medium">{t("tables.paymentMethod")}</label>
             <div className="flex gap-2">
               <button
                 onClick={() => setSettlePaymentMethod("Cash")}
@@ -573,14 +576,14 @@ const Tables = () => {
                     : "bg-[#1f1f1f] text-[#ababab]"
                 }`}
               >
-                Cash
+                {t("tables.cash")}
               </button>
               <button
                 disabled
                 className="px-4 py-2 rounded-lg bg-[#2a2a2a] text-[#686868] cursor-not-allowed"
                 title="Enable after Stripe environment configuration"
               >
-                Online (Stripe pending config)
+                {t("tables.onlineStripe")}
               </button>
             </div>
           </div>
@@ -592,7 +595,7 @@ const Tables = () => {
               settleMutation.isPending ? "opacity-60 cursor-not-allowed" : ""
             }`}
           >
-            {settleMutation.isPending ? "Settling..." : "Confirm Checkout"}
+            {settleMutation.isPending ? t("tables.checkingOut") : t("tables.confirmCheckout")}
           </button>
         </div>
       </Modal>

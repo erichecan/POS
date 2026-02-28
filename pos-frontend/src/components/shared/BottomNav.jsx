@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FaHome } from "react-icons/fa";
 import { MdOutlineReorder, MdTableBar } from "react-icons/md";
 import { CiCircleMore } from "react-icons/ci";
@@ -6,16 +8,17 @@ import { BiSolidDish } from "react-icons/bi";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const BottomNav = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const [isQuickOpenEnabled] = useState(true);
 
   const isActive = (path) => location.pathname === path;
   const navItems = [
-    { key: "home", path: "/", label: "Home", icon: FaHome },
-    { key: "orders", path: "/orders", label: "Orders", icon: MdOutlineReorder },
-    { key: "tables", path: "/tables", label: "Tables", icon: MdTableBar },
-    { key: "more", path: "/more", label: "More", icon: CiCircleMore },
+    { key: "home", path: "/", label: t("bottomNav.home"), icon: FaHome },
+    { key: "orders", path: "/orders", label: t("bottomNav.orders"), icon: MdOutlineReorder },
+    { key: "tables", path: "/tables", label: t("bottomNav.tables"), icon: MdTableBar },
+    { key: "more", path: "/more", label: t("bottomNav.more"), icon: CiCircleMore },
   ];
 
   return (

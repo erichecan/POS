@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import BackButton from "../components/shared/BackButton";
 import BottomNav from "../components/shared/BottomNav";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,11 +10,11 @@ import { enqueueSnackbar } from "notistack";
 
 const LAYOUT_STORAGE_KEY = "pos_table_layout_v2";
 const ZONES = [
-  { id: "ALL", name: "All Zones" },
-  { id: "MAIN", name: "Main Hall" },
-  { id: "TERRACE", name: "Terrace" },
-  { id: "BAR", name: "Bar" },
-  { id: "CORNER", name: "Corner" },
+  { id: "ALL", nameKey: "tableLayout.allZones" },
+  { id: "MAIN", nameKey: "tableLayout.mainHall" },
+  { id: "TERRACE", nameKey: "tableLayout.terrace" },
+  { id: "BAR", nameKey: "tableLayout.bar" },
+  { id: "CORNER", nameKey: "tableLayout.corner" },
 ];
 
 const getDefaultPosition = (index) => {
@@ -56,6 +57,8 @@ const getTableSize = (seats, shape) => {
 };
 
 const TableLayout = () => {
+  // 2026-02-26T21:00:00+08:00: i18n internationalization
+  const { t } = useTranslation();
   const floorRef = useRef(null);
   const [layoutMap, setLayoutMap] = useState({});
   const [activeZone, setActiveZone] = useState("ALL");
@@ -67,7 +70,7 @@ const TableLayout = () => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    document.title = "POS | Table Layout";
+    document.title = `POS | ${t("tableLayout.title")}`;
   }, []);
 
   useEffect(() => {
@@ -309,9 +312,9 @@ const TableLayout = () => {
         <div className="flex items-center gap-3 md:gap-4">
           <BackButton />
           <div>
-            <h1 className="text-[#f5f5f5] text-xl md:text-2xl font-bold tracking-wider">Table Layout</h1>
+            <h1 className="text-[#f5f5f5] text-xl md:text-2xl font-bold tracking-wider">{t("tableLayout.title")}</h1>
             <p className="text-sm text-[#ababab]">
-              Drag on desktop, or tap table then tap floor on iPad/touch.
+              {t("tableLayout.subtitle")}
             </p>
           </div>
         </div>
@@ -319,13 +322,13 @@ const TableLayout = () => {
           onClick={resetLayout}
           className="bg-[#353535] hover:bg-[#414141] text-[#f5f5f5] min-h-[44px] px-4 py-2 rounded-lg text-sm"
         >
-          Reset Layout
+          {t("tableLayout.resetLayout")}
         </button>
       </div>
 
       <div className="px-4 md:px-8 xl:px-10 pb-24 h-[calc(100%-6rem)] flex flex-col lg:flex-row gap-4 min-h-0">
         <div className="w-full lg:w-[260px] bg-[#252525] rounded-xl border border-[#333] p-3 overflow-y-auto">
-          <h2 className="text-[#f5f5f5] font-semibold mb-3">Zones</h2>
+          <h2 className="text-[#f5f5f5] font-semibold mb-3">{t("tableLayout.zones")}</h2>
           <div className="space-y-2">
             {ZONES.map((zone) => (
               <button
@@ -337,7 +340,7 @@ const TableLayout = () => {
                     : "bg-[#1f1f1f] text-[#ababab]"
                 }`}
               >
-                {zone.name}
+                {t(zone.nameKey)}
               </button>
             ))}
           </div>
@@ -347,15 +350,15 @@ const TableLayout = () => {
               onClick={openAddForm}
               className="w-full bg-[#f6b100] hover:bg-[#d99e00] text-[#1f1f1f] font-semibold px-3 py-2 rounded-lg text-sm min-h-[44px]"
             >
-              + Add Table
+              {t("tableLayout.addTable")}
             </button>
           </div>
 
           {showAddForm && (
             <div className="mt-3 p-3 bg-[#1f1f1f] rounded-lg border border-[#333] space-y-2">
-              <h3 className="text-[#f5f5f5] text-sm font-semibold">New Table</h3>
+              <h3 className="text-[#f5f5f5] text-sm font-semibold">{t("tableLayout.newTable")}</h3>
               <div>
-                <label className="block text-xs text-[#ababab] mb-1">Table Number</label>
+                <label className="block text-xs text-[#ababab] mb-1">{t("tableLayout.tableNumber")}</label>
                 <input
                   type="number"
                   value={addFormData.tableNo}
@@ -365,7 +368,7 @@ const TableLayout = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs text-[#ababab] mb-1">Seats</label>
+                <label className="block text-xs text-[#ababab] mb-1">{t("tableLayout.seats")}</label>
                 <select
                   value={addFormData.seats}
                   onChange={(e) => setAddFormData((prev) => ({ ...prev, seats: e.target.value }))}
@@ -378,26 +381,26 @@ const TableLayout = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-[#ababab] mb-1">Shape</label>
+                <label className="block text-xs text-[#ababab] mb-1">{t("tableLayout.shape")}</label>
                 <select
                   value={addFormData.shape}
                   onChange={(e) => setAddFormData((prev) => ({ ...prev, shape: e.target.value }))}
                   className="w-full bg-[#252525] text-[#f5f5f5] px-3 py-2 rounded-lg outline-none text-sm"
                 >
-                  <option value="round">Round</option>
-                  <option value="square">Square</option>
-                  <option value="long">Rectangle</option>
+                  <option value="round">{t("tableLayout.round")}</option>
+                  <option value="square">{t("tableLayout.square")}</option>
+                  <option value="long">{t("tableLayout.rectangle")}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs text-[#ababab] mb-1">Zone</label>
+                <label className="block text-xs text-[#ababab] mb-1">{t("tableLayout.zone")}</label>
                 <select
                   value={addFormData.zone}
                   onChange={(e) => setAddFormData((prev) => ({ ...prev, zone: e.target.value }))}
                   className="w-full bg-[#252525] text-[#f5f5f5] px-3 py-2 rounded-lg outline-none text-sm"
                 >
                   {ZONES.filter((z) => z.id !== "ALL").map((z) => (
-                    <option key={z.id} value={z.id}>{z.name}</option>
+                    <option key={z.id} value={z.id}>{t(z.nameKey)}</option>
                   ))}
                 </select>
               </div>
@@ -407,27 +410,27 @@ const TableLayout = () => {
                   disabled={addTableMutation.isPending}
                   className="flex-1 bg-[#f6b100] hover:bg-[#d99e00] text-[#1f1f1f] font-semibold px-3 py-2 rounded-lg text-sm min-h-[44px] disabled:opacity-50"
                 >
-                  {addTableMutation.isPending ? "Creating..." : "Create"}
+                  {addTableMutation.isPending ? t("common.creating") : t("tableLayout.create")}
                 </button>
                 <button
                   onClick={() => setShowAddForm(false)}
                   className="flex-1 bg-[#353535] hover:bg-[#414141] text-[#f5f5f5] px-3 py-2 rounded-lg text-sm min-h-[44px]"
                 >
-                  Cancel
+                  {t("common.cancel")}
                 </button>
               </div>
             </div>
           )}
 
           <div className="mt-4 pt-4 border-t border-t-[#333]">
-            <h3 className="text-[#f5f5f5] text-sm font-semibold mb-2">Selected Table</h3>
+            <h3 className="text-[#f5f5f5] text-sm font-semibold mb-2">{t("tableLayout.selectedTable")}</h3>
             {!selectedTable ? (
-              <p className="text-xs text-[#8a8a8a]">Click a table shape to edit zone.</p>
+              <p className="text-xs text-[#8a8a8a]">{t("tableLayout.clickTableToEdit")}</p>
             ) : (
               <div className="space-y-2 text-sm">
-                <p className="text-[#d8e6ff]">Table #{selectedTable.tableNo}</p>
+                <p className="text-[#d8e6ff]">{t("tables.table")} #{selectedTable.tableNo}</p>
                 <div>
-                  <label className="block text-xs text-[#ababab] mb-1">Seats</label>
+                  <label className="block text-xs text-[#ababab] mb-1">{t("tableLayout.seats")}</label>
                   <select
                     value={selectedTable.seats}
                     onChange={(e) => handleUpdateSeats(e.target.value)}
@@ -441,19 +444,19 @@ const TableLayout = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-[#ababab] mb-1">Shape</label>
+                  <label className="block text-xs text-[#ababab] mb-1">{t("tableLayout.shape")}</label>
                   <select
                     value={layoutMap[selectedTable._id]?.shape || ""}
                     onChange={(e) => updateSelectedShape(e.target.value)}
                     className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-3 py-2 rounded-lg outline-none text-sm"
                   >
-                    <option value="">Auto</option>
-                    <option value="round">Round</option>
-                    <option value="square">Square</option>
-                    <option value="long">Rectangle</option>
+                    <option value="">{t("tableLayout.shapeAuto")}</option>
+                    <option value="round">{t("tableLayout.round")}</option>
+                    <option value="square">{t("tableLayout.square")}</option>
+                    <option value="long">{t("tableLayout.rectangle")}</option>
                   </select>
                 </div>
-                <label className="block text-xs text-[#ababab]">Assign Zone</label>
+                <label className="block text-xs text-[#ababab]">{t("tableLayout.assignZone")}</label>
                 <select
                   value={layoutMap[selectedTable._id]?.zone || "MAIN"}
                   onChange={(event) => updateSelectedZone(event.target.value)}
@@ -461,30 +464,30 @@ const TableLayout = () => {
                 >
                   {ZONES.filter((zone) => zone.id !== "ALL").map((zone) => (
                     <option key={zone.id} value={zone.id}>
-                      {zone.name}
+                      {t(zone.nameKey)}
                     </option>
                   ))}
                 </select>
                 <div className="pt-2 border-t border-t-[#333] mt-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs text-[#ababab]">Touch placement mode</p>
+                    <p className="text-xs text-[#ababab]">{t("tableLayout.touchPlacement")}</p>
                     <button
                       onClick={() => setTouchPlacementMode((prev) => !prev)}
                       className={`text-xs rounded px-2 py-1 min-h-[36px] ${
                         touchPlacementMode ? "bg-[#2e4a40] text-[#9ef0bb]" : "bg-[#333] text-[#f5f5f5]"
                       }`}
                     >
-                      {touchPlacementMode ? "ON" : "OFF"}
+                      {touchPlacementMode ? t("common.on") : t("common.off")}
                     </button>
                   </div>
                   {touchPlacementMode && (
                     <p className="text-xs text-[#9ec7ff] mt-1">
-                      先点中桌子，再点地面放置位置。
+                      {t("tableLayout.touchPlacementHint")}
                     </p>
                   )}
                 </div>
                 <div className="pt-2 border-t border-t-[#333]">
-                  <p className="text-xs text-[#ababab] mb-2">Fine tune</p>
+                  <p className="text-xs text-[#ababab] mb-2">{t("tableLayout.fineTune")}</p>
                   <div className="grid grid-cols-3 gap-2 max-w-[180px]">
                     <span />
                     <button
@@ -533,8 +536,8 @@ const TableLayout = () => {
           {activeZone !== "ALL" && tableRows.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
               <div className="text-center p-6">
-                <p className="text-[#ababab] text-lg mb-2">No tables in this zone.</p>
-                <p className="text-[#8a8a8a] text-sm">Click &quot;Add Table&quot; to create one.</p>
+                <p className="text-[#ababab] text-lg mb-2">{t("tableLayout.emptyZone")}</p>
+                <p className="text-[#8a8a8a] text-sm">{t("tableLayout.emptyZoneHint")}</p>
               </div>
             </div>
           )}
@@ -543,7 +546,7 @@ const TableLayout = () => {
             const size = getTableSize(table.seats, layout.shape);
             const isBooked = table.status === "Booked";
             const isSelected = `${selectedTableId}` === `${table._id}`;
-            const zoneLabel = ZONES.find((zone) => zone.id === layout.zone)?.name || "Main Hall";
+            const zoneLabel = t(ZONES.find((zone) => zone.id === layout.zone)?.nameKey || "tableLayout.mainHall");
             return (
               <div
                 key={table._id}
@@ -573,7 +576,7 @@ const TableLayout = () => {
               >
                 <div className="w-full h-full flex flex-col items-center justify-center text-center p-2">
                   <p className="text-[#f5f5f5] font-semibold text-sm">#{table.tableNo}</p>
-                  <p className="text-[#d5d5d5] text-xs">{table.seats} seats</p>
+                  <p className="text-[#d5d5d5] text-xs">{table.seats} {t("tableLayout.seats")}</p>
                   <p className="text-[#c9e5ff] text-[10px] truncate max-w-full">{zoneLabel}</p>
                 </div>
               </div>

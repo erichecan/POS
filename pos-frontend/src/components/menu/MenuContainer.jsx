@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { menus } from "../../constants";
 import { GrRadialSelected } from "react-icons/gr";
 import { FaShoppingCart } from "react-icons/fa";
@@ -59,6 +61,7 @@ const resolveDefaultModifiers = (optionGroups = []) => {
 };
 
 const MenuContainer = () => {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState(menus[0]);
   const [itemCounts, setItemCounts] = useState({});
   const dispatch = useDispatch();
@@ -113,7 +116,7 @@ const MenuContainer = () => {
   return (
     <>
       <div className="px-4 md:px-8 xl:px-10 py-4">
-        <h2 className="text-[#f5f5f5] font-semibold mb-2">Frequent Picks</h2>
+        <h2 className="text-[#f5f5f5] font-semibold mb-2">{t("menu.frequentPicks")}</h2>
         <div className="flex flex-wrap gap-2">
           {[
             { menuId: 1, itemName: "Paneer Tikka" },
@@ -162,7 +165,7 @@ const MenuContainer = () => {
                 )}
               </div>
               <p className="text-[#ababab] text-sm font-semibold">
-                {menu.items.length} Items
+                {menu.items.length} {t("menu.items")}
               </p>
             </div>
           );

@@ -1,20 +1,23 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { itemsData, metricsData } from "../../constants";
 
 const Metrics = () => {
+  const { t } = useTranslation();
   return (
     <div className="container mx-auto py-2 px-6 md:px-4">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="font-semibold text-[#f5f5f5] text-xl">
-            Overall Performance
+            {t("admin.overallPerformance")}
           </h2>
           <p className="text-sm text-[#ababab]">
-            Key performance metrics and trends for your store.
+            {t("admin.keyPerformanceMetrics")}
           </p>
         </div>
         <button className="flex items-center gap-1 px-4 py-2 rounded-md text-[#f5f5f5] bg-[#1a1a1a]">
-          Last 1 Month
+          {t("admin.last1Month")}
           <svg
             className="w-3 h-3"
             viewBox="0 0 24 24"
@@ -70,10 +73,10 @@ const Metrics = () => {
       <div className="flex flex-col justify-between mt-12">
         <div>
           <h2 className="font-semibold text-[#f5f5f5] text-xl">
-            Item Details
+            {t("admin.itemDetails")}
           </h2>
           <p className="text-sm text-[#ababab]">
-            Item-level performance and category breakdown.
+            {t("admin.itemLevelPerformance")}
           </p>
         </div>
 

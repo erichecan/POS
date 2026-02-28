@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { FaSearch } from "react-icons/fa";
 import OrderList from "./OrderList";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
@@ -6,6 +8,7 @@ import { enqueueSnackbar } from "notistack";
 import { getOrders } from "../../https/index";
 
 const RecentOrders = () => {
+  const { t } = useTranslation();
   const { data: resData, isError } = useQuery({
     queryKey: ["orders"],
     queryFn: async () => {
@@ -30,10 +33,10 @@ const RecentOrders = () => {
       <div className="bg-[#1a1a1a] w-full rounded-lg">
         <div className="flex justify-between items-center px-6 py-4">
           <h1 className="text-[#f5f5f5] text-lg font-semibold tracking-wide">
-            Recent Orders
+            {t("home.recentOrders")}
           </h1>
           <a href="" className="text-[#025cca] text-sm font-semibold">
-            View all
+            {t("home.viewAll")}
           </a>
         </div>
 
@@ -41,7 +44,7 @@ const RecentOrders = () => {
           <FaSearch className="text-[#f5f5f5]" />
           <input
             type="text"
-            placeholder="Search recent orders"
+            placeholder={t("home.searchRecentOrders")}
             className="bg-[#1f1f1f] outline-none text-[#f5f5f5] w-full"
           />
         </div>
@@ -53,7 +56,7 @@ const RecentOrders = () => {
               return <OrderList key={order._id} order={order} />;
             })
           ) : (
-            <p className="col-span-3 text-gray-500">No orders available</p>
+            <p className="col-span-3 text-gray-500">{t("home.noOrdersAvailable")}</p>
           )}
         </div>
       </div>

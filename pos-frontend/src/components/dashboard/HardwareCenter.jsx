@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import {
@@ -48,6 +50,7 @@ const createDefaultSelection = () => ({
 });
 
 const HardwareCenter = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [catalogFilter, setCatalogFilter] = useState({
     countryCode: "US",
@@ -240,7 +243,7 @@ const HardwareCenter = () => {
     <div className="container mx-auto py-2 px-6 md:px-4 space-y-4">
       {/* 2026-02-26: Hardware description section */}
       <div className="mb-6 rounded-lg border border-[#333] bg-[#262626] p-4">
-        <h2 className="text-lg font-semibold text-[#f5f5f5] mb-2">Hardware Management</h2>
+        <h2 className="text-lg font-semibold text-[#f5f5f5] mb-2">{t("hardware.title")}</h2>
         <p className="text-sm text-[#ababab] leading-relaxed">
           <strong className="text-[#f5f5f5]">Hardware Catalog</strong> lists all compatible POS devices (terminals, printers, scanners, cash drawers, kiosks) filtered by country, provider, and capabilities. These are reference models — not yet connected to your store.<br/><br/>
           <strong className="text-[#f5f5f5]">Store Hardware Profile</strong> is your store's specific hardware setup. Select which devices each store location uses, assign roles (e.g. counter POS, kitchen printer), and save the configuration. This determines what hardware is expected at each store for operational readiness checks.
@@ -250,9 +253,9 @@ const HardwareCenter = () => {
       <div className={cardClass}>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-[#f5f5f5] text-lg font-semibold">Hardware Catalog</h2>
+            <h2 className="text-[#f5f5f5] text-lg font-semibold">{t("hardware.hardwareCatalog")}</h2>
             <p className="text-[#ababab] text-sm mt-1">
-              Toast / Square / Custom device matrix for NA + EU rollout.
+              {t("hardware.catalogSubtitle")}
             </p>
           </div>
           <p className="text-xs text-[#8fa7d6]">
@@ -276,7 +279,7 @@ const HardwareCenter = () => {
           </select>
           <input
             className={inputClass}
-            placeholder="Provider (TOAST/SQUARE)"
+            placeholder={t("hardware.providerPlaceholder")}
             value={catalogFilter.providerCode}
             onChange={(event) =>
               setCatalogFilter((prev) => ({
@@ -287,7 +290,7 @@ const HardwareCenter = () => {
           />
           <input
             className={inputClass}
-            placeholder="Capability (e.g. KDS_PRODUCTION)"
+            placeholder={t("hardware.capabilityPlaceholder")}
             value={catalogFilter.capability}
             onChange={(event) =>
               setCatalogFilter((prev) => ({
@@ -298,7 +301,7 @@ const HardwareCenter = () => {
           />
           <input
             className={inputClass}
-            placeholder="Device Class (e.g. KIOSK)"
+            placeholder={t("hardware.deviceClassPlaceholder")}
             value={catalogFilter.deviceClass}
             onChange={(event) =>
               setCatalogFilter((prev) => ({
@@ -336,7 +339,7 @@ const HardwareCenter = () => {
             </div>
           ))}
           {providers.length === 0 && (
-            <p className="text-sm text-[#ababab]">No catalog result for current filters.</p>
+            <p className="text-sm text-[#ababab]">{t("hardware.noCatalogResult")}</p>
           )}
         </div>
       </div>
@@ -344,9 +347,9 @@ const HardwareCenter = () => {
       <div className={cardClass}>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-[#f5f5f5] text-lg font-semibold">Store Hardware Profile</h2>
+            <h2 className="text-[#f5f5f5] text-lg font-semibold">{t("hardware.storeHardwareProfile")}</h2>
             <p className="text-[#ababab] text-sm mt-1">
-              Configure hardware bundles by store location (country-aware validation).
+              {t("hardware.profileSubtitle")}
             </p>
           </div>
           <div className="flex gap-2">
@@ -356,7 +359,7 @@ const HardwareCenter = () => {
               onClick={() => loadProfileMutation.mutate(profileForm.locationId)}
               disabled={loadProfileMutation.isPending}
             >
-              {loadProfileMutation.isPending ? "Loading..." : "Load Profile"}
+              {loadProfileMutation.isPending ? t("common.loading") : t("hardware.loadProfile")}
             </button>
           </div>
         </div>
@@ -365,7 +368,7 @@ const HardwareCenter = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
             <input
               className={inputClass}
-              placeholder="Location ID"
+              placeholder={t("hardware.locationId")}
               value={profileForm.locationId}
               onChange={(event) =>
                 setProfileForm((prev) => ({ ...prev, locationId: event.target.value }))
@@ -412,7 +415,7 @@ const HardwareCenter = () => {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
             <input
               className={inputClass}
-              placeholder="Provider priority (comma-separated)"
+              placeholder={t("hardware.providerPriority")}
               value={profileForm.providerPriorityText}
               onChange={(event) =>
                 setProfileForm((prev) => ({ ...prev, providerPriorityText: event.target.value }))
@@ -420,7 +423,7 @@ const HardwareCenter = () => {
             />
             <input
               className={inputClass}
-              placeholder="Capability targets (comma-separated)"
+              placeholder={t("hardware.capabilityTargets")}
               value={profileForm.capabilityTargetsText}
               onChange={(event) =>
                 setProfileForm((prev) => ({ ...prev, capabilityTargetsText: event.target.value }))
@@ -430,13 +433,13 @@ const HardwareCenter = () => {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-[#c9d3e8] font-semibold">Hardware Selections</p>
+              <p className="text-sm text-[#c9d3e8] font-semibold">{t("hardware.hardwareSelections")}</p>
               <button
                 type="button"
                 className="bg-[#2f4f7a] text-[#dfefff] rounded-md px-3 py-1 text-xs"
                 onClick={addSelection}
               >
-                + Add Row
+                {t("hardware.addRow")}
               </button>
             </div>
 
@@ -462,7 +465,7 @@ const HardwareCenter = () => {
                       updateSelection(index, { providerCode: event.target.value })
                     }
                   >
-                    <option value="">Provider</option>
+                    <option value="">{t("hardware.provider")}</option>
                     {providerOptions.map((providerCode) => (
                       <option key={`${index}-${providerCode}`} value={providerCode}>
                         {providerCode}
@@ -474,7 +477,7 @@ const HardwareCenter = () => {
                     value={row.modelCode}
                     onChange={(event) => updateSelection(index, { modelCode: event.target.value })}
                   >
-                    <option value="">Model</option>
+                    <option value="">{t("hardware.model")}</option>
                     {modelOptions.map((device) => (
                       <option key={`${index}-${device.modelCode}`} value={device.modelCode}>
                         {device.modelCode}
@@ -483,7 +486,7 @@ const HardwareCenter = () => {
                   </select>
                   <input
                     className={inputClass}
-                    placeholder="Zone (Front/Kitchen)"
+                    placeholder={t("hardware.zonePlaceholder")}
                     value={row.zone}
                     onChange={(event) => updateSelection(index, { zone: event.target.value })}
                   />
@@ -503,7 +506,7 @@ const HardwareCenter = () => {
                     onClick={() => removeSelection(index)}
                     disabled={profileForm.selections.length <= 1}
                   >
-                    Remove
+                    {t("hardware.remove")}
                   </button>
                 </div>
               );
@@ -517,12 +520,12 @@ const HardwareCenter = () => {
             }`}
             disabled={saveProfileMutation.isPending}
           >
-            {saveProfileMutation.isPending ? "Saving..." : "Save Hardware Profile"}
+            {saveProfileMutation.isPending ? t("common.saving") : t("hardware.saveHardwareProfile")}
           </button>
         </form>
 
         <div className="mt-4 border-t border-[#343434] pt-3">
-          <p className="text-[#d7d7d7] text-sm font-semibold mb-2">Existing Profiles</p>
+          <p className="text-[#d7d7d7] text-sm font-semibold mb-2">{t("hardware.existingProfiles")}</p>
           <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
             {profiles.map((profile) => (
               <div key={profile._id} className="bg-[#1f1f1f] px-3 py-2 rounded-md border border-[#333]">
@@ -544,7 +547,7 @@ const HardwareCenter = () => {
               </div>
             ))}
             {profiles.length === 0 && (
-              <p className="text-sm text-[#ababab]">No hardware profiles created.</p>
+              <p className="text-sm text-[#ababab]">{t("hardware.noHardwareProfiles")}</p>
             )}
           </div>
         </div>

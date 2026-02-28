@@ -1,9 +1,12 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { FaCheckDouble, FaLongArrowAltRight } from "react-icons/fa";
 import { FaCircle } from "react-icons/fa";
 import { getAvatarName } from "../../utils/index";
 
 const OrderList = ({ order }) => {
+  const { t } = useTranslation();
   return (
     <div className="flex items-start md:items-center gap-3 md:gap-5 mb-3">
       <button className="bg-[#f6b100] min-h-[44px] min-w-[44px] px-3 text-xl font-bold rounded-lg">
@@ -14,11 +17,11 @@ const OrderList = ({ order }) => {
           <h1 className="text-[#f5f5f5] text-base md:text-lg font-semibold tracking-wide">
             {order.customerDetails.name}
           </h1>
-          <p className="text-[#ababab] text-xs md:text-sm">{order.items.length} Items</p>
+          <p className="text-[#ababab] text-xs md:text-sm">{order.items.length} {t("common.items")}</p>
         </div>
 
         <h1 className="text-[#f6b100] text-xs md:text-sm font-semibold border border-[#f6b100] rounded-lg px-2 py-1 text-center">
-          Table <FaLongArrowAltRight className="text-[#ababab] ml-2 inline" />{" "}
+          {t("tables.table")} <FaLongArrowAltRight className="text-[#ababab] ml-2 inline" />{" "}
           {order.table?.tableNo || "N/A"}
         </h1>
 

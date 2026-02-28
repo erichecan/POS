@@ -1,5 +1,7 @@
 // 2026-02-26T19:42:00+08:00: Enterprise menu management with HQ-store architecture, categories, day parts
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { axiosWrapper } from "../../https/axiosWrapper";
 
 const LOCATIONS = [
@@ -34,6 +36,7 @@ const timeToMinutes = (t) => {
 };
 
 const MenuItemsPage = () => {
+  const { t } = useTranslation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -108,7 +111,7 @@ const MenuItemsPage = () => {
       }
     } catch (e) {
       console.error("Failed to load menu items:", e);
-      setError("Failed to load menu items");
+      setError(t("menu.failedToLoad"));
     } finally {
       setLoading(false);
     }
@@ -234,7 +237,7 @@ const MenuItemsPage = () => {
   };
 
   const handleArchive = async (item) => {
-    if (!window.confirm(`Archive "${item.name}"?`)) return;
+    if (!window.confirm(t("menu.confirmArchive", { name: item.name }))) return;
     try {
       await axiosWrapper.put("/api/menu/items", {
         _id: item._id,
@@ -247,12 +250,12 @@ const MenuItemsPage = () => {
       });
       fetchItems();
     } catch (err) {
-      alert(err.response?.data?.message || "Archive failed");
+      alert(err.response?.data?.message || t("menu.archiveFailed"));
     }
   };
 
   const handleBulkArchive = async () => {
-    if (!window.confirm(`Archive ${selectedIds.size} item(s)?`)) return;
+    if (!window.confirm(t("menu.confirmArchiveBulk", { count: selectedIds.size }))) return;
     const targets = items.filter((i) => selectedIds.has(i._id) && !i._inherited);
     for (const item of targets) {
       try {
@@ -301,7 +304,7 @@ const MenuItemsPage = () => {
       resetForm();
       fetchItems();
     } catch (err) {
-      alert(err.response?.data?.message || "Save failed");
+      alert(err.response?.data?.message || t("menu.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -366,11 +369,11 @@ const MenuItemsPage = () => {
       {/* ── Top Toolbar ── */}
       <div className="shrink-0 border-b border-[#333] bg-[#1f1f1f] px-4 py-3">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-lg font-bold text-[#f5f5f5] mr-2">Menu Center</h1>
+          <h1 className="text-lg font-bold text-[#f5f5f5] mr-2">{t("menu.menuCenter")}</h1>
 
           {/* Location */}
           <div className="flex items-center gap-1.5">
-            <label className="text-xs text-[#ababab]">Location</label>
+            <label className="text-xs text-[#ababab]">{t("common.location")}</label>
             <select
               value={locationId}
               onChange={(e) => { setLocationId(e.target.value); setSelectedIds(new Set()); }}
@@ -384,7 +387,7 @@ const MenuItemsPage = () => {
 
           {/* Channel */}
           <div className="flex items-center gap-1.5">
-            <label className="text-xs text-[#ababab]">Channel</label>
+            <label className="text-xs text-[#ababab]">{t("common.channel")}</label>
             <select
               value={channelCode}
               onChange={(e) => setChannelCode(e.target.value)}
@@ -398,13 +401,13 @@ const MenuItemsPage = () => {
 
           {/* Version */}
           <div className="flex items-center gap-1.5">
-            <label className="text-xs text-[#ababab]">Version</label>
+            <label className="text-xs text-[#ababab]">{t("common.version")}</label>
             <select
               value={versionTag}
               onChange={(e) => setVersionTag(e.target.value)}
               className="rounded bg-[#262626] border border-[#333] px-2 py-1.5 text-sm text-[#f5f5f5] focus:border-yellow-400 focus:outline-none"
             >
-              <option value="">All Versions</option>
+              <option value="">{t("menu.allVersions")}</option>
               {versions.map((v) => (
                 <option key={v.versionTag || v._id} value={v.versionTag}>
                   {v.versionTag}{v.status === "PUBLISHED" ? " ✓" : ""}
@@ -416,7 +419,7 @@ const MenuItemsPage = () => {
 
           {/* Status */}
           <div className="flex items-center gap-1.5">
-            <label className="text-xs text-[#ababab]">Status</label>
+            <label className="text-xs text-[#ababab]">{t("common.status")}</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -432,7 +435,7 @@ const MenuItemsPage = () => {
           <div className="flex-1 min-w-[180px] max-w-xs">
             <input
               type="text"
-              placeholder="Search items…"
+              placeholder={t("menu.searchItems")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded bg-[#262626] border border-[#333] px-3 py-1.5 text-sm text-[#f5f5f5] placeholder-[#666] focus:border-yellow-400 focus:outline-none"
@@ -443,7 +446,7 @@ const MenuItemsPage = () => {
             onClick={openAddForm}
             className="ml-auto rounded bg-yellow-400 px-4 py-2 text-sm font-bold text-gray-900 hover:bg-yellow-300 transition-colors"
           >
-            + Add Item
+            {t("menu.addItem")}
           </button>
         </div>
       </div>
@@ -451,18 +454,18 @@ const MenuItemsPage = () => {
       {/* ── Bulk Actions Bar ── */}
       {selectedIds.size > 0 && (
         <div className="shrink-0 flex items-center gap-3 bg-yellow-400/10 border-b border-yellow-400/30 px-4 py-2">
-          <span className="text-sm text-yellow-400 font-medium">{selectedIds.size} item(s) selected</span>
+          <span className="text-sm text-yellow-400 font-medium">{t("menu.itemsSelected", { count: selectedIds.size })}</span>
           <button
             onClick={handleBulkArchive}
             className="rounded bg-red-900/60 px-3 py-1 text-xs text-red-300 hover:bg-red-800 transition-colors"
           >
-            Archive Selected
+            {t("menu.archiveSelected")}
           </button>
           <button
             onClick={() => setSelectedIds(new Set())}
             className="rounded border border-[#333] px-3 py-1 text-xs text-[#ababab] hover:bg-[#333] transition-colors"
           >
-            Clear Selection
+            {t("menu.clearSelection")}
           </button>
         </div>
       )}
@@ -471,11 +474,11 @@ const MenuItemsPage = () => {
         {/* ── Category Sidebar ── */}
         <aside className="shrink-0 w-52 border-r border-[#333] bg-[#1f1f1f] overflow-y-auto">
           <div className="px-3 pt-3 pb-2 flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#ababab] uppercase tracking-wider">Categories</span>
+            <span className="text-xs font-semibold text-[#ababab] uppercase tracking-wider">{t("menu.categories")}</span>
             <button
               onClick={() => setShowCategoryManager(!showCategoryManager)}
               className="text-[10px] text-yellow-400 hover:text-yellow-300"
-              title="Manage categories"
+              title={t("menu.manageCategories")}
             >
               ⚙
             </button>
@@ -489,7 +492,7 @@ const MenuItemsPage = () => {
                 : "text-[#ababab] hover:bg-[#262626] hover:text-[#f5f5f5]"
             }`}
           >
-            All Categories
+            {t("menu.allCategories")}
             <span className="ml-1.5 text-xs opacity-60">({items.length})</span>
           </button>
 
@@ -514,11 +517,11 @@ const MenuItemsPage = () => {
           {/* Category Manager */}
           {showCategoryManager && (
             <div className="mx-2 my-2 rounded border border-[#333] bg-[#262626] p-2">
-              <p className="text-[10px] text-[#ababab] mb-1.5 font-medium">Manage Categories</p>
+              <p className="text-[10px] text-[#ababab] mb-1.5 font-medium">{t("menu.manageCategories")}</p>
               <div className="flex gap-1 mb-2">
                 <input
                   type="text"
-                  placeholder="New category"
+                  placeholder={t("menu.newCategory")}
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   className="flex-1 rounded bg-[#1f1f1f] border border-[#333] px-2 py-1 text-xs text-[#f5f5f5] focus:border-yellow-400 focus:outline-none"
@@ -542,7 +545,7 @@ const MenuItemsPage = () => {
                   </div>
                 ))}
                 {categories.length === 0 && (
-                  <p className="text-[10px] text-[#666] text-center py-1">No categories yet</p>
+                  <p className="text-[10px] text-[#666] text-center py-1">{t("menu.noCategoriesYet")}</p>
                 )}
               </div>
             </div>
@@ -554,7 +557,7 @@ const MenuItemsPage = () => {
           {error && (
             <div className="mb-4 rounded border border-red-800 bg-red-900/30 px-4 py-2 text-sm text-red-300">
               {error}
-              <button onClick={fetchItems} className="ml-3 underline hover:text-red-200">Retry</button>
+              <button onClick={fetchItems} className="ml-3 underline hover:text-red-200">{t("common.retry")}</button>
             </div>
           )}
 
@@ -563,7 +566,7 @@ const MenuItemsPage = () => {
             <div ref={formRef} className="mb-6 rounded-lg border border-[#333] bg-[#262626] overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 border-b border-[#333] bg-[#1f1f1f]">
                 <h3 className="text-sm font-semibold text-[#f5f5f5]">
-                  {editItem ? `Edit: ${editItem.name}` : "New Menu Item"}
+                  {editItem ? t("menu.editItemTitle", { name: editItem.name }) : t("menu.newMenuItem")}
                 </h3>
                 <button onClick={resetForm} className="text-[#ababab] hover:text-[#f5f5f5] text-lg leading-none">&times;</button>
               </div>
@@ -573,7 +576,7 @@ const MenuItemsPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div className="md:col-span-2">
                     <label className="block text-xs text-[#ababab] mb-1">
-                      Name <span className="text-red-400">*</span>
+                      {t("common.name")} <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="text"
@@ -584,13 +587,13 @@ const MenuItemsPage = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-[#ababab] mb-1">Category</label>
+                    <label className="block text-xs text-[#ababab] mb-1">{t("common.category")}</label>
                     <input
                       type="text"
                       list="category-list"
                       value={form.category}
                       onChange={(e) => setForm((p) => ({ ...p, category: e.target.value }))}
-                      placeholder="Select or type new"
+                      placeholder={t("menu.selectOrTypeNew")}
                       className="w-full rounded bg-[#1a1a1a] border border-[#333] px-3 py-2 text-sm text-[#f5f5f5] focus:border-yellow-400 focus:outline-none"
                     />
                     <datalist id="category-list">
@@ -599,7 +602,7 @@ const MenuItemsPage = () => {
                   </div>
                   <div>
                     <label className="block text-xs text-[#ababab] mb-1">
-                      Base Price <span className="text-red-400">*</span>
+                      {t("menu.basePrice")} <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="number"
@@ -616,7 +619,7 @@ const MenuItemsPage = () => {
                 {/* Row 2: Scope */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-xs text-[#ababab] mb-1">Status</label>
+                    <label className="block text-xs text-[#ababab] mb-1">{t("common.status")}</label>
                     <select
                       value={form.status}
                       onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))}
@@ -628,7 +631,7 @@ const MenuItemsPage = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-[#ababab] mb-1">Location ID</label>
+                    <label className="block text-xs text-[#ababab] mb-1">{t("menu.locationId")}</label>
                     <select
                       value={form.locationId}
                       onChange={(e) => setForm((p) => ({ ...p, locationId: e.target.value }))}
@@ -639,11 +642,11 @@ const MenuItemsPage = () => {
                       ))}
                     </select>
                     <p className="mt-0.5 text-[10px] text-[#666]">
-                      &quot;HQ (Master)&quot; = global menu; LOC-xxx = store-specific override
+                      {t("menu.hqGlobalNote")}
                     </p>
                   </div>
                   <div>
-                    <label className="block text-xs text-[#ababab] mb-1">Channel</label>
+                    <label className="block text-xs text-[#ababab] mb-1">{t("common.channel")}</label>
                     <select
                       value={form.channelCode}
                       onChange={(e) => setForm((p) => ({ ...p, channelCode: e.target.value }))}
@@ -655,7 +658,7 @@ const MenuItemsPage = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-[#ababab] mb-1">Version Tag</label>
+                    <label className="block text-xs text-[#ababab] mb-1">{t("menu.versionTag")}</label>
                     <input
                       type="text"
                       value={form.versionTag}
@@ -669,7 +672,7 @@ const MenuItemsPage = () => {
                 {/* Row 3: Dates */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div>
-                    <label className="block text-xs text-[#ababab] mb-1">Valid From</label>
+                    <label className="block text-xs text-[#ababab] mb-1">{t("menu.validFrom")}</label>
                     <input
                       type="date"
                       value={form.validFrom}
@@ -678,7 +681,7 @@ const MenuItemsPage = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-[#ababab] mb-1">Valid To</label>
+                    <label className="block text-xs text-[#ababab] mb-1">{t("menu.validTo")}</label>
                     <input
                       type="date"
                       value={form.validTo}
@@ -687,12 +690,12 @@ const MenuItemsPage = () => {
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-xs text-[#ababab] mb-1">Description / Notes</label>
+                    <label className="block text-xs text-[#ababab] mb-1">{t("menu.descriptionNotes")}</label>
                     <input
                       type="text"
                       value={form.description}
                       onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-                      placeholder="Optional notes"
+                      placeholder={t("menu.optionalNotes")}
                       className="w-full rounded bg-[#1a1a1a] border border-[#333] px-3 py-2 text-sm text-[#f5f5f5] focus:border-yellow-400 focus:outline-none"
                     />
                   </div>
@@ -702,27 +705,27 @@ const MenuItemsPage = () => {
                 <div className="border border-[#333] rounded-lg p-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-semibold text-[#ababab] uppercase tracking-wider">
-                      Day Parts (Time-Based Pricing)
+                      {t("menu.dayPartsTimePricing")}
                     </span>
                     <button
                       type="button"
                       onClick={addDayPart}
                       className="rounded bg-[#333] px-2 py-1 text-xs text-yellow-400 hover:bg-[#444] transition-colors"
                     >
-                      + Add Day Part
+                      {t("menu.addDayPart")}
                     </button>
                   </div>
 
                   {form.dayParts.length === 0 && (
                     <p className="text-xs text-[#666] text-center py-2">
-                      No day parts. Base price applies at all times.
+                      {t("menu.noDayParts")}
                     </p>
                   )}
 
                   {form.dayParts.map((dp, idx) => (
                     <div key={idx} className="flex flex-wrap items-end gap-2 mt-2 p-2 rounded bg-[#1a1a1a] border border-[#333]">
                       <div>
-                        <label className="block text-[10px] text-[#666] mb-0.5">Start</label>
+                        <label className="block text-[10px] text-[#666] mb-0.5">{t("common.start")}</label>
                         <input
                           type="time"
                           value={minutesToTime(dp.startMinute)}
@@ -731,7 +734,7 @@ const MenuItemsPage = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] text-[#666] mb-0.5">End</label>
+                        <label className="block text-[10px] text-[#666] mb-0.5">{t("common.end")}</label>
                         <input
                           type="time"
                           value={minutesToTime(dp.endMinute)}
@@ -740,7 +743,7 @@ const MenuItemsPage = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] text-[#666] mb-0.5">Price</label>
+                        <label className="block text-[10px] text-[#666] mb-0.5">{t("common.price")}</label>
                         <input
                           type="number"
                           step="0.01"
@@ -751,7 +754,7 @@ const MenuItemsPage = () => {
                         />
                       </div>
                       <div className="flex-1 min-w-[200px]">
-                        <label className="block text-[10px] text-[#666] mb-0.5">Days</label>
+                        <label className="block text-[10px] text-[#666] mb-0.5">{t("menu.days")}</label>
                         <div className="flex gap-1">
                           {DAYS_OF_WEEK.map((day, dayIdx) => (
                             <button
@@ -787,14 +790,14 @@ const MenuItemsPage = () => {
                     disabled={saving}
                     className="rounded bg-yellow-400 px-5 py-2 text-sm font-bold text-gray-900 hover:bg-yellow-300 disabled:opacity-50 transition-colors"
                   >
-                    {saving ? "Saving…" : editItem ? "Update Item" : "Create Item"}
+                    {saving ? t("common.saving") : editItem ? t("menu.updateItem") : t("menu.createItem")}
                   </button>
                   <button
                     type="button"
                     onClick={resetForm}
                     className="rounded border border-[#333] px-4 py-2 text-sm text-[#ababab] hover:bg-[#333] transition-colors"
                   >
-                    Cancel
+                    {t("common.cancel")}
                   </button>
                 </div>
               </form>
@@ -807,8 +810,7 @@ const MenuItemsPage = () => {
               <span className="font-bold">📍 {locationLabel(locationId)}</span>
               <span className="text-blue-400/60">|</span>
               <span>
-                Showing store-specific items + inherited HQ items.
-                Items marked &quot;HQ&quot; can be overridden for this store.
+                {t("menu.showingStoreItems")}
               </span>
             </div>
           )}
@@ -816,16 +818,16 @@ const MenuItemsPage = () => {
           {/* ── Items Table ── */}
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <div className="text-[#ababab] text-sm">Loading menu items…</div>
+              <div className="text-[#ababab] text-sm">{t("menu.loadingMenuItems")}</div>
             </div>
           ) : filteredItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="text-3xl mb-3 opacity-30">🍽</div>
-              <p className="text-[#ababab] text-sm mb-2">No menu items found</p>
+              <p className="text-[#ababab] text-sm mb-2">{t("menu.noMenuItems")}</p>
               <p className="text-[#666] text-xs mb-4">
                 {search || statusFilter !== "ALL" || selectedCategory !== "ALL"
-                  ? "Try adjusting your filters"
-                  : "Click \"+ Add Item\" to create your first menu item"}
+                  ? t("menu.tryAdjustingFilters")
+                  : t("menu.clickAddFirstItem")}
               </p>
             </div>
           ) : (
@@ -841,14 +843,14 @@ const MenuItemsPage = () => {
                         className="accent-yellow-400"
                       />
                     </th>
-                    <th className="px-3 py-2.5 text-left">Name</th>
-                    <th className="px-3 py-2.5 text-left">Category</th>
-                    <th className="px-3 py-2.5 text-right">Base Price</th>
-                    <th className="px-3 py-2.5 text-center">Status</th>
-                    <th className="px-3 py-2.5 text-center">Day Parts</th>
-                    <th className="px-3 py-2.5 text-left">Location</th>
-                    <th className="px-3 py-2.5 text-left">Channel</th>
-                    <th className="px-3 py-2.5 text-right">Actions</th>
+                    <th className="px-3 py-2.5 text-left">{t("common.name")}</th>
+                    <th className="px-3 py-2.5 text-left">{t("common.category")}</th>
+                    <th className="px-3 py-2.5 text-right">{t("menu.basePrice")}</th>
+                    <th className="px-3 py-2.5 text-center">{t("common.status")}</th>
+                    <th className="px-3 py-2.5 text-center">{t("menu.dayParts")}</th>
+                    <th className="px-3 py-2.5 text-left">{t("common.location")}</th>
+                    <th className="px-3 py-2.5 text-left">{t("common.channel")}</th>
+                    <th className="px-3 py-2.5 text-right">{t("common.actions")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#333]">
@@ -910,7 +912,7 @@ const MenuItemsPage = () => {
                             onClick={() => handleCreateOverride(item)}
                             className="text-blue-400 hover:text-blue-300 text-xs font-medium"
                           >
-                            Override
+                            {t("menu.override")}
                           </button>
                         ) : (
                           <div className="flex items-center justify-end gap-2">
@@ -918,20 +920,20 @@ const MenuItemsPage = () => {
                               onClick={() => handleEdit(item)}
                               className="text-yellow-400 hover:text-yellow-300 text-xs"
                             >
-                              Edit
+                              {t("common.edit")}
                             </button>
                             <button
                               onClick={() => handleDuplicate(item)}
                               className="text-[#ababab] hover:text-[#f5f5f5] text-xs"
                             >
-                              Copy
+                              {t("common.copy")}
                             </button>
                             {item.status !== "ARCHIVED" && (
                               <button
                                 onClick={() => handleArchive(item)}
                                 className="text-red-400 hover:text-red-300 text-xs"
                               >
-                                Archive
+                                {t("common.archive")}
                               </button>
                             )}
                           </div>
@@ -948,12 +950,12 @@ const MenuItemsPage = () => {
           {!loading && filteredItems.length > 0 && (
             <div className="mt-3 flex items-center justify-between text-xs text-[#666]">
               <span>
-                {filteredItems.length} item(s)
-                {selectedCategory !== "ALL" && ` in "${selectedCategory}"`}
+                {t("menu.itemCountLabel", { count: filteredItems.length })}
+                {selectedCategory !== "ALL" && ` ${t("menu.inCategory", { category: selectedCategory })}`}
                 {filteredItems.filter((i) => i._inherited).length > 0 &&
-                  ` (${filteredItems.filter((i) => i._inherited).length} from HQ)`}
+                  ` ${t("menu.fromHQ", { count: filteredItems.filter((i) => i._inherited).length })}`}
               </span>
-              <span>Location: {locationLabel(locationId)}</span>
+              <span>{t("common.location")}: {locationLabel(locationId)}</span>
             </div>
           )}
         </main>

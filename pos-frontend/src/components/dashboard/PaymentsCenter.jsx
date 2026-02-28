@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import {
@@ -37,6 +39,7 @@ const toDateTime = (value) => {
 
 /** 2026-02-26: initialSection for sub-page filtered view (ledger|refunds|reconciliation) */
 const PaymentsCenter = ({ initialSection }) => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const showSection = (key) => !initialSection || initialSection === key;
   const showSummary = !initialSection;
@@ -178,27 +181,27 @@ const PaymentsCenter = ({ initialSection }) => {
 
   const summaryCards = [
     {
-      label: "Total Payments",
+      label: t("payments.totalPayments"),
       value: stats.totalPayments ?? 0,
       color: "bg-[#1f2f4f] text-[#9ac7ff]",
     },
     {
-      label: "Gross Amount",
+      label: t("payments.grossAmount"),
       value: `€${(stats.grossAmount ?? 0).toFixed(2)}`,
       color: "bg-[#1f3d2f] text-[#8fe6b2]",
     },
     {
-      label: "Refunded",
+      label: t("payments.refunded"),
       value: `€${(stats.refundedAmount ?? 0).toFixed(2)}`,
       color: "bg-[#4e1f1f] text-[#ff8f8f]",
     },
     {
-      label: "Net Amount",
+      label: t("payments.netAmount"),
       value: `€${(stats.netAmount ?? 0).toFixed(2)}`,
       color: "bg-[#4f431e] text-[#ffd36a]",
     },
     {
-      label: "Pending Approvals",
+      label: t("payments.pendingApprovals"),
       value: stats.pendingRefundApprovals ?? 0,
       color: "bg-[#2a1f4f] text-[#c8b5ff]",
     },
@@ -208,7 +211,7 @@ const PaymentsCenter = ({ initialSection }) => {
     <div className="container mx-auto py-2 px-6 md:px-4 space-y-4">
       {showSummary && (
       <div className={panelClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Payment Summary</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("payments.summary")}</h2>
         <div className="grid grid-cols-5 gap-3 mb-3">
           {summaryCards.map((card) => (
             <div key={card.label} className={`rounded-md px-3 py-2 ${card.color}`}>
@@ -218,7 +221,7 @@ const PaymentsCenter = ({ initialSection }) => {
           ))}
         </div>
         <p className="text-xs text-[#ababab]">
-          Verification Rate: {stats.verificationRate ?? 0}% · Refund Rate: {stats.refundRate ?? 0}%
+          {t("payments.verificationRate")}: {stats.verificationRate ?? 0}% · {t("payments.refundRate")}: {stats.refundRate ?? 0}%
         </p>
         {(stats.gatewayBreakdown || []).length > 0 && (
           <p className="text-xs text-[#ababab] mt-1">
@@ -233,14 +236,14 @@ const PaymentsCenter = ({ initialSection }) => {
 
       {showSection("ledger") && (
       <div className={panelClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Filters</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("payments.filters")}</h2>
         <div className="grid grid-cols-5 gap-3">
           <select
             className={inputClass}
             value={filter.status}
             onChange={(e) => setFilter((prev) => ({ ...prev, status: e.target.value }))}
           >
-            <option value="">All Status</option>
+            <option value="">{t("payments.allStatus")}</option>
             {["succeeded", "requires_capture", "pending", "failed", "refunded"].map((status) => (
               <option key={status} value={status}>
                 {status}
@@ -252,29 +255,29 @@ const PaymentsCenter = ({ initialSection }) => {
             value={filter.verified}
             onChange={(e) => setFilter((prev) => ({ ...prev, verified: e.target.value }))}
           >
-            <option value="">All Verified</option>
-            <option value="true">Verified</option>
-            <option value="false">Unverified</option>
+            <option value="">{t("payments.allVerified")}</option>
+            <option value="true">{t("payments.verified")}</option>
+            <option value="false">{t("payments.unverified")}</option>
           </select>
           <select
             className={inputClass}
             value={filter.refundStatus}
             onChange={(e) => setFilter((prev) => ({ ...prev, refundStatus: e.target.value }))}
           >
-            <option value="">All Refund Status</option>
+            <option value="">{t("payments.allRefundStatus")}</option>
             <option value="NONE">NONE</option>
             <option value="PARTIAL">PARTIAL</option>
             <option value="FULL">FULL</option>
           </select>
           <input
             className={inputClass}
-            placeholder="Payment ID"
+            placeholder={t("payments.paymentId")}
             value={filter.paymentId}
             onChange={(e) => setFilter((prev) => ({ ...prev, paymentId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Order/Session ID"
+            placeholder={t("payments.orderSessionId")}
             value={filter.orderId}
             onChange={(e) => setFilter((prev) => ({ ...prev, orderId: e.target.value }))}
           />
@@ -285,7 +288,7 @@ const PaymentsCenter = ({ initialSection }) => {
       {showSection("refunds") && (
       <>
       <div className={panelClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Manual Refund</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("payments.manualRefund")}</h2>
         <form
           className="grid grid-cols-4 gap-3"
           onSubmit={(event) => {
@@ -299,19 +302,19 @@ const PaymentsCenter = ({ initialSection }) => {
         >
           <input
             className={inputClass}
-            placeholder="Payment ID"
+            placeholder={t("payments.paymentId")}
             value={refundForm.paymentId}
             onChange={(e) => setRefundForm((prev) => ({ ...prev, paymentId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Amount (optional)"
+            placeholder={t("payments.amountOptional")}
             value={refundForm.amount}
             onChange={(e) => setRefundForm((prev) => ({ ...prev, amount: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Reason (optional)"
+            placeholder={t("payments.reasonOptional")}
             value={refundForm.reason}
             onChange={(e) => setRefundForm((prev) => ({ ...prev, reason: e.target.value }))}
           />
@@ -320,13 +323,13 @@ const PaymentsCenter = ({ initialSection }) => {
             className="bg-[#f6b100] text-[#1f1f1f] rounded-md py-2 font-semibold"
             disabled={refundMutation.isPending}
           >
-            Submit Refund
+            {t("payments.submitRefund")}
           </button>
         </form>
       </div>
 
       <div className={panelClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Refund Approvals (Dual Review)</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("payments.refundApprovalsDual")}</h2>
         <div className="space-y-2 max-h-[260px] overflow-auto">
           {approvalRows.map((row, index) => {
             const approval = row.approval || {};
@@ -362,7 +365,7 @@ const PaymentsCenter = ({ initialSection }) => {
                       })
                     }
                   >
-                    Approve
+                    {t("payments.approve")}
                   </button>
                   <button
                     className="text-xs px-2 py-1 rounded bg-[#5a2f2f] text-[#ffd8d8]"
@@ -376,14 +379,14 @@ const PaymentsCenter = ({ initialSection }) => {
                       });
                     }}
                   >
-                    Reject
+                    {t("payments.reject")}
                   </button>
                 </div>
               </div>
             );
           })}
           {approvalRows.length === 0 && (
-            <p className="text-[#ababab] text-sm">No pending refund approvals.</p>
+            <p className="text-[#ababab] text-sm">{t("payments.noPendingApprovals")}</p>
           )}
         </div>
       </div>
@@ -392,23 +395,23 @@ const PaymentsCenter = ({ initialSection }) => {
 
       {showSection("reconciliation") && (
       <div className={panelClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Reconciliation</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("payments.reconciliation")}</h2>
         <div className="grid grid-cols-3 gap-3 mb-3">
           <div className="bg-[#1f1f1f] rounded px-3 py-2 text-xs text-[#f5f5f5]">
-            Unlinked Payments: {reconciliation.summary?.unlinkedPayments ?? 0}
+            {t("payments.unlinkedPayments")}: {reconciliation.summary?.unlinkedPayments ?? 0}
           </div>
           <div className="bg-[#1f1f1f] rounded px-3 py-2 text-xs text-[#f5f5f5]">
-            Order Issues: {reconciliation.summary?.orderIssues ?? 0}
+            {t("payments.orderIssues")}: {reconciliation.summary?.orderIssues ?? 0}
           </div>
           <div className="bg-[#1f1f1f] rounded px-3 py-2 text-xs text-[#f5f5f5]">
-            Last Refresh: {new Date().toLocaleTimeString()}
+            {t("payments.lastRefresh")}: {new Date().toLocaleTimeString()}
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-3">
           <input
             className={inputClass}
-            placeholder="Order ID (repair link)"
+            placeholder={t("payments.orderIdRepair")}
             value={reconciliationForm.orderId}
             onChange={(e) =>
               setReconciliationForm((prev) => ({ ...prev, orderId: e.target.value }))
@@ -416,7 +419,7 @@ const PaymentsCenter = ({ initialSection }) => {
           />
           <input
             className={inputClass}
-            placeholder="Stripe Session ID (retry verify)"
+            placeholder={t("payments.stripeSessionId")}
             value={reconciliationForm.stripeSessionId}
             onChange={(e) =>
               setReconciliationForm((prev) => ({ ...prev, stripeSessionId: e.target.value }))
@@ -429,7 +432,7 @@ const PaymentsCenter = ({ initialSection }) => {
                 repairMutation.mutate({ orderId: reconciliationForm.orderId.trim() })
               }
             >
-              Repair Link
+              {t("payments.repairLink")}
             </button>
             <button
               className="w-full bg-[#333] text-[#f5f5f5] rounded-md py-2 text-sm font-semibold"
@@ -439,7 +442,7 @@ const PaymentsCenter = ({ initialSection }) => {
                 })
               }
             >
-              Retry Verify
+              {t("payments.retryVerify")}
             </button>
           </div>
         </div>
@@ -455,7 +458,7 @@ const PaymentsCenter = ({ initialSection }) => {
             </div>
           ))}
           {(reconciliation.orderIssues || []).length === 0 && (
-            <p className="text-[#ababab] text-xs">No order reconciliation issues.</p>
+            <p className="text-[#ababab] text-xs">{t("payments.noReconciliationIssues")}</p>
           )}
         </div>
       </div>
@@ -463,7 +466,7 @@ const PaymentsCenter = ({ initialSection }) => {
 
       {showSection("ledger") && (
       <div className={panelClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Payment Ledger</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("payments.paymentLedger")}</h2>
         <div className="space-y-2 max-h-[520px] overflow-auto">
           {payments.map((payment) => {
             const remaining = Number(
@@ -514,13 +517,13 @@ const PaymentsCenter = ({ initialSection }) => {
                         submitRefund(payment.paymentId, amountInput, reason);
                       }}
                     >
-                      Refund Amount
+                      {t("payments.refundAmount")}
                     </button>
                     <button
                       className="text-xs px-2 py-1 rounded bg-[#333] text-[#f5f5f5]"
                       onClick={() => submitRefund(payment.paymentId, undefined, "full_refund")}
                     >
-                      Refund Full
+                      {t("payments.refundFull")}
                     </button>
                     <button
                       className="text-xs px-2 py-1 rounded bg-[#2f4a5a] text-[#d0ecff]"
@@ -528,14 +531,14 @@ const PaymentsCenter = ({ initialSection }) => {
                         retryVerifyMutation.mutate({ stripe_session_id: payment.orderId })
                       }
                     >
-                      Retry Verify
+                      {t("payments.retryVerify")}
                     </button>
                   </div>
                 )}
               </div>
             );
           })}
-          {payments.length === 0 && <p className="text-[#ababab] text-sm">No payments found.</p>}
+          {payments.length === 0 && <p className="text-[#ababab] text-sm">{t("payments.noPayments")}</p>}
         </div>
       </div>
       )}

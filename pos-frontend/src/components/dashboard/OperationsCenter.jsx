@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
 import {
@@ -23,6 +25,7 @@ const inputClass =
 const getRows = (response) => (Array.isArray(response?.data?.data) ? response.data.data : []);
 
 const OperationsCenter = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const [inventoryForm, setInventoryForm] = useState({
@@ -248,7 +251,7 @@ const OperationsCenter = () => {
   return (
     <div className="container mx-auto py-2 px-6 md:px-4 space-y-4">
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Inventory Bootstrap</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.inventoryBootstrap")}</h2>
         <form
           className="grid grid-cols-4 gap-3"
           onSubmit={(event) => {
@@ -262,13 +265,13 @@ const OperationsCenter = () => {
         >
           <input
             className={inputClass}
-            placeholder="Location ID"
+            placeholder={t("operations.locationId")}
             value={inventoryForm.locationId}
             onChange={(e) => setInventoryForm((prev) => ({ ...prev, locationId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Default Qty"
+            placeholder={t("operations.defaultQty")}
             value={inventoryForm.defaultQuantity}
             onChange={(e) =>
               setInventoryForm((prev) => ({ ...prev, defaultQuantity: e.target.value }))
@@ -276,24 +279,24 @@ const OperationsCenter = () => {
           />
           <input
             className={inputClass}
-            placeholder="Low Stock Threshold"
+            placeholder={t("operations.lowStockThreshold")}
             value={inventoryForm.lowStockThreshold}
             onChange={(e) =>
               setInventoryForm((prev) => ({ ...prev, lowStockThreshold: e.target.value }))
             }
           />
           <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 font-semibold">
-            Bootstrap
+            {t("operations.bootstrap")}
           </button>
         </form>
       </div>
 
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Inventory Snapshot</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.inventorySnapshot")}</h2>
         <div className="flex items-center gap-3 mb-3">
           <input
             className={inputClass}
-            placeholder="Location ID"
+            placeholder={t("operations.locationId")}
             value={inventoryFilter.locationId}
             onChange={(e) => setInventoryFilter((prev) => ({ ...prev, locationId: e.target.value }))}
           />
@@ -305,7 +308,7 @@ const OperationsCenter = () => {
                 setInventoryFilter((prev) => ({ ...prev, onlyLowStock: e.target.checked }))
               }
             />
-            Only Low Stock
+            {t("operations.onlyLowStock")}
           </label>
         </div>
         <div className="space-y-2 max-h-[260px] overflow-auto">
@@ -318,17 +321,17 @@ const OperationsCenter = () => {
                 {item.displayName} <span className="text-[#ababab]">({item.itemCode})</span>
               </div>
               <div className="text-[#f5f5f5]">
-                Qty {item.availableQuantity} · Threshold {item.lowStockThreshold} · {item.status} ·{" "}
-                {item.isOutOfStock ? "86" : "On Sale"}
+                {t("operations.qty")} {item.availableQuantity} · {t("operations.threshold")} {item.lowStockThreshold} · {item.status} ·{" "}
+                {item.isOutOfStock ? "86" : t("operations.onSale")}
               </div>
             </div>
           ))}
-          {inventoryItems.length === 0 && <p className="text-[#ababab] text-sm">No items found.</p>}
+          {inventoryItems.length === 0 && <p className="text-[#ababab] text-sm">{t("operations.noItems")}</p>}
         </div>
       </div>
 
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Cash Shifts</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.cashShifts")}</h2>
         <form
           className="grid grid-cols-3 gap-3 mb-4"
           onSubmit={(event) => {
@@ -341,18 +344,18 @@ const OperationsCenter = () => {
         >
           <input
             className={inputClass}
-            placeholder="Location ID"
+            placeholder={t("operations.locationId")}
             value={shiftForm.locationId}
             onChange={(e) => setShiftForm((prev) => ({ ...prev, locationId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Opening Float"
+            placeholder={t("operations.openingFloat")}
             value={shiftForm.openingFloat}
             onChange={(e) => setShiftForm((prev) => ({ ...prev, openingFloat: e.target.value }))}
           />
           <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 font-semibold">
-            Open Shift
+            {t("operations.openShift")}
           </button>
         </form>
 
@@ -368,20 +371,20 @@ const OperationsCenter = () => {
         >
           <input
             className={inputClass}
-            placeholder="Shift ID"
+            placeholder={t("operations.shiftId")}
             value={closeShiftForm.shiftId}
             onChange={(e) => setCloseShiftForm((prev) => ({ ...prev, shiftId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Closing Counted"
+            placeholder={t("operations.closingCounted")}
             value={closeShiftForm.closingCounted}
             onChange={(e) =>
               setCloseShiftForm((prev) => ({ ...prev, closingCounted: e.target.value }))
             }
           />
           <button type="submit" className="bg-[#f6b100] text-[#1f1f1f] rounded-md py-2 font-semibold">
-            Close Shift
+            {t("operations.closeShift")}
           </button>
         </form>
 
@@ -397,14 +400,14 @@ const OperationsCenter = () => {
                 setCloseShiftForm((prev) => ({ ...prev, shiftId: shift._id }));
               }}
             >
-              {shift._id} · {shift.locationId} · {shift.status} · Opening {shift.openingFloat}
+              {shift._id} · {shift.locationId} · {shift.status} · {t("operations.opening")} {shift.openingFloat}
             </div>
           ))}
-          {shifts.length === 0 && <p className="text-[#ababab] text-sm">No shifts found.</p>}
+          {shifts.length === 0 && <p className="text-[#ababab] text-sm">{t("operations.noShifts")}</p>}
         </div>
 
         <div className="mt-4 pt-4 border-t border-[#333]">
-          <h3 className="text-[#f5f5f5] text-md font-semibold mb-2">Cash Movements</h3>
+          <h3 className="text-[#f5f5f5] text-md font-semibold mb-2">{t("operations.cashMovements")}</h3>
           <form
             className="grid grid-cols-6 gap-3 mb-3"
             onSubmit={(event) => {
@@ -432,8 +435,8 @@ const OperationsCenter = () => {
           >
             <input
               className={inputClass}
-              placeholder="Shift ID"
-              value={movementForm.shiftId}
+            placeholder={t("operations.shiftId")}
+            value={movementForm.shiftId}
               onChange={(e) => setMovementForm((prev) => ({ ...prev, shiftId: e.target.value }))}
             />
             <select
@@ -456,18 +459,18 @@ const OperationsCenter = () => {
             </select>
             <input
               className={inputClass}
-              placeholder="Amount"
-              value={movementForm.amount}
+            placeholder={t("operations.amount")}
+            value={movementForm.amount}
               onChange={(e) => setMovementForm((prev) => ({ ...prev, amount: e.target.value }))}
             />
             <input
               className={inputClass}
-              placeholder="Reason"
+              placeholder={t("operations.reason")}
               value={movementForm.reason}
               onChange={(e) => setMovementForm((prev) => ({ ...prev, reason: e.target.value }))}
             />
             <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 font-semibold">
-              Add Movement
+              {t("operations.addMovement")}
             </button>
           </form>
 
@@ -475,16 +478,16 @@ const OperationsCenter = () => {
             <>
               <div className="grid grid-cols-4 gap-2 mb-3">
                 <div className="bg-[#1f1f1f] rounded px-2 py-1 text-xs text-[#f5f5f5]">
-                  Cash Sales: {Number(selectedShift.cashSalesTotal || 0).toFixed(2)}
+                  {t("operations.cashSales")} {Number(selectedShift.cashSalesTotal || 0).toFixed(2)}
                 </div>
                 <div className="bg-[#1f1f1f] rounded px-2 py-1 text-xs text-[#f5f5f5]">
-                  Paid In: {Number(selectedShift.paidInTotal || 0).toFixed(2)}
+                  {t("operations.paidIn")} {Number(selectedShift.paidInTotal || 0).toFixed(2)}
                 </div>
                 <div className="bg-[#1f1f1f] rounded px-2 py-1 text-xs text-[#f5f5f5]">
-                  Paid Out: {Number(selectedShift.paidOutTotal || 0).toFixed(2)}
+                  {t("operations.paidOut")} {Number(selectedShift.paidOutTotal || 0).toFixed(2)}
                 </div>
                 <div className="bg-[#1f1f1f] rounded px-2 py-1 text-xs text-[#f5f5f5]">
-                  Expected Close: {Number(selectedShift.closingExpectedPreview || 0).toFixed(2)}
+                  {t("operations.expectedClose")} {Number(selectedShift.closingExpectedPreview || 0).toFixed(2)}
                 </div>
               </div>
 
@@ -499,7 +502,7 @@ const OperationsCenter = () => {
                   </div>
                 ))}
                 {(!selectedShift.movements || selectedShift.movements.length === 0) && (
-                  <p className="text-[#ababab] text-xs">No cash movements for selected shift.</p>
+                  <p className="text-[#ababab] text-xs">{t("operations.noMovements")}</p>
                 )}
               </div>
             </>
@@ -508,7 +511,7 @@ const OperationsCenter = () => {
       </div>
 
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Table Transfer</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.tableTransfer")}</h2>
         <form
           className="grid grid-cols-3 gap-3"
           onSubmit={(event) => {
@@ -521,24 +524,24 @@ const OperationsCenter = () => {
         >
           <input
             className={inputClass}
-            placeholder="From Table ID"
+            placeholder={t("operations.fromTableId")}
             value={transferForm.fromTableId}
             onChange={(e) => setTransferForm((prev) => ({ ...prev, fromTableId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="To Table ID"
+            placeholder={t("operations.toTableId")}
             value={transferForm.toTableId}
             onChange={(e) => setTransferForm((prev) => ({ ...prev, toTableId: e.target.value }))}
           />
           <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 font-semibold">
-            Transfer
+            {t("operations.transfer")}
           </button>
         </form>
       </div>
 
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Table Merge (Cash Orders)</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.tableMerge")}</h2>
         <form
           className="grid grid-cols-3 gap-3"
           onSubmit={(event) => {
@@ -551,27 +554,27 @@ const OperationsCenter = () => {
         >
           <input
             className={inputClass}
-            placeholder="Source Table ID"
+            placeholder={t("operations.sourceTableId")}
             value={mergeForm.fromTableId}
             onChange={(e) => setMergeForm((prev) => ({ ...prev, fromTableId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Target Table ID"
+            placeholder={t("operations.targetTableId")}
             value={mergeForm.toTableId}
             onChange={(e) => setMergeForm((prev) => ({ ...prev, toTableId: e.target.value }))}
           />
           <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 font-semibold">
-            Merge
+            {t("operations.merge")}
           </button>
         </form>
         <p className="text-xs text-[#ababab] mt-2">
-          Source and target tables must both be booked, and both orders must be active cash dine-in orders.
+          {t("operations.mergeDesc")}
         </p>
       </div>
 
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Table Split (Cash Orders)</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.tableSplit")}</h2>
         <form
           className="space-y-3"
           onSubmit={(event) => {
@@ -601,19 +604,19 @@ const OperationsCenter = () => {
           <div className="grid grid-cols-3 gap-3">
             <input
               className={inputClass}
-              placeholder="Source Table ID"
+              placeholder={t("operations.sourceTableId")}
               value={splitForm.fromTableId}
               onChange={(e) => setSplitForm((prev) => ({ ...prev, fromTableId: e.target.value }))}
             />
             <input
               className={inputClass}
-              placeholder="Target Table ID"
+              placeholder={t("operations.targetTableId")}
               value={splitForm.toTableId}
               onChange={(e) => setSplitForm((prev) => ({ ...prev, toTableId: e.target.value }))}
             />
             <input
               className={inputClass}
-              placeholder="Split Guests (optional)"
+              placeholder={t("operations.splitGuests")}
               value={splitForm.splitGuests}
               onChange={(e) => setSplitForm((prev) => ({ ...prev, splitGuests: e.target.value }))}
             />
@@ -626,17 +629,17 @@ const OperationsCenter = () => {
           />
           <div className="flex items-center justify-between">
             <p className="text-xs text-[#ababab]">
-              Format: JSON array with item name and quantity. Optional field: pricePerQuantity.
+              {t("operations.splitDesc")}
             </p>
             <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 px-4 font-semibold">
-              Split
+              {t("operations.split")}
             </button>
           </div>
         </form>
       </div>
 
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Table Split By Seats</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.tableSplitBySeats")}</h2>
         <form
           className="grid grid-cols-4 gap-3"
           onSubmit={(event) => {
@@ -662,7 +665,7 @@ const OperationsCenter = () => {
         >
           <input
             className={inputClass}
-            placeholder="Source Table ID"
+            placeholder={t("operations.sourceTableId")}
             value={splitBySeatForm.fromTableId}
             onChange={(e) =>
               setSplitBySeatForm((prev) => ({ ...prev, fromTableId: e.target.value }))
@@ -670,7 +673,7 @@ const OperationsCenter = () => {
           />
           <input
             className={inputClass}
-            placeholder="Target Table ID"
+            placeholder={t("operations.targetTableId")}
             value={splitBySeatForm.toTableId}
             onChange={(e) =>
               setSplitBySeatForm((prev) => ({ ...prev, toTableId: e.target.value }))
@@ -678,23 +681,23 @@ const OperationsCenter = () => {
           />
           <input
             className={inputClass}
-            placeholder="Seat Nos CSV"
+            placeholder={t("operations.seatNosCsv")}
             value={splitBySeatForm.seatNosCsv}
             onChange={(e) =>
               setSplitBySeatForm((prev) => ({ ...prev, seatNosCsv: e.target.value }))
             }
           />
           <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 font-semibold">
-            Split By Seat
+            {t("operations.splitBySeat")}
           </button>
         </form>
         <p className="text-xs text-[#ababab] mt-2">
-          Source order items must already contain seatNo tags (e.g. seatNo: 1).
+          {t("operations.splitBySeatDesc")}
         </p>
       </div>
 
       <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">Table Unmerge (Reverse Merge)</h2>
+        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.tableUnmerge")}</h2>
         <form
           className="grid grid-cols-4 gap-3"
           onSubmit={(event) => {
@@ -708,28 +711,28 @@ const OperationsCenter = () => {
         >
           <input
             className={inputClass}
-            placeholder="Target Order ID"
+            placeholder={t("operations.targetOrderId")}
             value={unmergeForm.targetOrderId}
             onChange={(e) => setUnmergeForm((prev) => ({ ...prev, targetOrderId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Source Order ID (optional)"
+            placeholder={t("operations.sourceOrderId")}
             value={unmergeForm.sourceOrderId}
             onChange={(e) => setUnmergeForm((prev) => ({ ...prev, sourceOrderId: e.target.value }))}
           />
           <input
             className={inputClass}
-            placeholder="Restore Table ID (optional)"
+            placeholder={t("operations.restoreTableId")}
             value={unmergeForm.restoreTableId}
             onChange={(e) => setUnmergeForm((prev) => ({ ...prev, restoreTableId: e.target.value }))}
           />
           <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 font-semibold">
-            Unmerge
+            {t("operations.unmerge")}
           </button>
         </form>
         <p className="text-xs text-[#ababab] mt-2">
-          Reverses latest active merge entry by default, restoring the source order to an available table.
+          {t("operations.unmergeDesc")}
         </p>
       </div>
     </div>

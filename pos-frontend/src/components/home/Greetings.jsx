@@ -1,7 +1,10 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 const Greetings = () => {
+  const { t } = useTranslation();
   const userData = useSelector(state => state.user);
   const [dateTime, setDateTime] = useState(new Date());
 
@@ -27,10 +30,10 @@ const Greetings = () => {
     <div className="flex flex-wrap justify-between items-start md:items-center gap-3 px-4 md:px-8 mt-5">
       <div>
         <h1 className="text-[#f5f5f5] text-xl md:text-2xl font-semibold tracking-wide">
-          Good Morning, {userData.name || "TEST USER"}
+          {t("home.goodMorning")} {userData.name || "TEST USER"}
         </h1>
         <p className="text-[#ababab] text-sm">
-          Give your best services for customers 😀
+          {t("home.serviceSlogan")} 😀
         </p>
       </div>
       <div>

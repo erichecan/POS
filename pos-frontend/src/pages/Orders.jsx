@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import BottomNav from "../components/shared/BottomNav";
 import OrderCard from "../components/orders/OrderCard";
 import BackButton from "../components/shared/BackButton";
@@ -14,6 +15,8 @@ import { useNavigate } from "react-router-dom";
 import { menus } from "../constants";
 
 const Orders = () => {
+  // 2026-02-26T21:00:00+08:00: i18n internationalization
+  const { t } = useTranslation();
   const [status, setStatus] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState(null);
   const queryClient = useQueryClient();
@@ -21,7 +24,7 @@ const Orders = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "POS | Orders";
+    document.title = `POS | ${t("orders.title")}`;
   }, []);
 
   const { data: resData, isError } = useQuery({
@@ -153,7 +156,7 @@ const Orders = () => {
       <div className="flex flex-wrap items-center justify-between gap-3 px-4 md:px-8 xl:px-10 py-4">
         <div className="flex items-center gap-3 md:gap-4">
           <BackButton />
-          <h1 className="text-[#f5f5f5] text-xl md:text-2xl font-bold tracking-wider">Orders</h1>
+          <h1 className="text-[#f5f5f5] text-xl md:text-2xl font-bold tracking-wider">{t("orders.title")}</h1>
         </div>
         <div className="w-full md:w-auto overflow-x-auto">
           <div className="flex items-center gap-2 md:gap-3 min-w-max">
@@ -163,7 +166,7 @@ const Orders = () => {
               status === "all" && "bg-[#383838] rounded-lg px-4 py-2"
             } rounded-lg px-4 py-2 font-semibold`}
           >
-            All
+            {t("orders.all")}
           </button>
           <button
             onClick={() => setStatus("progress")}
@@ -171,7 +174,7 @@ const Orders = () => {
               status === "progress" && "bg-[#383838] rounded-lg px-4 py-2"
             } rounded-lg px-4 py-2 font-semibold`}
           >
-            In Progress
+            {t("orders.inProgress")}
           </button>
           <button
             onClick={() => setStatus("ready")}
@@ -179,7 +182,7 @@ const Orders = () => {
               status === "ready" && "bg-[#383838] rounded-lg px-4 py-2"
             } rounded-lg px-4 py-2 font-semibold`}
           >
-            Ready
+            {t("orders.ready")}
           </button>
           <button
             onClick={() => setStatus("completed")}
@@ -187,7 +190,7 @@ const Orders = () => {
               status === "completed" && "bg-[#383838] rounded-lg px-4 py-2"
             } rounded-lg px-4 py-2 font-semibold`}
           >
-            Completed
+            {t("orders.completed")}
           </button>
           </div>
         </div>
@@ -199,20 +202,20 @@ const Orders = () => {
             return <OrderCard key={order._id} order={order} onSelect={setSelectedOrder} />;
           })
         ) : (
-          <p className="col-span-3 text-gray-500">No orders available</p>
+          <p className="col-span-3 text-gray-500">{t("orders.noOrders")}</p>
         )}
       </div>
 
-      <Modal isOpen={Boolean(selectedOrder)} onClose={() => setSelectedOrder(null)} title="Order Details">
+      <Modal isOpen={Boolean(selectedOrder)} onClose={() => setSelectedOrder(null)} title={t("orders.orderDetails")}>
         {selectedOrder && (
           <div className="space-y-3 text-sm text-[#f5f5f5]">
             <div className="rounded-lg bg-[#202020] border border-[#343434] p-3 space-y-1">
               <p>
-                {readableOrderId} · Table #{selectedOrder?.table?.tableNo || "N/A"} ·{" "}
+                {readableOrderId} · {t("orders.tableNo")} #{selectedOrder?.table?.tableNo || "N/A"} ·{" "}
                 {selectedOrder?.orderStatus}
               </p>
               <p>
-                {readableCustomerName} · {selectedOrder?.customerDetails?.guests || "N/A"} pax ·{" "}
+                {readableCustomerName} · {selectedOrder?.customerDetails?.guests || "N/A"} {t("orders.pax")} ·{" "}
                 {selectedOrder?.customerDetails?.phone || "N/A"}
               </p>
               <p>
@@ -222,7 +225,7 @@ const Orders = () => {
             </div>
 
             <div>
-              <p className="mb-1 text-[#ababab]">Items</p>
+              <p className="mb-1 text-[#ababab]">{t("orders.items")}</p>
               <div className="max-h-48 overflow-y-auto rounded-lg border border-[#343434]">
                 {(selectedOrder.items || []).map((item, index) => (
                   <div
@@ -244,7 +247,7 @@ const Orders = () => {
                   onClick={() => openOrderInMenu(selectedOrder)}
                   className="flex-1 bg-[#2f4f7a] text-[#dfefff] py-2 rounded-lg font-semibold"
                 >
-                  Add/Edit Items
+                  {t("orders.addEditItems")}
                 </button>
                 <button
                   onClick={() => checkoutOrder(selectedOrder)}
@@ -253,7 +256,7 @@ const Orders = () => {
                     settleMutation.isPending ? "opacity-60 cursor-not-allowed" : ""
                   }`}
                 >
-                  {settleMutation.isPending ? "Checking out..." : "Checkout (Cash)"}
+                  {settleMutation.isPending ? t("orders.checkingOut") : t("orders.checkoutCash")}
                 </button>
               </div>
             )}

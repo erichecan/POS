@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { FaCheckDouble, FaLongArrowAltRight } from "react-icons/fa";
 import { FaCircle } from "react-icons/fa";
 import {
@@ -9,6 +11,7 @@ import {
 } from "../../utils/index";
 
 const OrderCard = ({ order, onSelect }) => {
+  const { t } = useTranslation();
   const readableName = getReadableCustomerName(
     order?.customerDetails?.name,
     order?.customerDetails?.phone
@@ -29,8 +32,8 @@ const OrderCard = ({ order, onSelect }) => {
             <h1 className="text-[#f5f5f5] text-lg font-semibold tracking-wide">
               {readableName}
             </h1>
-            <p className="text-[#ababab] text-xs md:text-sm">{readableOrderId} / Dine in</p>
-            <p className="text-[#ababab] text-xs md:text-sm">Table <FaLongArrowAltRight className="text-[#ababab] ml-2 inline" /> {order.table?.tableNo || "N/A"}</p>
+            <p className="text-[#ababab] text-xs md:text-sm">{readableOrderId} / {t("tables.dineIn")}</p>
+            <p className="text-[#ababab] text-xs md:text-sm">{t("tables.table")} <FaLongArrowAltRight className="text-[#ababab] ml-2 inline" /> {order.table?.tableNo || "N/A"}</p>
           </div>
           <div className="flex flex-col items-end gap-1 md:gap-2">
             {order.orderStatus === "Ready" ? (
@@ -39,8 +42,7 @@ const OrderCard = ({ order, onSelect }) => {
                   <FaCheckDouble className="inline mr-2" /> {order.orderStatus}
                 </p>
                 <p className="text-[#ababab] text-xs md:text-sm">
-                  <FaCircle className="inline mr-2 text-green-600" /> Ready to
-                  serve
+                  <FaCircle className="inline mr-2 text-green-600" /> {t("tables.readyToServe")}
                 </p>
               </>
             ) : (
@@ -49,7 +51,7 @@ const OrderCard = ({ order, onSelect }) => {
                   <FaCircle className="inline mr-2" /> {order.orderStatus}
                 </p>
                 <p className="text-[#ababab] text-xs md:text-sm">
-                  <FaCircle className="inline mr-2 text-yellow-600" /> Preparing your order
+                  <FaCircle className="inline mr-2 text-yellow-600" /> {t("tables.preparingOrder")}
                 </p>
               </>
             )}
@@ -59,16 +61,16 @@ const OrderCard = ({ order, onSelect }) => {
       <div className="flex justify-between items-center mt-4 text-[#ababab] text-xs md:text-sm gap-2">
         <p className="truncate">{formatDateAndTime(order.orderDate)}</p>
         <p className="text-right">
-          {order.items.length} Items · {order.sourceType || "POS"}
+          {order.items.length} {t("common.items")} · {order.sourceType || "POS"}
           {order.externalOrderId ? ` · ${order.externalOrderId}` : ""}
         </p>
       </div>
       <hr className="w-full mt-4 border-t-1 border-gray-500" />
       <div className="flex items-center justify-between mt-4">
-        <h1 className="text-[#f5f5f5] text-lg font-semibold">Total</h1>
+        <h1 className="text-[#f5f5f5] text-lg font-semibold">{t("common.total")}</h1>
         <p className="text-[#f5f5f5] text-lg font-semibold">€{Number(order?.bills?.totalWithTax || 0).toFixed(2)}</p>
       </div>
-      <p className="text-xs text-[#8bbcff] mt-2">Click to view order details</p>
+      <p className="text-xs text-[#8bbcff] mt-2">{t("orders.clickToView")}</p>
     </div>
   );
 };

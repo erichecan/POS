@@ -1,16 +1,19 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { popularDishes } from "../../constants";
 
 const PopularDishes = () => {
+  const { t } = useTranslation();
   return (
     <div className="mt-6 px-4 md:px-6">
       <div className="bg-[#1a1a1a] w-full rounded-lg">
         <div className="flex justify-between items-center px-6 py-4">
           <h1 className="text-[#f5f5f5] text-lg font-semibold tracking-wide">
-            Popular Dishes
+            {t("home.popularDishes")}
           </h1>
           <a href="" className="text-[#025cca] text-sm font-semibold">
-            View all
+            {t("home.viewAll")}
           </a>
         </div>
 
@@ -30,7 +33,7 @@ const PopularDishes = () => {
                 <div>
                   <h1 className="text-[#f5f5f5] font-semibold tracking-wide">{dish.name}</h1>
                   <p className="text-[#f5f5f5] text-sm font-semibold mt-1">
-                    <span className="text-[#ababab]">Orders: </span>
+                    <span className="text-[#ababab]">{t("home.ordersCount")} </span>
                     {dish.numberOfOrders}
                   </p>
                 </div>

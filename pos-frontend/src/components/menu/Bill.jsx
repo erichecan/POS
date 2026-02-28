@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { getTotalPrice, removeAllItems, setItems } from "../../redux/slices/cartSlice";
 import { addOrder, getReceiptTemplate, updateOrderItems, updateTable } from "../../https/index";
@@ -87,6 +89,7 @@ const SPLIT_MODE_EVEN = "even";
 const SPLIT_MODE_ITEM = "item";
 
 const Bill = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   const customerData = useSelector((state) => state.customer);
@@ -456,7 +459,7 @@ const Bill = () => {
   return (
     <>
       <div className="flex items-center justify-between px-5 mt-2">
-        <p className="text-xs text-[#ababab] font-medium mt-2">Items({cartData.length})</p>
+        <p className="text-xs text-[#ababab] font-medium mt-2">{t("cart.items")}({cartData.length})</p>
         <h1 className="text-[#f5f5f5] text-md font-bold">€{total.toFixed(2)}</h1>
       </div>
       <div className="flex items-center justify-between px-5 mt-2">
@@ -464,14 +467,14 @@ const Bill = () => {
         <h1 className="text-[#f5f5f5] text-md font-bold">€{tax.toFixed(2)}</h1>
       </div>
       <div className="flex items-center justify-between px-5 mt-2">
-        <p className="text-xs text-[#ababab] font-medium mt-2">Total With Tax</p>
+        <p className="text-xs text-[#ababab] font-medium mt-2">{t("cart.totalWithTax")}</p>
         <h1 className="text-[#f5f5f5] text-md font-bold">€{totalPriceWithTax.toFixed(2)}</h1>
       </div>
       <div className="px-5 mt-4">
         <p className="text-xs text-[#97a3b8]">
           {isEditingExistingOrder
-            ? `Editing ${formatReadableOrderId(customerData.activeOrderId)}. Save changes, then checkout in table details.`
-            : "Orders are created first. Payment is settled at checkout/close table."}
+            ? t("cart.editingOrder", { orderId: formatReadableOrderId(customerData.activeOrderId) })
+            : t("cart.orderNote")}
         </p>
       </div>
 
@@ -479,7 +482,7 @@ const Bill = () => {
       {showSplitPanel && (
         <div className="mx-5 mt-3 mb-2 bg-[#262626] border border-[#333] rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-[#f5f5f5] font-semibold text-sm">Split Bill / AA制</h3>
+            <h3 className="text-[#f5f5f5] font-semibold text-sm">{t("cart.splitBill")}</h3>
             <button
               onClick={handleToggleSplitPanel}
               className="text-[#ababab] hover:text-[#f5f5f5] text-lg leading-none"
@@ -497,7 +500,7 @@ const Bill = () => {
                   : "bg-[#333] text-[#ababab]"
               }`}
             >
-              Even Split / 平均分摊
+              {t("cart.splitEvenly")}
             </button>
             <button
               onClick={() => setSplitMode(SPLIT_MODE_ITEM)}
@@ -507,13 +510,13 @@ const Bill = () => {
                   : "bg-[#333] text-[#ababab]"
               }`}
             >
-              By Item / 按菜品分
+              {t("cart.splitByItem")}
             </button>
           </div>
 
           {splitMode === SPLIT_MODE_EVEN && (
             <div>
-              <label className="block text-[#ababab] text-xs mb-2">Number of People</label>
+              <label className="block text-[#ababab] text-xs mb-2">{t("cart.numberOfPeople")}</label>
               <div className="flex items-center justify-between bg-[#1f1f1f] px-4 py-2 rounded-lg mb-3">
                 <button
                   onClick={() => setSplitPeople((p) => Math.max(2, p - 1))}
@@ -538,7 +541,7 @@ const Bill = () => {
                 ))}
               </div>
               <div className="mt-2 text-[#ababab] text-xs text-center">
-                €{totalPriceWithTax.toFixed(2)} ÷ {splitPeople} = €{perPersonAmount.toFixed(2)} / person
+                €{totalPriceWithTax.toFixed(2)} ÷ {splitPeople} = €{perPersonAmount.toFixed(2)} / {t("cart.perPerson")}
               </div>
             </div>
           )}
@@ -546,12 +549,12 @@ const Bill = () => {
           {splitMode === SPLIT_MODE_ITEM && (
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[#ababab] text-xs">Groups ({splitGroups.length})</span>
+                <span className="text-[#ababab] text-xs">{t("cart.groups")} ({splitGroups.length})</span>
                 <button
                   onClick={addSplitGroup}
                   className="text-xs bg-[#025cca] text-[#f5f5f5] px-3 py-1 rounded-lg"
                 >
-                  + Add Guest
+                  {t("cart.addGuest")}
                 </button>
               </div>
               <div className="space-y-3 max-h-60 overflow-y-auto">
@@ -621,15 +624,15 @@ const Bill = () => {
               ? "bg-[#333] text-[#f5f5f5]"
               : "bg-[#025cca] text-[#f5f5f5]"
           }`}
-          title="Split Bill / AA制"
+          title={t("cart.splitBill")}
         >
-          Split
+          {t("cart.split")}
         </button>
         <button
           onClick={handlePrintReceipt}
           className="bg-[#025cca] px-4 py-3 w-full rounded-lg text-[#f5f5f5] font-semibold text-lg"
         >
-          Print Receipt
+          {t("cart.printReceipt")}
         </button>
         <button
           disabled={orderMutation.isPending}
@@ -639,10 +642,10 @@ const Bill = () => {
           }`}
         >
           {orderMutation.isPending
-            ? "Submitting..."
+            ? t("cart.submitting")
             : isEditingExistingOrder
-            ? "Save Changes"
-            : "Place Order"}
+            ? t("cart.saveChanges")
+            : t("cart.placeOrder")}
         </button>
       </div>
 

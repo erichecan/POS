@@ -1,4 +1,6 @@
+// 2026-02-26T21:00:00+08:00: i18n
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { IoMdClose } from "react-icons/io";
 import { useMutation } from "@tanstack/react-query";
@@ -6,6 +8,7 @@ import { addTable } from "../../https";
 import { enqueueSnackbar } from "notistack"
 
 const Modal = ({ setIsTableModalOpen }) => {
+  const { t } = useTranslation();
   const [tableData, setTableData] = useState({
     tableNo: "",
     seats: "",
@@ -53,7 +56,7 @@ const Modal = ({ setIsTableModalOpen }) => {
         {/* Modal Header */}
 
         <div className="flex justify-between item-center mb-4">
-          <h2 className="text-[#f5f5f5] text-xl font-semibold">Add Table</h2>
+          <h2 className="text-[#f5f5f5] text-xl font-semibold">{t("dashboard.addTableTitle")}</h2>
           <button
             onClick={handleCloseModal}
             className="text-[#f5f5f5] hover:text-red-500"
@@ -67,7 +70,7 @@ const Modal = ({ setIsTableModalOpen }) => {
         <form onSubmit={handleSubmit} className="space-y-4 mt-10">
           <div>
             <label className="block text-[#ababab] mb-2 mt-3 text-sm font-medium">
-              Table Number
+              {t("dashboard.tableNumber")}
             </label>
             <div className="flex item-center rounded-lg p-5 px-4 bg-[#1f1f1f]">
               <input
@@ -82,7 +85,7 @@ const Modal = ({ setIsTableModalOpen }) => {
           </div>
           <div>
             <label className="block text-[#ababab] mb-2 mt-3 text-sm font-medium">
-              Number of Seats
+              {t("dashboard.seats")}
             </label>
             <div className="flex item-center rounded-lg p-5 px-4 bg-[#1f1f1f]">
               <input
@@ -100,7 +103,7 @@ const Modal = ({ setIsTableModalOpen }) => {
             type="submit"
             className="w-full rounded-lg mt-10 mb-6 py-3 text-lg bg-yellow-400 text-gray-900 font-bold"
           >
-            Add Table
+            {t("dashboard.addTableTitle")}
           </button>
         </form>
       </motion.div>
