@@ -73,6 +73,11 @@ const mergeQueryParams = (txtParamString, explicitParams) => {
     merged.set("tls", "true");
   }
 
+  // 2026-02-28: Atlas 默认在 admin 库认证，未显式指定时补充 authSource=admin 避免 "bad auth"
+  if (!merged.has("authSource")) {
+    merged.set("authSource", "admin");
+  }
+
   return merged.toString();
 };
 
@@ -81,13 +86,26 @@ const resolveMongoUri = async (mongodbUri) => {
     return process.env.MONGODB_DIRECT_URI;
   }
 
-  if (!mongodbUri || !mongodbUri.startsWith("mongodb+srv://")) {
-    return mongodbUri;
+  const raw = (mongodbUri || "").trim();
+  if (!raw || !raw.startsWith("mongodb+srv://")) {
+    return raw || mongodbUri;
   }
 
-  const parsed = new URL(mongodbUri);
+  // 2026-02-28: 优先使用原生 mongodb+srv，避免自定义解析破坏认证；原生驱动直接支持
+  const useNativeSrv = process.env.MONGODB_USE_NATIVE_SRV !== "0";
+  if (useNativeSrv) {
+    // 未指定 authSource 时补上（Atlas 用户通常在 admin 库）
+    if (!raw.includes("authSource=")) {
+      const sep = raw.includes("?") ? "&" : "?";
+      return `${raw}${sep}authSource=admin`;
+    }
+    return raw;
+  }
+
+  const parsed = new URL(raw);
   const srvHost = parsed.hostname;
-  const dbName = parsed.pathname.replace(/^\//, "") || "admin";
+  // 2026-02-28: URI 未指定数据库时使用 pos-db（与 config 默认一致）
+  const dbName = parsed.pathname.replace(/^\//, "").trim() || "pos-db";
   const authSegment = buildAuthSegment(parsed);
 
   const [srvRecords, txtRecords] = await Promise.all([

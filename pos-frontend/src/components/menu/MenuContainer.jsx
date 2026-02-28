@@ -118,10 +118,11 @@ const MenuContainer = () => {
       <div className="px-4 md:px-8 xl:px-10 py-4">
         <h2 className="text-[#f5f5f5] font-semibold mb-2">{t("menu.frequentPicks")}</h2>
         <div className="flex flex-wrap gap-2">
+          {/* 2026-02-28: 热门推荐改为中餐菜品 */}
           {[
-            { menuId: 1, itemName: "Paneer Tikka" },
-            { menuId: 2, itemName: "Butter Chicken" },
-            { menuId: 3, itemName: "Masala Chai" },
+            { menuId: 1, itemName: "夫妻肺片" },
+            { menuId: 2, itemName: "宫保鸡丁" },
+            { menuId: 5, itemName: "珍珠奶茶" },
           ].map((pick) => {
             const parentMenu = menus.find((menu) => menu.id === pick.menuId);
             const pickedItem = parentMenu?.items?.find((item) => item.name === pick.itemName);
@@ -206,7 +207,7 @@ const MenuContainer = () => {
               </div>
               <div className="flex items-center justify-between w-full">
                 <p className="text-[#f5f5f5] text-xl font-bold">
-                  €{item.price}
+                  ¥{item.price}
                 </p>
                 <div className="flex items-center justify-between bg-[#1f1f1f] px-3 py-2 rounded-lg gap-4 min-w-[132px]">
                   <button

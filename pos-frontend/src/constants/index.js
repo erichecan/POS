@@ -1,3 +1,4 @@
+// 2026-02-28: 中餐正餐演示 - 与后端 seed 菜单一致
 import butterChicken from '../assets/images/butter-chicken-4.jpg';
 import palakPaneer from '../assets/images/Saag-Paneer-1.jpg';
 import biryani from '../assets/images/hyderabadibiryani.jpg';
@@ -73,431 +74,128 @@ const ADD_ON_GROUP = {
 };
 
 export const popularDishes = [
-    {
-      id: 1,
-      image: butterChicken,
-      name: 'Butter Chicken',
-      numberOfOrders: 250,
-    },
-    {
-      id: 2,
-      image: palakPaneer,
-      name: 'Palak Paneer',
-      numberOfOrders: 190,
-    },
-    {
-      id: 3,
-      image: biryani,
-      name: 'Hyderabadi Biryani',
-      numberOfOrders: 300,
-    },
-    {
-      id: 4,
-      image: masalaDosa,
-      name: 'Masala Dosa',
-      numberOfOrders: 220,
-    },
-    {
-      id: 5,
-      image: choleBhature,
-      name: 'Chole Bhature',
-      numberOfOrders: 270,
-    },
-    {
-      id: 6,
-      image: rajmaChawal,
-      name: 'Rajma Chawal',
-      numberOfOrders: 180,
-    },
-    {
-      id: 7,
-      image: paneerTikka,
-      name: 'Paneer Tikka',
-      numberOfOrders: 210,
-    },
-    {
-      id: 8,
-      image: gulabJamun,
-      name: 'Gulab Jamun',
-      numberOfOrders: 310,
-    },
-    {
-      id: 9,
-      image: pooriSabji,
-      name: 'Poori Sabji',
-      numberOfOrders: 140,
-    },
-    {
-      id: 10,
-      image: roganJosh,
-      name: 'Rogan Josh',
-      numberOfOrders: 160,
-    },
+    { id: 1, image: butterChicken, name: '红烧肉', numberOfOrders: 185 },
+    { id: 2, image: palakPaneer, name: '宫保鸡丁', numberOfOrders: 210 },
+    { id: 3, image: biryani, name: '扬州炒饭', numberOfOrders: 168 },
+    { id: 4, image: masalaDosa, name: '糖醋里脊', numberOfOrders: 142 },
+    { id: 5, image: choleBhature, name: '珍珠奶茶', numberOfOrders: 265 },
+    { id: 6, image: rajmaChawal, name: '酸梅汤', numberOfOrders: 198 },
+    { id: 7, image: paneerTikka, name: '夫妻肺片', numberOfOrders: 156 },
+    { id: 8, image: gulabJamun, name: '杨枝甘露', numberOfOrders: 132 },
+    { id: 9, image: pooriSabji, name: '小笼包', numberOfOrders: 175 },
+    { id: 10, image: roganJosh, name: '清蒸鲈鱼', numberOfOrders: 148 },
   ];
 
 
+// 2026-02-28: 桌位展示（后端 Table 为真实数据，此处为前端静态占位）
 export const tables = [
-    { id: 1, name: "Table 1", status: "Booked", initial: "AM", seats: 4 },
-    { id: 2, name: "Table 2", status: "Available", initial: "MB", seats: 6 },
-    { id: 3, name: "Table 3", status: "Booked", initial: "JS", seats: 2 },
-    { id: 4, name: "Table 4", status: "Available", initial: "HR", seats: 4 },
-    { id: 5, name: "Table 5", status: "Booked", initial: "PL", seats: 3 },
-    { id: 6, name: "Table 6", status: "Available", initial: "RT", seats: 4 },
-    { id: 7, name: "Table 7", status: "Booked", initial: "LC", seats: 5 },
-    { id: 8, name: "Table 8", status: "Available", initial: "DP", seats: 5 },
-    { id: 9, name: "Table 9", status: "Booked", initial: "NK", seats: 6 },
-    { id: 10, name: "Table 10", status: "Available", initial: "SB", seats: 6 },
-    { id: 11, name: "Table 11", status: "Booked", initial: "GT", seats: 4 },
-    { id: 12, name: "Table 12", status: "Available", initial: "JS", seats: 6 },
-    { id: 13, name: "Table 13", status: "Booked", initial: "EK", seats: 2 },
-    { id: 14, name: "Table 14", status: "Available", initial: "QN", seats: 6 },
-    { id: 15, name: "Table 15", status: "Booked", initial: "TW", seats: 3 }
+    { id: 1, name: "1号桌", status: "Booked", initial: "张", seats: 4 },
+    { id: 2, name: "2号桌", status: "Available", initial: "李", seats: 6 },
+    { id: 3, name: "3号桌", status: "Booked", initial: "王", seats: 2 },
+    { id: 4, name: "4号桌", status: "Available", initial: "陈", seats: 4 },
+    { id: 5, name: "5号桌", status: "Booked", initial: "刘", seats: 3 },
+    { id: 6, name: "6号桌", status: "Available", initial: "赵", seats: 4 },
+    { id: 7, name: "7号桌", status: "Booked", initial: "周", seats: 5 },
+    { id: 8, name: "8号桌", status: "Available", initial: "吴", seats: 5 },
+    { id: 9, name: "9号桌", status: "Booked", initial: "郑", seats: 6 },
+    { id: 10, name: "10号桌", status: "Available", initial: "孙", seats: 6 },
+    { id: 11, name: "11号桌", status: "Booked", initial: "黄", seats: 4 },
+    { id: 12, name: "12号桌", status: "Available", initial: "林", seats: 6 },
+    { id: 13, name: "13号桌", status: "Booked", initial: "何", seats: 2 },
+    { id: 14, name: "14号桌", status: "Available", initial: "钱", seats: 6 },
+    { id: 15, name: "15号桌", status: "Booked", initial: "冯", seats: 3 }
   ];
   
+// 2026-02-28: 凉菜 - 与后端 seed 一致
 export const startersItem = [
-    {
-      id: 1,
-      name: "Paneer Tikka",
-      price: 250,
-      category: "Vegetarian",
-      optionGroups: [PORTION_SIZE_GROUP, SPICE_LEVEL_GROUP, OIL_LEVEL_GROUP, COOKING_STYLE_GROUP, ADD_ON_GROUP],
-    },
-    {
-      id: 2,
-      name: "Chicken Tikka",
-      price: 300,
-      category: "Non-Vegetarian",
-      optionGroups: [PORTION_SIZE_GROUP, SPICE_LEVEL_GROUP, OIL_LEVEL_GROUP, COOKING_STYLE_GROUP, ADD_ON_GROUP],
-    },
-    {
-      id: 3,
-      name: "Tandoori Chicken",
-      price: 350,
-      category: "Non-Vegetarian",
-      optionGroups: [PORTION_SIZE_GROUP, SPICE_LEVEL_GROUP, OIL_LEVEL_GROUP, COOKING_STYLE_GROUP],
-    },
-    {
-      id: 4,
-      name: "Samosa",
-      price: 100,
-      category: "Vegetarian"
-    },
-    {
-      id: 5,
-      name: "Aloo Tikki",
-      price: 120,
-      category: "Vegetarian"
-    },
-    {
-      id: 6,
-      name: "Hara Bhara Kebab",
-      price: 220,
-      category: "Vegetarian"
-    }
+    { id: 1, name: "夫妻肺片", price: 38, category: "凉菜", optionGroups: [PORTION_SIZE_GROUP, SPICE_LEVEL_GROUP] },
+    { id: 2, name: "蒜泥黄瓜", price: 18, category: "凉菜" },
+    { id: 3, name: "口水鸡", price: 42, category: "凉菜", optionGroups: [PORTION_SIZE_GROUP, SPICE_LEVEL_GROUP] },
+    { id: 4, name: "凉拌木耳", price: 22, category: "凉菜" },
+    { id: 5, name: "皮蛋豆腐", price: 28, category: "凉菜" },
   ];
   
+// 2026-02-28: 热菜 - 与后端 seed 一致
 export const mainCourse = [
-  {
-    id: 1,
-    name: "Butter Chicken",
-    price: 400,
-    category: "Non-Vegetarian",
-    optionGroups: [PORTION_SIZE_GROUP, SPICE_LEVEL_GROUP, OIL_LEVEL_GROUP, COOKING_STYLE_GROUP, ADD_ON_GROUP],
-  },
-  {
-    id: 2,
-    name: "Paneer Butter Masala",
-    price: 350,
-    category: "Vegetarian",
-    optionGroups: [PORTION_SIZE_GROUP, SPICE_LEVEL_GROUP, OIL_LEVEL_GROUP, COOKING_STYLE_GROUP, ADD_ON_GROUP],
-  },
-  {
-    id: 3,
-    name: "Chicken Biryani",
-    price: 450,
-    category: "Non-Vegetarian",
-    optionGroups: [PORTION_SIZE_GROUP, SPICE_LEVEL_GROUP, COOKING_STYLE_GROUP, ADD_ON_GROUP],
-  },
-  {
-    id: 4,
-    name: "Dal Makhani",
-    price: 180,
-    category: "Vegetarian"
-  },
-  {
-    id: 5,
-    name: "Kadai Paneer",
-    price: 300,
-    category: "Vegetarian"
-  },
-  {
-    id: 6,
-    name: "Rogan Josh",
-    price: 500,
-    category: "Non-Vegetarian"
-  }
+  { id: 1, name: "宫保鸡丁", price: 48, category: "热菜", optionGroups: [PORTION_SIZE_GROUP, SPICE_LEVEL_GROUP] },
+  { id: 2, name: "糖醋里脊", price: 52, category: "热菜" },
+  { id: 3, name: "红烧肉", price: 58, category: "热菜" },
+  { id: 4, name: "清蒸鲈鱼", price: 88, category: "热菜" },
+  { id: 5, name: "麻婆豆腐", price: 38, category: "热菜", optionGroups: [SPICE_LEVEL_GROUP] },
+  { id: 6, name: "鱼香肉丝", price: 45, category: "热菜" },
+  { id: 7, name: "东坡肉", price: 68, category: "热菜" },
 ];
 
+// 2026-02-28: 饮品 - 与后端 seed 一致
 export const beverages = [
-  {
-    id: 1,
-    name: "Masala Chai",
-    price: 50,
-    category: "Hot"
-  },
-  {
-    id: 2,
-    name: "Lemon Soda",
-    price: 80,
-    category: "Cold"
-  },
-  {
-    id: 3,
-    name: "Mango Lassi",
-    price: 120,
-    category: "Cold"
-  },
-  {
-    id: 4,
-    name: "Cold Coffee",
-    price: 150,
-    category: "Cold"
-  },
-  {
-    id: 5,
-    name: "Fresh Lime Water",
-    price: 60,
-    category: "Cold"
-  },
-  {
-    id: 6,
-    name: "Iced Tea",
-    price: 100,
-    category: "Cold"
-  }
+  { id: 1, name: "珍珠奶茶", price: 22, category: "饮品" },
+  { id: 2, name: "酸梅汤", price: 18, category: "饮品" },
+  { id: 3, name: "柠檬水", price: 15, category: "饮品" },
+  { id: 4, name: "鲜榨橙汁", price: 28, category: "饮品" },
 ];
 
+// 2026-02-28: 汤羹 - 与后端 seed 一致
 export const soups = [
-  {
-    id: 1,
-    name: "Tomato Soup",
-    price: 120,
-    category: "Vegetarian",
-    optionGroups: [PORTION_SIZE_GROUP, SPICE_LEVEL_GROUP, COOKING_STYLE_GROUP],
-  },
-  {
-    id: 2,
-    name: "Sweet Corn Soup",
-    price: 130,
-    category: "Vegetarian"
-  },
-  {
-    id: 3,
-    name: "Hot & Sour Soup",
-    price: 140,
-    category: "Vegetarian"
-  },
-  {
-    id: 4,
-    name: "Chicken Clear Soup",
-    price: 160,
-    category: "Non-Vegetarian"
-  },
-  {
-    id: 5,
-    name: "Mushroom Soup",
-    price: 150,
-    category: "Vegetarian"
-  },
-  {
-    id: 6,
-    name: "Lemon Coriander Soup",
-    price: 110,
-    category: "Vegetarian"
-  }
+  { id: 1, name: "酸辣汤", price: 28, category: "汤羹" },
+  { id: 2, name: "老鸭汤", price: 48, category: "汤羹" },
+  { id: 3, name: "冬瓜排骨汤", price: 42, category: "汤羹" },
+  { id: 4, name: "西红柿蛋汤", price: 22, category: "汤羹" },
 ];
 
+// 2026-02-28: 甜品 - 与后端 seed 一致
 export const desserts = [
-  {
-    id: 1,
-    name: "Gulab Jamun",
-    price: 100,
-    category: "Vegetarian"
-  },
-  {
-    id: 2,
-    name: "Kulfi",
-    price: 150,
-    category: "Vegetarian"
-  },
-  {
-    id: 3,
-    name: "Chocolate Lava Cake",
-    price: 250,
-    category: "Vegetarian"
-  },
-  {
-    id: 4,
-    name: "Ras Malai",
-    price: 180,
-    category: "Vegetarian"
-  }
+  { id: 1, name: "绿豆糕", price: 18, category: "甜品" },
+  { id: 2, name: "桂花糕", price: 22, category: "甜品" },
+  { id: 3, name: "红豆糕", price: 20, category: "甜品" },
+  { id: 4, name: "杨枝甘露", price: 32, category: "甜品" },
 ];
 
+// 2026-02-28: 主食 - 与后端 seed 一致
 export const pizzas = [
-  {
-    id: 1,
-    name: "Margherita Pizza",
-    price: 350,
-    category: "Vegetarian"
-  },
-  {
-    id: 2,
-    name: "Veg Supreme Pizza",
-    price: 400,
-    category: "Vegetarian"
-  },
-  {
-    id: 3,
-    name: "Pepperoni Pizza",
-    price: 450,
-    category: "Non-Vegetarian"
-  }
+  { id: 1, name: "小笼包", price: 32, category: "主食" },
+  { id: 2, name: "扬州炒饭", price: 35, category: "主食" },
+  { id: 3, name: "葱油拌面", price: 28, category: "主食" },
+  { id: 4, name: "蛋炒饭", price: 25, category: "主食" },
 ];
 
+// 2026-02-28: 酒水 - 与后端 seed 一致
 export const alcoholicDrinks = [
-  {
-    id: 1,
-    name: "Beer",
-    price: 200,
-    category: "Alcoholic"
-  },
-  {
-    id: 2,
-    name: "Whiskey",
-    price: 500,
-    category: "Alcoholic"
-  },
-  {
-    id: 3,
-    name: "Vodka",
-    price: 450,
-    category: "Alcoholic"
-  },
-  {
-    id: 4,
-    name: "Rum",
-    price: 350,
-    category: "Alcoholic"
-  },
-  {
-    id: 5,
-    name: "Tequila",
-    price: 600,
-    category: "Alcoholic"
-  },
-  {
-    id: 6,
-    name: "Cocktail",
-    price: 400,
-    category: "Alcoholic"
-  }
+  { id: 1, name: "茅台", price: 188, category: "酒水" },
+  { id: 2, name: "啤酒", price: 18, category: "酒水" },
+  { id: 3, name: "红酒", price: 98, category: "酒水" },
+  { id: 4, name: "黄酒", price: 38, category: "酒水" },
 ];
 
-export const salads = [
-  {
-    id: 1,
-    name: "Caesar Salad",
-    price: 200,
-    category: "Vegetarian"
-  },
-  {
-    id: 2,
-    name: "Greek Salad",
-    price: 250,
-    category: "Vegetarian"
-  },
-  {
-    id: 3,
-    name: "Fruit Salad",
-    price: 150,
-    category: "Vegetarian"
-  },
-  {
-    id: 4,
-    name: "Chicken Salad",
-    price: 300,
-    category: "Non-Vegetarian"
-  },
-  {
-    id: 5,
-    name: "Tuna Salad",
-    price: 350,
-  
-  }
-];
-
-
+// 2026-02-28: 移除 salads，用 menus 覆盖 7 类
 export const menus = [
-  { id: 1, name: "Starters", bgColor: "#b73e3e" ,icon: "🍲", items: startersItem },
-  { id: 2, name: "Main Course", bgColor: "#5b45b0" ,icon: "🍛", items: mainCourse },
-  { id: 3, name: "Beverages", bgColor: "#7f167f" ,icon: "🍹", items: beverages },
-  { id: 4, name: "Soups", bgColor: "#735f32" ,icon: "🍜", items: soups },
-  { id: 5, name: "Desserts", bgColor: "#1d2569" ,icon: "🍰", items: desserts },
-  { id: 6, name: "Pizzas", bgColor: "#285430" ,icon: "🍕", items: pizzas },
-  { id: 7, name: "Alcoholic Drinks", bgColor: "#b73e3e" ,icon: "🍺", items: alcoholicDrinks },
-  { id: 8, name: "Salads", bgColor: "#5b45b0" ,icon: "🥗", items: salads }
-]
+  { id: 1, name: "凉菜", bgColor: "#22c55e", icon: "🥗", items: startersItem },
+  { id: 2, name: "热菜", bgColor: "#ef4444", icon: "🍖", items: mainCourse },
+  { id: 3, name: "汤羹", bgColor: "#f97316", icon: "🍜", items: soups },
+  { id: 4, name: "主食", bgColor: "#eab308", icon: "🍚", items: pizzas },
+  { id: 5, name: "饮品", bgColor: "#06b6d4", icon: "🥤", items: beverages },
+  { id: 6, name: "甜品", bgColor: "#ec4899", icon: "🍰", items: desserts },
+  { id: 7, name: "酒水", bgColor: "#8b5cf6", icon: "🍶", items: alcoholicDrinks },
+];
 
+// 2026-02-28: 中餐演示指标
 export const metricsData = [
-  { title: "Revenue", value: "€50,846.90", percentage: "12%", color: "#025cca", isIncrease: false },
-  { title: "Outbound Clicks", value: "10,342", percentage: "16%", color: "#02ca3a", isIncrease: true },
-  { title: "Total Customer", value: "19,720", percentage: "10%", color: "#f6b100", isIncrease: true },
-  { title: "Event Count", value: "20,000", percentage: "10%", color: "#be3e3f", isIncrease: false },
+  { title: "营业额", value: "¥15,680", percentage: "12%", color: "#025cca", isIncrease: false },
+  { title: "订单数", value: "30", percentage: "16%", color: "#02ca3a", isIncrease: true },
+  { title: "会员数", value: "1,200", percentage: "10%", color: "#f6b100", isIncrease: true },
+  { title: "菜品数", value: "33", percentage: "8%", color: "#be3e3f", isIncrease: true },
 ];
 
 export const itemsData = [
-  { title: "Total Categories", value: "8", percentage: "12%", color: "#5b45b0", isIncrease: false },
-  { title: "Total Dishes", value: "50", percentage: "12%", color: "#285430", isIncrease: true },
-  { title: "Active Orders", value: "12", percentage: "12%", color: "#735f32", isIncrease: true },
-  { title: "Total Tables", value: "10", color: "#7f167f"}
+  { title: "菜品分类", value: "7", percentage: "12%", color: "#5b45b0", isIncrease: false },
+  { title: "菜品数量", value: "33", percentage: "12%", color: "#285430", isIncrease: true },
+  { title: "进行中订单", value: "12", percentage: "12%", color: "#735f32", isIncrease: true },
+  { title: "桌位数", value: "12", color: "#7f167f" },
 ];
 
+// 2026-02-28: 前端静态订单示例（实际订单来自后端 API）
 export const orders = [
-  {
-    id: "101",
-    customer: "Amrit Raj",
-    status: "Ready",
-    dateTime: "January 18, 2025 08:32 PM",
-    items: 8,
-    tableNo: 3,
-    total: 250.0,
-  },
-  {
-    id: "102",
-    customer: "John Doe",
-    status: "In Progress",
-    dateTime: "January 18, 2025 08:45 PM",
-    items: 5,
-    tableNo: 4,
-    total: 180.0,
-  },
-  {
-    id: "103",
-    customer: "Emma Smith",
-    status: "Ready",
-    dateTime: "January 18, 2025 09:00 PM",
-    items: 3,
-    tableNo: 5,
-    total: 120.0,
-  },
-  {
-    id: "104",
-    customer: "Chris Brown",
-    status: "In Progress",
-    dateTime: "January 18, 2025 09:15 PM",
-    items: 6,
-    tableNo: 6,
-    total: 220.0,
-  },
+  { id: "101", customer: "张明", status: "Ready", dateTime: "2025-02-24 18:32", items: 3, tableNo: 1, total: 82 },
+  { id: "102", customer: "李芳", status: "In Progress", dateTime: "2025-02-24 18:45", items: 5, tableNo: 2, total: 238 },
+  { id: "103", customer: "王强", status: "Ready", dateTime: "2025-02-24 19:00", items: 3, tableNo: 3, total: 128 },
+  { id: "104", customer: "陈静", status: "In Progress", dateTime: "2025-02-24 19:15", items: 2, tableNo: 4, total: 124 },
 ];

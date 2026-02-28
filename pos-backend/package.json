@@ -6,6 +6,8 @@
     "dev": "nodemon app.js",
     "start": "node app.js",
     "seed": "node scripts/seed.js",
+    "seed:local": "MONGODB_SEED_URI=mongodb://127.0.0.1:27017/pos-db node scripts/seed.js",
+    "db:test": "node scripts/test-mongo-connection.js",
     "test": "JWT_SECRET=test-secret node --test tests/*.test.js",
     "test:e2e:phase2": "node scripts/phase2-e2e.js",
     "test:e2e:playwright": "node scripts/playwright-fullstack-e2e.js",
