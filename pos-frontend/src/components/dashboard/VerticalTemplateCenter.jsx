@@ -15,7 +15,18 @@ const cardClass = "bg-[#262626] rounded-lg p-4 border border-[#333]";
 const inputClass =
   "w-full bg-[#1f1f1f] text-[#f5f5f5] border border-[#3b3b3b] rounded-md px-3 py-2 focus:outline-none";
 
+// 2026-02-28T17:10:00+08:00: Phase A2 - ABCPOS 7 种 Business Type
 const COUNTRY_OPTIONS = ["US", "CA", "IE", "GB", "FR", "ES", "NL"];
+const BUSINESS_TYPE_OPTIONS = [
+  { value: "", label: "All Business Types" },
+  { value: "ENTERPRISE", label: "Enterprise" },
+  { value: "FINE_DINING", label: "Fine Dining" },
+  { value: "CASUAL_DINING", label: "Casual Dining" },
+  { value: "QSR", label: "Quick Service / Fast Food" },
+  { value: "CAFE_TEA", label: "Cafe / Tea" },
+  { value: "RETAIL", label: "Retail" },
+  { value: "BAKERY", label: "Bakery" },
+];
 
 const getRows = (response) => (Array.isArray(response?.data?.data) ? response.data.data : []);
 
@@ -25,6 +36,7 @@ const VerticalTemplateCenter = () => {
   const [catalogFilter, setCatalogFilter] = useState({
     countryCode: "US",
     typeGroup: "",
+    businessType: "",
     keyword: "",
   });
   const [profileForm, setProfileForm] = useState({
@@ -59,6 +71,7 @@ const VerticalTemplateCenter = () => {
       getVerticalTemplateCatalog({
         countryCode: catalogFilter.countryCode,
         typeGroup: catalogFilter.typeGroup || undefined,
+        businessType: catalogFilter.businessType || undefined,
         keyword: catalogFilter.keyword || undefined,
       }),
   });
@@ -204,7 +217,7 @@ const VerticalTemplateCenter = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
           <select
             className={inputClass}
             value={catalogFilter.countryCode}
@@ -215,6 +228,19 @@ const VerticalTemplateCenter = () => {
             {COUNTRY_OPTIONS.map((countryCode) => (
               <option key={countryCode} value={countryCode}>
                 {countryCode}
+              </option>
+            ))}
+          </select>
+          <select
+            className={inputClass}
+            value={catalogFilter.businessType}
+            onChange={(event) =>
+              setCatalogFilter((prev) => ({ ...prev, businessType: event.target.value }))
+            }
+          >
+            {BUSINESS_TYPE_OPTIONS.map((opt) => (
+              <option key={opt.value || "all"} value={opt.value}>
+                {opt.label}
               </option>
             ))}
           </select>
@@ -251,7 +277,7 @@ const VerticalTemplateCenter = () => {
                 </p>
                 <p className="text-xs text-[#9aa7bf]">{template.templateCode}</p>
               </div>
-              <p className="text-xs text-[#8ea7d8] mt-2">Type: {template.typeGroup}</p>
+              <p className="text-xs text-[#8ea7d8] mt-2">Type: {template.typeGroup} · Business: {template.businessType || "—"}</p>
               <p className="text-xs text-[#9ecdc3] mt-1">
                 Required: {(template.requiredCapabilities || []).join(", ")}
               </p>

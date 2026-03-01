@@ -354,10 +354,59 @@ const markMenuItemSyncStatus = async (req, res, next) => {
   }
 };
 
+// 2026-02-28T16:25:00+08:00 Phase E2.2 菜单同步状态聚合
+const getMenuSyncStatusSummary = async (req, res, next) => {
+  try {
+    const locationId = `${req.query.locationId || ""}`.trim() || "default";
+    const providerCode = `${req.query.providerCode || ""}`.trim().toUpperCase();
+
+    const items = await MenuCatalogItem.find({
+      locationId,
+      status: "ACTIVE",
+    })
+      .select("name syncStatus")
+      .lean();
+
+    const byProvider = {};
+    for (const item of items) {
+      const statusMap = item.syncStatus;
+      if (!statusMap || typeof statusMap !== "object") {
+        continue;
+      }
+      for (const [prov, info] of Object.entries(statusMap)) {
+        const code = `${prov}`.toUpperCase();
+        if (providerCode && code !== providerCode) continue;
+        if (!byProvider[code]) {
+          byProvider[code] = { synced: 0, failed: 0, pending: 0, lastSyncAt: null };
+        }
+        const status = info?.status || "PENDING";
+        if (status === "SYNCED") byProvider[code].synced += 1;
+        else if (status === "FAILED") byProvider[code].failed += 1;
+        else byProvider[code].pending += 1;
+        const at = info?.lastSyncAt ? new Date(info.lastSyncAt) : null;
+        if (at && (!byProvider[code].lastSyncAt || at > byProvider[code].lastSyncAt)) {
+          byProvider[code].lastSyncAt = at;
+        }
+      }
+    }
+
+    const summary = Object.entries(byProvider).map(([code, data]) => ({
+      providerCode: code,
+      ...data,
+      lastSyncAt: data.lastSyncAt ? data.lastSyncAt.toISOString() : null,
+    }));
+
+    return res.status(200).json({ success: true, data: summary });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   upsertMenuItem,
   listMenuItems,
   publishMenuVersion,
   listMenuVersions,
   markMenuItemSyncStatus,
+  getMenuSyncStatusSummary,
 };

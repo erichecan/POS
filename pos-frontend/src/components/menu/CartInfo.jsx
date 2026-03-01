@@ -37,7 +37,7 @@ const CartInfo = ({ onAddMore }) => {
   const dispatch = useDispatch();
   const { resolved } = useVerticalProfile();
   const optionModel = resolved?.menuOptionProfile?.optionModel || "COMBO_AND_MODIFIER";
-  const showModifiers = optionModel !== "SERVICE_PACKAGE";
+  const showModifiers = !["SERVICE_PACKAGE", "SIMPLE_ITEM"].includes(optionModel);
   const showMultiRound = ["SMALL_PLATE_MULTI_ROUND", "BASE_AND_MULTI_ROUND"].includes(optionModel);
 
   useEffect(() => {

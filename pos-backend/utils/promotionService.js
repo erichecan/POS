@@ -40,6 +40,7 @@ const resolveEligiblePromotions = async ({
   channelCode,
   subtotal,
   promotionCodes = [],
+  orderItems = [],
 }) => {
   const normalizedLocationId = normalizeLocationId(locationId);
   const normalizedChannelCode = normalizeChannelCode(channelCode || "ALL");
@@ -88,6 +89,7 @@ const resolveEligiblePromotions = async ({
     subtotal,
     locationId: normalizedLocationId,
     channelCode: normalizedChannelCode,
+    orderItems,
   });
 
   const appliedPromotions = result.applied.map((entry) => {

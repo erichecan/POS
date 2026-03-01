@@ -45,9 +45,13 @@ export const approveRefundApproval = ({ approvalId, ...data }) =>
 export const rejectRefundApproval = ({ approvalId, ...data }) =>
   axiosWrapper.post(`/api/payment/refunds/approvals/${approvalId}/reject`, data);
 
+// 2026-02-28T18:35:00+08:00 Phase D2 活动效果 API
+export const getPromotionEffects = (params) =>
+  axiosWrapper.get("/api/analytics/promotion-effects", { params });
+
 // Order Endpoints
 export const addOrder = (data) => axiosWrapper.post("/api/order/", data);
-export const getOrders = () => axiosWrapper.get("/api/order");
+export const getOrders = (params) => axiosWrapper.get("/api/order", { params });
 export const updateOrderStatus = ({ orderId, orderStatus }) =>
   axiosWrapper.put(`/api/order/${orderId}`, { orderStatus });
 export const updateOrderItems = ({ orderId, ...data }) =>
@@ -76,6 +80,22 @@ export const getAdMaterial = (id) => axiosWrapper.get(`/api/ad-material/${id}`);
 export const createAdMaterial = (data) => axiosWrapper.post("/api/ad-material", data);
 export const updateAdMaterial = ({ id, ...data }) => axiosWrapper.put(`/api/ad-material/${id}`, data);
 export const deleteAdMaterial = (id) => axiosWrapper.delete(`/api/ad-material/${id}`);
+
+// Promotion Endpoints - PRD 7.11 M11 2026-02-28T16:15:00+08:00
+export const listPromotionRules = (params) => axiosWrapper.get("/api/promotion/rules", { params });
+
+// 2026-02-28T18:15:00+08:00 Phase D1 会员端 H5 公开 API（无需员工登录）
+export const bindMember = (data) => axiosWrapper.post("/api/public/member/bind", data);
+export const getMemberProfile = (memberCode, params) =>
+  axiosWrapper.get(`/api/public/member/${encodeURIComponent(memberCode)}/profile`, { params });
+export const listMemberOrders = (memberCode, params) =>
+  axiosWrapper.get(`/api/public/member/${encodeURIComponent(memberCode)}/orders`, { params });
+export const listMemberCoupons = (memberCode, params) =>
+  axiosWrapper.get(`/api/public/member/${encodeURIComponent(memberCode)}/coupons`, { params });
+export const createPromotionRule = (data) => axiosWrapper.post("/api/promotion/rules", data);
+export const listPromotionCoupons = (params) => axiosWrapper.get("/api/promotion/coupons", { params });
+export const createPromotionCoupon = (data) => axiosWrapper.post("/api/promotion/coupons", data);
+export const previewPromotionApply = (data) => axiosWrapper.post("/api/promotion/apply/preview", data);
 
 // Channel Config Endpoints
 export const createChannelProvider = (data) =>
@@ -257,10 +277,70 @@ export const getStoreVerticalProfile = (locationId, params) =>
 export const upsertStoreVerticalProfile = ({ locationId, ...data }) =>
   axiosWrapper.put(`/api/organization/vertical-templates/profiles/${locationId}`, data);
 
-// Organization Store Endpoints
+// Organization Endpoints - 2026-02-28T14:00:00+08:00 settings-general-chain
+export const listOrganizations = (params) =>
+  axiosWrapper.get("/api/organization/orgs", { params });
+export const updateOrganization = ({ id, ...data }) =>
+  axiosWrapper.patch(`/api/organization/orgs/${id}`, data);
+export const listRegions = (params) =>
+  axiosWrapper.get("/api/organization/regions", { params });
+export const updateRegion = ({ id, ...data }) =>
+  axiosWrapper.patch(`/api/organization/regions/${id}`, data);
 export const listStores = (params) =>
   axiosWrapper.get("/api/organization/stores", { params });
 export const createOrganizationStore = (data) =>
   axiosWrapper.post("/api/organization/stores", data);
+export const updateStore = ({ id, ...data }) =>
+  axiosWrapper.patch(`/api/organization/stores/${id}`, data);
+export const getResolvedStoreSettings = (storeId) =>
+  axiosWrapper.get(`/api/organization/stores/${storeId}/resolved-settings`);
+
+// 2026-02-28T16:30:00+08:00 Phase E2.2 菜单同步状态
+export const getMenuSyncStatusSummary = (params) =>
+  axiosWrapper.get("/api/menu/sync-status", { params });
+
+// 2026-02-28T15:35:00+08:00 Phase E1.2 Handheld - resolve table by QR token
+export const resolveTableByToken = (token) =>
+  axiosWrapper.get(`/api/self-order/staff/resolve-table/${encodeURIComponent(token)}`);
+
+// Till Rules - PRD 7.24 M22 2026-02-28T15:00:00+08:00
+export const getTillRules = (locationId) =>
+  axiosWrapper.get(`/api/till-rules/${locationId || "default"}`);
+export const upsertTillRules = ({ locationId = "default", ...data }) =>
+  axiosWrapper.put(`/api/till-rules/${locationId}`, { locationId, ...data });
 export const previewStoreProvisioning = (data) =>
   axiosWrapper.post("/api/organization/stores/provisioning-preview", data);
+
+// 2026-02-28T18:35:00+08:00 Phase B - Self-Order / Kiosk / QR Table
+export const generateTableQrSession = (data) =>
+  axiosWrapper.post("/api/self-order/sessions", data);
+export const getKioskMenu = (params) =>
+  axiosWrapper.get("/api/self-order/public/menu/kiosk", { params });
+export const getPublicMenuByToken = (token) =>
+  axiosWrapper.get(`/api/self-order/public/menu/${token}`);
+export const createKioskOrder = (data) =>
+  axiosWrapper.post("/api/self-order/public/kiosk/orders", data);
+export const createSelfOrderByToken = (data) =>
+  axiosWrapper.post("/api/self-order/public/orders", data);
+
+// 2026-02-28T16:20:00+08:00 Phase C1 在线订餐 - 公开 API
+export const getPublicMenu = (params) =>
+  axiosWrapper.get("/api/public/menu", { params });
+export const createPublicOrder = (data) =>
+  axiosWrapper.post("/api/public/orders", data);
+export const getPublicOrderStatus = (orderId) =>
+  axiosWrapper.get(`/api/public/orders/${orderId}/status`);
+export const createPublicPaymentCheckout = (data) =>
+  axiosWrapper.post("/api/public/payment/create-checkout", data);
+export const verifyPublicPayment = (data) =>
+  axiosWrapper.post("/api/public/payment/verify", data);
+
+// 2026-02-28T16:21:00+08:00 Phase C2 排队叫号
+export const takeQueueNumber = (data) =>
+  axiosWrapper.post("/api/queue/tickets", data);
+export const getQueueDisplay = (params) =>
+  axiosWrapper.get("/api/queue/display", { params });
+export const getQueueTickets = (params) =>
+  axiosWrapper.get("/api/queue/tickets", { params });
+export const updateQueueTicket = ({ id, ...data }) =>
+  axiosWrapper.patch(`/api/queue/tickets/${id}`, data);

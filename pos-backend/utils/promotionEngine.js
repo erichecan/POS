@@ -43,42 +43,98 @@ const supportsChannel = (rule, channelCode = "ALL") => {
   return allowedChannels.includes(channelCode);
 };
 
-const computePromotionDiscount = ({ rule, subtotal }) => {
+/**
+ * ORDER_DISCOUNT: 整单折扣 PERCENT/FIXED
+ * TIERED_OFF: 阶梯满减 tiers[{threshold,discountType,discountValue}]
+ * BOGO/ITEM_DISCOUNT: 需 orderItems，否则返回 0
+ */
+const computePromotionDiscount = ({ rule, subtotal = 0, orderItems = [] }) => {
   const safeSubtotal = Number(subtotal || 0);
-  if (!Number.isFinite(safeSubtotal) || safeSubtotal <= 0) {
-    return 0;
+  const promoType = `${rule?.promoType || "ORDER_DISCOUNT"}`.toUpperCase();
+
+  if (promoType === "TIERED_OFF") {
+    const tiers = Array.isArray(rule?.tiers) ? rule.tiers : [];
+    if (tiers.length === 0) return 0;
+    const minOrderAmount = Number(rule?.minOrderAmount || 0);
+    if (safeSubtotal < minOrderAmount) return 0;
+    const sorted = [...tiers].sort((a, b) => Number(b?.threshold || 0) - Number(a?.threshold || 0));
+    const best = sorted.find((t) => safeSubtotal >= Number(t?.threshold || 0));
+    if (!best) return 0;
+    const dt = `${best.discountType || "FIXED"}`.toUpperCase();
+    const dv = Number(best.discountValue || 0);
+    if (!Number.isFinite(dv) || dv <= 0) return 0;
+    let d = 0;
+    if (dt === "PERCENT") d = roundToTwo((safeSubtotal * dv) / 100);
+    else if (dt === "FIXED") d = roundToTwo(dv);
+    return Math.min(d, safeSubtotal);
   }
 
-  const minOrderAmount = Number(rule?.minOrderAmount || 0);
-  if (safeSubtotal < minOrderAmount) {
-    return 0;
+  if (promoType === "BOGO" || promoType === "ITEM_DISCOUNT") {
+    if (!Array.isArray(orderItems) || orderItems.length === 0) return 0;
+    const catIds = new Set((rule?.appliesToCategoryIds || []).map(String));
+    const itemIds = new Set((rule?.appliesToItemIds || []).map(String));
+    const applies = (it) => {
+      if (catIds.size > 0 && it.categoryId && catIds.has(String(it.categoryId))) return true;
+      if (itemIds.size > 0 && it.itemId && itemIds.has(String(it.itemId))) return true;
+      return catIds.size === 0 && itemIds.size === 0;
+    };
+    if (promoType === "BOGO") {
+      const buyQ = Number(rule?.buyQuantity || 1);
+      const getQ = Number(rule?.getQuantity || 0);
+      if (getQ <= 0 || buyQ < 1) return 0;
+      let eligibleQty = 0;
+      let eligibleAmount = 0;
+      for (const it of orderItems) {
+        if (!applies(it)) continue;
+        const qty = Number(it.quantity || 0);
+        const price = Number(it.unitPrice || it.price || 0);
+        if (qty <= 0 || price <= 0) continue;
+        eligibleQty += qty;
+        eligibleAmount += qty * price;
+      }
+      const sets = Math.floor(eligibleQty / (buyQ + getQ));
+      if (sets <= 0) return 0;
+      const freePerSet = getQ;
+      const discountPercent = Number(rule?.discountValue || 100) / 100;
+      const discount = roundToTwo((freePerSet * sets * (eligibleAmount / Math.max(eligibleQty, 1))) * discountPercent);
+      return Math.min(discount, safeSubtotal);
+    }
+    if (promoType === "ITEM_DISCOUNT") {
+      const dt = `${rule?.discountType || ""}`.toUpperCase();
+      const dv = Number(rule?.discountValue || 0);
+      if (!Number.isFinite(dv) || dv <= 0 || !["PERCENT", "FIXED"].includes(dt)) return 0;
+      let discount = 0;
+      for (const it of orderItems) {
+        if (!applies(it)) continue;
+        const qty = Number(it.quantity || 0);
+        const price = Number(it.unitPrice || it.price || 0);
+        const lineTotal = qty * price;
+        if (lineTotal <= 0) continue;
+        if (dt === "PERCENT") discount += roundToTwo((lineTotal * dv) / 100);
+        else discount += roundToTwo(Math.min(dv * qty, lineTotal));
+      }
+      return Math.min(roundToTwo(discount), safeSubtotal);
+    }
   }
+
+  if (safeSubtotal <= 0) return 0;
+  const minOrderAmount = Number(rule?.minOrderAmount || 0);
+  if (safeSubtotal < minOrderAmount) return 0;
 
   const discountType = `${rule?.discountType || ""}`.toUpperCase();
   const discountValue = Number(rule?.discountValue || 0);
-
-  if (!Number.isFinite(discountValue) || discountValue <= 0) {
-    return 0;
-  }
+  if (!Number.isFinite(discountValue) || discountValue <= 0 || !["PERCENT", "FIXED"].includes(discountType)) return 0;
 
   let discount = 0;
-  if (discountType === "PERCENT") {
-    discount = roundToTwo((safeSubtotal * discountValue) / 100);
-  } else if (discountType === "FIXED") {
-    discount = roundToTwo(discountValue);
-  } else {
-    return 0;
-  }
+  if (discountType === "PERCENT") discount = roundToTwo((safeSubtotal * discountValue) / 100);
+  else if (discountType === "FIXED") discount = roundToTwo(discountValue);
 
   const maxDiscountAmount = Number(rule?.maxDiscountAmount);
-  if (Number.isFinite(maxDiscountAmount) && maxDiscountAmount > 0) {
-    discount = Math.min(discount, roundToTwo(maxDiscountAmount));
-  }
-
+  if (Number.isFinite(maxDiscountAmount) && maxDiscountAmount > 0) discount = Math.min(discount, roundToTwo(maxDiscountAmount));
   return Math.min(discount, safeSubtotal);
 };
 
-const resolvePromotionApplication = ({ rules = [], subtotal, locationId, channelCode }) => {
+const resolvePromotionApplication = ({ rules = [], subtotal, locationId, channelCode, orderItems = [] }) => {
   const normalizedLocationId = normalizeLocationId(locationId);
   const normalizedChannelCode = normalizeChannelCode(channelCode);
   const now = new Date();
@@ -93,7 +149,7 @@ const resolvePromotionApplication = ({ rules = [], subtotal, locationId, channel
     .filter((rule) => isPromotionActive(rule, now))
     .filter((rule) => supportsChannel(rule, normalizedChannelCode))
     .map((rule) => {
-      const discount = computePromotionDiscount({ rule, subtotal: safeSubtotal });
+      const discount = computePromotionDiscount({ rule, subtotal: safeSubtotal, orderItems });
       return {
         rule,
         discount,
@@ -102,6 +158,9 @@ const resolvePromotionApplication = ({ rules = [], subtotal, locationId, channel
     .filter((entry) => entry.discount > 0)
     .sort((a, b) => {
       if (a.discount !== b.discount) return b.discount - a.discount;
+      const aPri = Number(a.rule?.priority || 0);
+      const bPri = Number(b.rule?.priority || 0);
+      if (aPri !== bPri) return bPri - aPri;
       const aStackable = Boolean(a.rule?.stackable);
       const bStackable = Boolean(b.rule?.stackable);
       if (aStackable !== bStackable) return Number(bStackable) - Number(aStackable);

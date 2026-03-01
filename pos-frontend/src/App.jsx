@@ -5,7 +5,8 @@ import {
   useLocation,
   Navigate,
 } from "react-router-dom";
-import { Home, Auth, Orders, Tables, Menu, More, TableLayout } from "./pages";
+import { Home, Auth, Orders, Tables, Menu, More, TableLayout, CashierStation, HandheldPos, KioskOrder, QrTableOrder, OnlineOrder, OnlineOrderStatus, QueueTakeNumber, QueueDisplay, QueueManage } from "./pages";
+import { MemberCenter, MemberLogin } from "./pages/member";
 import {
   Overview,
   OrdersPage,
@@ -29,6 +30,8 @@ import {
   PaymentLedgerPage,
   PaymentRefundsPage,
   PaymentReconciliationPage,
+  ChannelConfigWizardPage,
+  ChannelOrdersPage,
   KitchenStationsPage,
   KitchenTicketsPage,
   KitchenReplayPage,
@@ -43,6 +46,9 @@ import {
   BrandReceiptPage,
   BrandSignagePage,
   BrandAdsPage,
+  PromotionRulesPage,
+  PromotionCouponsPage,
+  CampaignListPage,
 } from "./pages/dashboard/index.js";
 import Header from "./components/shared/Header";
 import NotFound from "./components/shared/NotFound";
@@ -57,7 +63,9 @@ const normalizeRole = (role) => `${role || ""}`.trim().toLowerCase();
 function Layout() {
   const isLoading = useLoadData();
   const location = useLocation();
-  const hideHeaderRoutes = ["/auth"];
+  // 2026-02-28T18:45:00+08:00 Phase B - Kiosk/QR 无 header
+  const hideHeaderRoutes = ["/auth", "/kiosk", "/member", "/queue"];
+  const isPublicOrder = location.pathname.startsWith("/order");
   const isDashboard = location.pathname.startsWith("/dashboard");
   const { isAuth } = useSelector(state => state.user);
 
@@ -66,7 +74,7 @@ function Layout() {
   return (
     <VerticalProfileProvider>
       <>
-        {!hideHeaderRoutes.includes(location.pathname) && !isDashboard && <Header />}
+        {!hideHeaderRoutes.includes(location.pathname) && !isDashboard && !isPublicOrder && <Header />}
         <Routes>
         <Route
           path="/"
@@ -77,6 +85,22 @@ function Layout() {
           }
         />
         <Route path="/auth" element={isAuth ? <Navigate to="/" /> : <Auth />} />
+        {/* 2026-02-28T16:40:00+08:00 Phase C 在线订餐 + 排队叫号 - 公开路由 */}
+        <Route path="/order" element={<OnlineOrder />} />
+        <Route path="/order/status/:orderId" element={<OnlineOrderStatus />} />
+        <Route path="/queue" element={<QueueTakeNumber />} />
+        <Route path="/queue/display" element={<QueueDisplay />} />
+        <Route
+          path="/queue/manage"
+          element={
+            <ProtectedRoutes>
+              <QueueManage />
+            </ProtectedRoutes>
+          }
+        />
+        {/* 2026-02-28T18:26:00+08:00 Phase D1 会员端 H5 公开路由 */}
+        <Route path="/member" element={<MemberCenter />} />
+        <Route path="/member/login" element={<MemberLogin />} />
         <Route
           path="/orders"
           element={
@@ -128,6 +152,8 @@ function Layout() {
           <Route path="ops" element={<OpsPage />} />
           <Route path="slo" element={<SLOPage />} />
           <Route path="channels" element={<ChannelsPage />} />
+          <Route path="channels/wizard" element={<ChannelConfigWizardPage />} />
+          <Route path="channels/orders" element={<ChannelOrdersPage />} />
           <Route path="channels/providers" element={<ChannelProvidersPage />} />
           <Route path="channels/markets" element={<ChannelMarketsPage />} />
           <Route path="channels/connections" element={<ChannelConnectionsPage />} />
@@ -138,6 +164,9 @@ function Layout() {
           <Route path="brand/receipt" element={<BrandReceiptPage />} />
           <Route path="brand/signage" element={<BrandSignagePage />} />
           <Route path="brand/ads" element={<BrandAdsPage />} />
+          <Route path="promotions/rules" element={<PromotionRulesPage />} />
+          <Route path="promotions/coupons" element={<PromotionCouponsPage />} />
+          <Route path="campaigns" element={<CampaignListPage />} />
           <Route path="stores" element={<StoresPage />} />
           <Route path="team" element={<TeamPage />} />
           <Route path="team/schedule" element={<TeamSchedulePage />} />
@@ -147,6 +176,22 @@ function Layout() {
           <Route path="settings" element={<SettingsPage />} />
           <Route path="audit" element={<AuditPage />} />
         </Route>
+        <Route
+          path="/cashier"
+          element={
+            <ProtectedRoutes>
+              <CashierStation />
+            </ProtectedRoutes>
+          }
+        />
+        <Route
+          path="/handheld"
+          element={
+            <ProtectedRoutes>
+              <HandheldPos />
+            </ProtectedRoutes>
+          }
+        />
         <Route
           path="/more"
           element={
@@ -163,6 +208,9 @@ function Layout() {
             </ProtectedRoutes>
           }
         />
+        {/* 2026-02-28T18:47:00+08:00 Phase B - Kiosk / QR 公开路由 */}
+        <Route path="/kiosk" element={<KioskOrder />} />
+        <Route path="/order/qr" element={<QrTableOrder />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       </>

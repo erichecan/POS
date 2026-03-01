@@ -5,9 +5,12 @@ const { requireHighRiskApproval } = require("../middlewares/highRiskApprovalGuar
 const {
   createOrganization,
   listOrganizations,
+  updateOrganization,
   createRegion,
   listRegions,
+  updateRegion,
   createStore,
+  updateStore,
   previewStoreProvisioning,
   listStores,
   getResolvedStoreSettings,
@@ -45,6 +48,16 @@ router
   );
 
 router
+  .route("/orgs/:id")
+  .patch(
+    isVerifiedUser,
+    requireRoles("Admin"),
+    requirePermission("organization", "write"),
+    idempotencyMiddleware,
+    updateOrganization
+  );
+
+router
   .route("/regions")
   .post(
     isVerifiedUser,
@@ -65,6 +78,16 @@ router
     requireRoles("Admin", "Cashier"),
     requirePermission("organization", "read"),
     listRegions
+  );
+
+router
+  .route("/regions/:id")
+  .patch(
+    isVerifiedUser,
+    requireRoles("Admin"),
+    requirePermission("organization", "write"),
+    idempotencyMiddleware,
+    updateRegion
   );
 
 router
@@ -106,6 +129,16 @@ router
     requireRoles("Admin", "Cashier"),
     requirePermission("organization", "read"),
     getResolvedStoreSettings
+  );
+
+router
+  .route("/stores/:id")
+  .patch(
+    isVerifiedUser,
+    requireRoles("Admin"),
+    requirePermission("organization", "write"),
+    idempotencyMiddleware,
+    updateStore
   );
 
 router

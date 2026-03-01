@@ -8,6 +8,7 @@ import { enqueueSnackbar } from "notistack";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { removeCustomer } from "../../redux/slices/customerSlice";
 import Invoice from "../invoice/Invoice";
+import OrderActionToolbar from "../order/OrderActionToolbar";
 import { formatDateAndTime, formatReadableOrderId, getDefaultCartRowId } from "../../utils";
 
 const DEFAULT_RECEIPT_TEMPLATE = {
@@ -96,7 +97,9 @@ const Bill = () => {
   const cartData = useSelector((state) => state.cart);
   const total = useSelector(getTotalPrice);
   const taxRate = Number(import.meta.env.VITE_TAX_RATE_PERCENT || 5.25);
+  const cardSurchargeRate = Number(import.meta.env.VITE_CARD_SURCHARGE_PERCENT || 0);
   const tax = (total * taxRate) / 100;
+  const cardSurcharge = cardSurchargeRate > 0 ? (total * cardSurchargeRate) / 100 : 0;
   const totalPriceWithTax = total + tax;
   const isEditingExistingOrder = Boolean(customerData?.activeOrderId);
 
@@ -500,6 +503,12 @@ const Bill = () => {
         <p className="text-xs text-[#ababab] font-medium mt-2">{t("cart.items")}({cartData.length})</p>
         <h1 className="text-[#f5f5f5] text-md font-bold">€{total.toFixed(2)}</h1>
       </div>
+      {cardSurchargeRate > 0 && (
+        <div className="flex items-center justify-between px-5 mt-2">
+          <p className="text-xs text-[#ababab] font-medium mt-2">{t("cart.cardSurcharge")}({cardSurchargeRate}%)</p>
+          <h1 className="text-[#f5f5f5] text-md font-bold">€{cardSurcharge.toFixed(2)}</h1>
+        </div>
+      )}
       <div className="flex items-center justify-between px-5 mt-2">
         <p className="text-xs text-[#ababab] font-medium mt-2">Tax({taxRate}%)</p>
         <h1 className="text-[#f5f5f5] text-md font-bold">€{tax.toFixed(2)}</h1>
@@ -654,7 +663,23 @@ const Bill = () => {
         </div>
       )}
 
-      <div className="sticky bottom-0 z-10 bg-[#1a1a1a] border-t border-t-[#2a2a2a] flex items-center gap-3 px-5 pt-4 pb-4">
+      {/* 2026-03-01: iPad 点餐 - 订单操作工具栏 */}
+      <div className="px-5 py-2 overflow-x-auto">
+        <div className="flex gap-2 min-w-max">
+          <OrderActionToolbar
+            onPrintCheck={handlePrintReceipt}
+            onSplit={handleToggleSplitPanel}
+            onDiscount={() => enqueueSnackbar("Discount: configure in backend", { variant: "info" })}
+            onSurcharge={() => enqueueSnackbar("Surcharge: configure in backend", { variant: "info" })}
+            onAddTips={() => enqueueSnackbar("Add Tips: configure in backend", { variant: "info" })}
+            onTaxExempt={() => enqueueSnackbar("Tax Exempt: configure in backend", { variant: "info" })}
+            onDeposit={() => enqueueSnackbar("Deposit: configure in backend", { variant: "info" })}
+            onPromotion={() => enqueueSnackbar("Promotion: configure in backend", { variant: "info" })}
+            splitActive={showSplitPanel}
+          />
+        </div>
+      </div>
+      <div className="sticky bottom-0 z-10 bg-[#1a1a1a] border-t border-t-[#2a2a2a] flex flex-wrap items-center gap-3 px-5 pt-4 pb-4">
         <button
           onClick={handleToggleSplitPanel}
           className={`px-4 py-3 rounded-lg font-semibold text-lg ${
@@ -668,7 +693,7 @@ const Bill = () => {
         </button>
         <button
           onClick={handlePrintReceipt}
-          className="bg-[#025cca] px-4 py-3 w-full rounded-lg text-[#f5f5f5] font-semibold text-lg"
+          className="bg-[#025cca] px-4 py-3 rounded-lg text-[#f5f5f5] font-semibold text-lg"
         >
           {t("cart.printReceipt")}
         </button>

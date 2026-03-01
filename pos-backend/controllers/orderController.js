@@ -421,9 +421,15 @@ const getOrderById = async (req, res, next) => {
   }
 };
 
+// 2026-02-28T16:10:00+08:00 Phase E2.3 渠道订单筛选 sourceType=CHANNEL
 const getOrders = async (req, res, next) => {
   try {
-    const orders = await Order.find().populate("table memberId").sort({ createdAt: -1 });
+    const sourceType = `${req.query.sourceType || ""}`.trim().toUpperCase();
+    const match = {};
+    if (sourceType === "CHANNEL" || sourceType === "POS") {
+      match.sourceType = sourceType;
+    }
+    const orders = await Order.find(match).populate("table memberId").sort({ createdAt: -1 });
     res.status(200).json({ success: true, data: orders });
   } catch (error) {
     next(error);

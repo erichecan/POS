@@ -36,20 +36,49 @@ const parseDate = (value, fieldName) => {
   return parsed;
 };
 
+/**
+ * 2026-02-28T16:10:00+08:00: M11 支持 promoType/tiers/BOGO/ITEM_DISCOUNT
+ */
 const createPromotionRule = async (req, res, next) => {
   try {
     const locationId = normalizeLocationId(req.body.locationId);
     const code = normalizePromoCode(req.body.code);
     const name = `${req.body.name || ""}`.trim();
-    const discountType = `${req.body.discountType || ""}`.trim().toUpperCase();
-    const discountValue = Number(req.body.discountValue);
+    const promoType = `${req.body.promoType || "ORDER_DISCOUNT"}`.toUpperCase();
 
-    if (!code || !name || !discountType || !Number.isFinite(discountValue) || discountValue <= 0) {
-      return next(createHttpError(400, "code, name, discountType and discountValue are required."));
+    if (!code || !name) {
+      return next(createHttpError(400, "code and name are required."));
     }
 
-    if (!["PERCENT", "FIXED"].includes(discountType)) {
-      return next(createHttpError(400, "discountType must be PERCENT or FIXED."));
+    if (!["ORDER_DISCOUNT", "TIERED_OFF", "BOGO", "ITEM_DISCOUNT"].includes(promoType)) {
+      return next(createHttpError(400, "promoType must be ORDER_DISCOUNT, TIERED_OFF, BOGO, or ITEM_DISCOUNT."));
+    }
+
+    const tiers = Array.isArray(req.body.tiers)
+      ? req.body.tiers
+        .filter((t) => Number.isFinite(Number(t?.threshold)) && t?.discountType && Number.isFinite(Number(t?.discountValue)))
+        .map((t) => ({
+          threshold: Number(t.threshold),
+          discountType: `${t.discountType}`.toUpperCase(),
+          discountValue: Number(t.discountValue),
+        }))
+        .filter((t) => ["PERCENT", "FIXED"].includes(t.discountType))
+      : undefined;
+
+    const discountType = req.body.discountType ? `${req.body.discountType}`.trim().toUpperCase() : undefined;
+    const discountValue = req.body.discountValue !== undefined ? Number(req.body.discountValue) : undefined;
+    if ((promoType === "ORDER_DISCOUNT" || promoType === "ITEM_DISCOUNT") && (!discountType || !Number.isFinite(discountValue) || discountValue <= 0)) {
+      return next(createHttpError(400, "discountType and discountValue are required for ORDER_DISCOUNT and ITEM_DISCOUNT."));
+    }
+    if (promoType === "TIERED_OFF" && (!tiers || tiers.length === 0)) {
+      return next(createHttpError(400, "tiers are required for TIERED_OFF."));
+    }
+    if (promoType === "BOGO") {
+      const buyQ = Number(req.body.buyQuantity || 1);
+      const getQ = Number(req.body.getQuantity || 0);
+      if (!Number.isFinite(buyQ) || buyQ < 1 || !Number.isFinite(getQ) || getQ < 1) {
+        return next(createHttpError(400, "buyQuantity and getQuantity (min 1) are required for BOGO."));
+      }
     }
 
     const startAt = parseDate(req.body.startAt, "startAt");
@@ -58,16 +87,13 @@ const createPromotionRule = async (req, res, next) => {
       return next(createHttpError(400, "endAt must be later than startAt."));
     }
 
-    const rule = await PromotionRule.create({
+    const payload = {
       locationId,
       code,
       name,
       status: `${req.body.status || "ACTIVE"}`.trim().toUpperCase(),
-      discountType,
-      discountValue,
+      promoType,
       minOrderAmount: Number(req.body.minOrderAmount || 0),
-      maxDiscountAmount:
-        req.body.maxDiscountAmount === undefined ? undefined : Number(req.body.maxDiscountAmount),
       stackable: Boolean(req.body.stackable),
       autoApply: Boolean(req.body.autoApply),
       appliesToChannels: Array.isArray(req.body.appliesToChannels)
@@ -76,8 +102,31 @@ const createPromotionRule = async (req, res, next) => {
       startAt,
       endAt,
       usageLimit: req.body.usageLimit === undefined ? undefined : Number(req.body.usageLimit),
+      priority: Number(req.body.priority || 0),
+      stackGroup: req.body.stackGroup ? `${req.body.stackGroup}`.trim() : undefined,
+      maxPerOrder: req.body.maxPerOrder === undefined ? undefined : Number(req.body.maxPerOrder),
       metadata: req.body.metadata,
-    });
+    };
+    if (discountType) payload.discountType = discountType;
+    if (Number.isFinite(discountValue)) payload.discountValue = discountValue;
+    if (payload.discountType && payload.discountValue) {
+      payload.maxDiscountAmount = req.body.maxDiscountAmount === undefined ? undefined : Number(req.body.maxDiscountAmount);
+    }
+    if (tiers && tiers.length) payload.tiers = tiers;
+    if (promoType === "BOGO") {
+      payload.buyQuantity = Number(req.body.buyQuantity || 1);
+      payload.getQuantity = Number(req.body.getQuantity || 1);
+      if (req.body.discountValue !== undefined) payload.discountValue = Number(req.body.discountValue) || 100;
+      else payload.discountValue = 100;
+    }
+    if (Array.isArray(req.body.appliesToCategoryIds) && req.body.appliesToCategoryIds.length) {
+      payload.appliesToCategoryIds = req.body.appliesToCategoryIds.filter((id) => mongoose.Types.ObjectId.isValid(id)).map((id) => new mongoose.Types.ObjectId(id));
+    }
+    if (Array.isArray(req.body.appliesToItemIds) && req.body.appliesToItemIds.length) {
+      payload.appliesToItemIds = req.body.appliesToItemIds.filter((id) => mongoose.Types.ObjectId.isValid(id)).map((id) => new mongoose.Types.ObjectId(id));
+    }
+
+    const rule = await PromotionRule.create(payload);
 
     await logAuditEvent({
       req,
@@ -204,7 +253,7 @@ const listPromotionCoupons = async (req, res, next) => {
         .sort({ updatedAt: -1 })
         .skip(offset)
         .limit(limit)
-        .populate("promotionId", "code name discountType discountValue"),
+        .populate("promotionId", "code name discountType discountValue promoType buyQuantity getQuantity"),
       PromotionCoupon.countDocuments(query),
     ]);
 
@@ -223,6 +272,7 @@ const previewPromotionApplication = async (req, res, next) => {
     const locationId = normalizeLocationId(req.body.locationId);
     const channelCode = normalizeChannelCode(req.body.channelCode || "ALL");
     const subtotal = Number(req.body.subtotal);
+    const orderItems = Array.isArray(req.body.orderItems) ? req.body.orderItems : [];
 
     if (!Number.isFinite(subtotal) || subtotal < 0) {
       return next(createHttpError(400, "subtotal must be >= 0."));
@@ -235,6 +285,7 @@ const previewPromotionApplication = async (req, res, next) => {
       channelCode,
       subtotal,
       promotionCodes,
+      orderItems,
     });
 
     return res.status(200).json({

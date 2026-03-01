@@ -7,6 +7,7 @@ const {
   publishMenuVersion,
   listMenuVersions,
   markMenuItemSyncStatus,
+  getMenuSyncStatusSummary,
 } = require("../controllers/menuController");
 
 const router = express.Router();
@@ -35,6 +36,15 @@ router
     requirePermission("menu", "write"),
     idempotencyMiddleware,
     markMenuItemSyncStatus
+  );
+
+router
+  .route("/sync-status")
+  .get(
+    isVerifiedUser,
+    requireRoles("Admin", "Cashier"),
+    requirePermission("menu", "read"),
+    getMenuSyncStatusSummary
   );
 
 router

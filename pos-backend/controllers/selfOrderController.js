@@ -42,6 +42,30 @@ const applyPromotionDiscountToBills = (bills, discountTotal) => {
   };
 };
 
+// 2026-02-28T15:30:00+08:00 Phase E1.2 手持 POS - 服务员扫码解析桌台 token
+const resolveTableByTokenForStaff = async (req, res, next) => {
+  try {
+    const token = `${req.params.token || req.query?.token || ""}`.trim();
+    if (!token) {
+      return next(createHttpError(400, "token is required."));
+    }
+
+    const session = await resolveActiveSessionByToken(token);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        tableId: session.tableId?._id,
+        tableNo: session.tableId?.tableNo,
+        seats: session.tableId?.seats,
+        locationId: session.locationId,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 const resolveActiveSessionByToken = async (token) => {
   const session = await TableQrSession.findOne({ token }).populate("tableId");
   if (!session) {
@@ -59,6 +83,115 @@ const resolveActiveSessionByToken = async (token) => {
   }
 
   return session;
+};
+
+// 2026-02-28T18:30:00+08:00 Phase B1 - Kiosk 无 token 公开菜单接口（自助点餐机用）
+const getKioskMenu = async (req, res, next) => {
+  try {
+    const locationId = normalizeLocationId(req.query.locationId);
+
+    const items = await MenuCatalogItem.find({
+      locationId,
+      status: "ACTIVE",
+      channelCode: "ALL",
+    })
+      .sort({ category: 1, name: 1 })
+      .lean();
+
+    const menuItems = items.length
+      ? items.map((item) => ({
+          id: item._id,
+          name: item.name,
+          category: item.category,
+          price: item.basePrice,
+          versionTag: item.versionTag,
+        }))
+      : getMenuItemEntries().map((item) => ({
+          name: item.name,
+          category: "default",
+          price: item.price,
+          versionTag: "static",
+        }));
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        locationId,
+        menuItems,
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// 2026-02-28T18:31:00+08:00 Phase B1 - Kiosk 无桌下单（取餐号场景，fulfillmentType: PICKUP）
+const createKioskOrder = async (req, res, next) => {
+  try {
+    const locationId = normalizeLocationId(req.body.locationId);
+
+    const pricing = await calculateOrderSummaryFromCatalog(req.body.items, {
+      locationId,
+      channelProviderCode: "ALL",
+      versionTag: req.body.menuVersion,
+    });
+
+    const promotionResult = await resolveEligiblePromotions({
+      locationId,
+      channelCode: "ALL",
+      subtotal: pricing.bills.total,
+      promotionCodes: req.body.promotionCodes || [],
+    });
+
+    const bills = applyPromotionDiscountToBills(pricing.bills, promotionResult.discountTotal);
+
+    const paymentMethod = `${req.body.paymentMethod || "Cash"}`.trim();
+    if (!["Cash", "Online"].includes(paymentMethod)) {
+      return next(createHttpError(400, "Invalid paymentMethod."));
+    }
+
+    const order = await Order.create({
+      customerDetails: sanitizeCustomerDetails(req.body.customerDetails),
+      orderStatus: "In Progress",
+      sourceType: "POS",
+      fulfillmentType: "PICKUP",
+      locationId,
+      bills,
+      items: pricing.items,
+      table: null,
+      paymentMethod,
+      appliedPromotions: promotionResult.appliedPromotions,
+    });
+
+    if (promotionResult.appliedPromotions.length > 0) {
+      await consumePromotionUsage({ appliedPromotions: promotionResult.appliedPromotions });
+    }
+
+    try {
+      await createKitchenTicketForOrder(order, null);
+    } catch (error) {
+      console.error("Failed to create kitchen ticket for kiosk order:", error.message);
+    }
+
+    if (paymentMethod === "Cash") {
+      try {
+        await applyCashSaleToOpenShift({
+          locationId,
+          amount: order.bills.totalWithTax,
+          metadata: {
+            orderId: order._id,
+            sourceType: "SELF_ORDER_KIOSK",
+          },
+        });
+      } catch (error) {
+        console.error("Failed to apply cash movement for kiosk order:", error.message);
+      }
+    }
+
+    return res.status(201).json({ success: true, data: order });
+  } catch (error) {
+    return next(error);
+  }
 };
 
 const generateTableQrSession = async (req, res, next) => {
@@ -232,4 +365,7 @@ module.exports = {
   generateTableQrSession,
   getPublicMenuByToken,
   createSelfOrderByToken,
+  resolveTableByTokenForStaff, // 2026-02-28T15:32:00+08:00 Phase E1.2 手持 POS
+  getKioskMenu,
+  createKioskOrder,
 };

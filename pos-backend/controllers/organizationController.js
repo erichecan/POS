@@ -54,6 +54,116 @@ const createOrganization = async (req, res, next) => {
   }
 };
 
+// 2026-02-28T14:00:00+08:00: docs/plans/2026-02-28-settings-general-chain.md PATCH 更新接口
+const sanitizeDefaultSettings = (obj) => {
+  if (!obj || typeof obj !== "object") return {};
+  const out = {};
+  if (obj.timezone != null) out.timezone = `${obj.timezone}`.trim().slice(0, 64);
+  if (obj.currency != null) out.currency = `${obj.currency}`.trim().toUpperCase().slice(0, 6);
+  if (obj.countryCode != null) out.countryCode = `${obj.countryCode}`.trim().toUpperCase().slice(0, 4);
+  if (obj.locale != null) out.locale = `${obj.locale}`.trim().slice(0, 16);
+  return out;
+};
+
+const updateOrganization = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(createHttpError(400, "Invalid organization id."));
+    }
+    const body = req.body || {};
+    const update = {};
+    if (body.defaultSettings && typeof body.defaultSettings === "object") {
+      const org = await Organization.findById(id).lean();
+      const merged = { ...(org?.defaultSettings || {}), ...sanitizeDefaultSettings(body.defaultSettings) };
+      update.defaultSettings = merged;
+    }
+    if (Object.keys(update).length === 0) {
+      return next(createHttpError(400, "No valid fields to update."));
+    }
+    const org = await Organization.findByIdAndUpdate(id, { $set: update }, { new: true });
+    if (!org) return next(createHttpError(404, "Organization not found."));
+    await logAuditEvent({
+      req,
+      action: "ORGANIZATION_UPDATED",
+      resourceType: "Organization",
+      resourceId: org._id,
+      statusCode: 200,
+    });
+    return res.status(200).json({ success: true, data: org });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const updateRegion = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(createHttpError(400, "Invalid region id."));
+    }
+    const body = req.body || {};
+    const update = {};
+    if (body.timezone != null) update.timezone = `${body.timezone}`.trim().slice(0, 64) || "UTC";
+    if (body.currency != null) update.currency = `${body.currency}`.trim().toUpperCase().slice(0, 6) || "EUR";
+    if (body.countryCode != null) update.countryCode = `${body.countryCode}`.trim().toUpperCase().slice(0, 4);
+    if (body.defaultSettings && typeof body.defaultSettings === "object") {
+      const region = await Region.findById(id).lean();
+      const merged = { ...(region?.defaultSettings || {}), ...sanitizeDefaultSettings(body.defaultSettings) };
+      update.defaultSettings = merged;
+    }
+    if (Object.keys(update).length === 0) {
+      return next(createHttpError(400, "No valid fields to update."));
+    }
+    const region = await Region.findByIdAndUpdate(id, { $set: update }, { new: true });
+    if (!region) return next(createHttpError(404, "Region not found."));
+    await logAuditEvent({
+      req,
+      action: "REGION_UPDATED",
+      resourceType: "Region",
+      resourceId: region._id,
+      statusCode: 200,
+    });
+    return res.status(200).json({ success: true, data: region });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const updateStore = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(createHttpError(400, "Invalid store id."));
+    }
+    const body = req.body || {};
+    const update = {};
+    if (body.timezone != null) update.timezone = `${body.timezone}`.trim().slice(0, 64) || "";
+    if (body.overrideSettings && typeof body.overrideSettings === "object") {
+      const store = await Store.findById(id).lean();
+      const merged = { ...(store?.overrideSettings || {}), ...sanitizeDefaultSettings(body.overrideSettings) };
+      update.overrideSettings = merged;
+    }
+    if (Object.keys(update).length === 0) {
+      return next(createHttpError(400, "No valid fields to update."));
+    }
+    const store = await Store.findByIdAndUpdate(id, { $set: update }, { new: true })
+      .populate("organizationId", "code name")
+      .populate("regionId", "code name countryCode timezone");
+    if (!store) return next(createHttpError(404, "Store not found."));
+    await logAuditEvent({
+      req,
+      action: "STORE_UPDATED",
+      resourceType: "Store",
+      resourceId: store._id,
+      statusCode: 200,
+    });
+    return res.status(200).json({ success: true, data: store });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 const listOrganizations = async (req, res, next) => {
   try {
     const { limit, offset } = parsePagination(req);
@@ -375,16 +485,27 @@ const getResolvedStoreSettings = async (req, res, next) => {
 
     const store = await Store.findById(id)
       .populate("organizationId", "defaultSettings code name")
-      .populate("regionId", "defaultSettings code name");
+      .populate("regionId", "defaultSettings code name timezone currency countryCode");
 
     if (!store) {
       return next(createHttpError(404, "Store not found."));
     }
 
+    const regionDefaults = {
+      ...(store.regionId?.defaultSettings || {}),
+      ...(store.regionId?.timezone && { timezone: store.regionId.timezone }),
+      ...(store.regionId?.currency && { currency: store.regionId.currency }),
+      ...(store.regionId?.countryCode && { countryCode: store.regionId.countryCode }),
+    };
+    const storeOverrides = {
+      ...(store.overrideSettings || {}),
+      ...(store.timezone && { timezone: store.timezone }),
+    };
+
     const resolvedSettings = resolveStoreSettings({
       organizationDefaults: store.organizationId?.defaultSettings || {},
-      regionDefaults: store.regionId?.defaultSettings || {},
-      storeOverrides: store.overrideSettings || {},
+      regionDefaults,
+      storeOverrides,
     });
 
     return res.status(200).json({
@@ -403,9 +524,12 @@ const getResolvedStoreSettings = async (req, res, next) => {
 module.exports = {
   createOrganization,
   listOrganizations,
+  updateOrganization,
   createRegion,
   listRegions,
+  updateRegion,
   createStore,
+  updateStore,
   previewStoreProvisioning,
   listStores,
   getResolvedStoreSettings,

@@ -20,6 +20,7 @@ import {
   MdMenuBook,
   MdGridOn,
   MdCampaign,
+  MdLocalOffer,
 } from "react-icons/md";
 import { IoBarChartSharp } from "react-icons/io5";
 
@@ -72,6 +73,8 @@ export const adminNavConfig = [
         label: "Channels",
         icon: MdStorefront,
         children: [
+          { label: "Setup Wizard", path: "/dashboard/channels/wizard" },
+          { label: "Channel Orders", path: "/dashboard/channels/orders" },
           { label: "Providers", path: "/dashboard/channels/providers" },
           { label: "Markets", path: "/dashboard/channels/markets" },
           { label: "Connections", path: "/dashboard/channels/connections" },
@@ -88,6 +91,15 @@ export const adminNavConfig = [
           { label: "Receipt Template", path: "/dashboard/brand/receipt" },
           { label: "Signage", path: "/dashboard/brand/signage" },
           { label: "Ad Materials", path: "/dashboard/brand/ads" },
+        ],
+      },
+      {
+        label: "Promotions",
+        icon: MdLocalOffer,
+        children: [
+          { label: "Rules", path: "/dashboard/promotions/rules" },
+          { label: "Coupons", path: "/dashboard/promotions/coupons" },
+          { label: "Campaigns", path: "/dashboard/campaigns" },
         ],
       },
     ],
@@ -147,6 +159,9 @@ export const pathSegmentToLabel = {
   receipt: "Receipt Template",
   signage: "Signage",
   ads: "Ad Materials",
+  promotions: "Promotions",
+  rules: "Rules",
+  coupons: "Coupons",
   stores: "Stores",
   layout: "Table Layout",
   team: "Team",

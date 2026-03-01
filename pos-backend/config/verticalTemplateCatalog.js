@@ -1,3 +1,7 @@
+/**
+ * 2026-02-28T17:00:00+08:00: Phase A2 - businessType 对标 ABCPOS 7 种 Business Type
+ * Enterprise | Fine Dining | Casual Dining | QSR | Cafe/Tea | Retail | Bakery
+ */
 const VERTICAL_TEMPLATE_VERSION = "2026-02-24-v1";
 
 const VERTICAL_TEMPLATES = Object.freeze([
@@ -5,6 +9,7 @@ const VERTICAL_TEMPLATES = Object.freeze([
     templateCode: "MILK_TEA",
     displayName: "奶茶店",
     displayNameEn: "Milk Tea",
+    businessType: "CAFE_TEA",
     typeGroup: "QSR_BEVERAGE",
     supportedCountries: ["US", "CA", "IE", "GB"],
     operatingModes: ["TAKEAWAY", "DELIVERY", "SELF_PICKUP"],
@@ -29,6 +34,7 @@ const VERTICAL_TEMPLATES = Object.freeze([
     templateCode: "SUSHI",
     displayName: "寿司",
     displayNameEn: "Sushi",
+    businessType: "CASUAL_DINING",
     typeGroup: "DINE_IN_LIGHT",
     supportedCountries: ["US", "CA", "IE", "GB"],
     operatingModes: ["DINE_IN", "TAKEAWAY", "DELIVERY"],
@@ -55,6 +61,7 @@ const VERTICAL_TEMPLATES = Object.freeze([
     templateCode: "DIM_SUM",
     displayName: "广式早茶",
     displayNameEn: "Dim Sum",
+    businessType: "CASUAL_DINING",
     typeGroup: "DINE_IN_FULL",
     supportedCountries: ["US", "CA", "IE", "GB"],
     operatingModes: ["DINE_IN", "TAKEAWAY"],
@@ -82,6 +89,7 @@ const VERTICAL_TEMPLATES = Object.freeze([
     templateCode: "WESTERN_DINING",
     displayName: "西餐",
     displayNameEn: "Western Dining",
+    businessType: "FINE_DINING",
     typeGroup: "DINE_IN_FULL",
     supportedCountries: ["US", "CA", "IE", "GB", "FR", "ES", "NL"],
     operatingModes: ["DINE_IN", "TAKEAWAY", "DELIVERY"],
@@ -108,6 +116,7 @@ const VERTICAL_TEMPLATES = Object.freeze([
     templateCode: "CHINESE_FAST_FOOD",
     displayName: "中式快餐",
     displayNameEn: "Chinese Fast Food",
+    businessType: "QSR",
     typeGroup: "QSR_FOOD",
     supportedCountries: ["US", "CA", "IE", "GB"],
     operatingModes: ["TAKEAWAY", "DELIVERY", "SELF_PICKUP", "DINE_IN"],
@@ -133,6 +142,7 @@ const VERTICAL_TEMPLATES = Object.freeze([
     templateCode: "NAIL_SALON",
     displayName: "美甲店",
     displayNameEn: "Nail Salon",
+    businessType: "ENTERPRISE",
     typeGroup: "SERVICE",
     supportedCountries: ["US", "CA", "IE", "GB", "FR", "ES", "NL"],
     operatingModes: ["APPOINTMENT", "WALK_IN"],
@@ -155,6 +165,7 @@ const VERTICAL_TEMPLATES = Object.freeze([
     templateCode: "HOTPOT",
     displayName: "火锅店",
     displayNameEn: "Hotpot",
+    businessType: "CASUAL_DINING",
     typeGroup: "DINE_IN_FULL",
     supportedCountries: ["US", "CA", "IE", "GB"],
     operatingModes: ["DINE_IN", "TAKEAWAY"],
@@ -178,6 +189,57 @@ const VERTICAL_TEMPLATES = Object.freeze([
       supportsTableMerge: true,
       supportsLongSession: true,
     },
+  },
+  {
+    templateCode: "CAFE",
+    displayName: "咖啡馆",
+    displayNameEn: "Cafe",
+    businessType: "CAFE_TEA",
+    typeGroup: "QSR_BEVERAGE",
+    supportedCountries: ["US", "CA", "IE", "GB", "FR", "ES", "NL"],
+    operatingModes: ["DINE_IN", "TAKEAWAY", "SELF_PICKUP"],
+    requiredCapabilities: ["COUNTER_CHECKOUT", "EMV_NFC_PAYMENT", "FRONT_RECEIPT_PRINT"],
+    recommendedCapabilities: ["SELF_ORDER_KIOSK", "KITCHEN_TICKET_PRINT"],
+    menuOptionProfile: {
+      optionModel: "MULTI_MODIFIER",
+      examples: ["杯型", "浓度", "糖浆", "奶"],
+      highFrequencyEdits: true,
+    },
+    tableServiceProfile: { enabled: true, supportsSeatSplit: false },
+  },
+  {
+    templateCode: "RETAIL",
+    displayName: "零售",
+    displayNameEn: "Retail",
+    businessType: "RETAIL",
+    typeGroup: "RETAIL",
+    supportedCountries: ["US", "CA", "IE", "GB"],
+    operatingModes: ["WALK_IN", "SELF_PICKUP"],
+    requiredCapabilities: ["COUNTER_CHECKOUT", "EMV_NFC_PAYMENT", "FRONT_RECEIPT_PRINT"],
+    recommendedCapabilities: ["INVENTORY_TRACKING", "BARCODE_SCAN"],
+    menuOptionProfile: {
+      optionModel: "SIMPLE_ITEM",
+      examples: ["规格", "数量"],
+      highFrequencyEdits: false,
+    },
+    tableServiceProfile: { enabled: false },
+  },
+  {
+    templateCode: "BAKERY",
+    displayName: "烘焙店",
+    displayNameEn: "Bakery",
+    businessType: "BAKERY",
+    typeGroup: "QSR_FOOD",
+    supportedCountries: ["US", "CA", "IE", "GB"],
+    operatingModes: ["TAKEAWAY", "DINE_IN", "SELF_PICKUP"],
+    requiredCapabilities: ["COUNTER_CHECKOUT", "EMV_NFC_PAYMENT", "FRONT_RECEIPT_PRINT"],
+    recommendedCapabilities: ["SCALE_WEIGHT", "KITCHEN_TICKET_PRINT"],
+    menuOptionProfile: {
+      optionModel: "MULTI_MODIFIER",
+      examples: ["规格", "切片", "数量"],
+      highFrequencyEdits: true,
+    },
+    tableServiceProfile: { enabled: false },
   },
 ]);
 

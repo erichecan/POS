@@ -7,6 +7,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useVerticalProfile } from "../contexts/VerticalProfileContext";
 // 2026-02-24T12:00:05Z: 转台/并台/拆台/撤销并台迁移到 Tables
 // 2026-02-28T12:20:00+08:00: PRD 7.22 - tableServiceProfile 控制并台/拆台/席位分单显示
+// 2026-03-01T14:30:00+08:00: iPad 点餐 UX - 右侧上下文面板（订单详情 | 收银）
 import {
   getTables,
   settleOrder,
@@ -18,6 +19,7 @@ import {
 } from "../https";
 import { enqueueSnackbar } from "notistack";
 import Modal from "../components/shared/Modal";
+import PaymentTenderPanel from "../components/tender/PaymentTenderPanel";
 import { useDispatch } from "react-redux";
 import { setCustomer, updateTable } from "../redux/slices/customerSlice";
 import { removeAllItems, setItems } from "../redux/slices/cartSlice";
@@ -55,6 +57,8 @@ const Tables = () => {
   const [splitBySeatTargetId, setSplitBySeatTargetId] = useState("");
   const [splitBySeatNos, setSplitBySeatNos] = useState("");
   const [showUnmergeUI, setShowUnmergeUI] = useState(false);
+  // 2026-03-01T14:30:00+08:00: 右侧面板标签 order|payment
+  const [rightPanelTab, setRightPanelTab] = useState("order");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -391,6 +395,8 @@ const Tables = () => {
 
   const closeBookedDetailModal = () => {
     setBookedTableTarget(null);
+    setRightPanelTab("order");
+    setSettleTarget(null);
     setShowTransferUI(false);
     setTransferTargetId("");
     setShowMergeUI(false);
@@ -539,6 +545,7 @@ const Tables = () => {
       customerName: getReadableCustomerName(order?.customerDetails?.name, order?.customerDetails?.phone),
     });
     setSettlePaymentMethod("Cash");
+    setRightPanelTab("payment");
   };
 
   const confirmSettlement = () => {
@@ -592,13 +599,490 @@ const Tables = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-3 px-6 md:px-10 xl:px-16 py-4 pb-36 flex-1 min-h-0 overflow-y-auto">
-        {filteredTables.length > 0 ? (
-          filteredTables.map((table) => {
-            return <TableCard key={table._id} table={table} onOpen={openTableModal} />;
-          })
-        ) : (
-          <p className="col-span-5 text-gray-500">{t("tables.noTables")}</p>
+      <div
+        className={`flex flex-1 min-h-0 ${bookedTableTarget ? "flex-row gap-0" : ""}`}
+      >
+        <div
+          className={`grid gap-3 px-6 md:px-10 xl:px-16 py-4 pb-36 flex-1 min-h-0 overflow-y-auto ${
+            bookedTableTarget
+              ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4"
+              : "grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5"
+          }`}
+        >
+          {filteredTables.length > 0 ? (
+            filteredTables.map((table) => (
+              <TableCard key={table._id} table={table} onOpen={openTableModal} />
+            ))
+          ) : (
+            <p className="col-span-5 text-gray-500">{t("tables.noTables")}</p>
+          )}
+        </div>
+
+        {bookedTableTarget && (
+          <aside className="w-full lg:w-96 xl:w-[26rem] shrink-0 flex flex-col bg-[#252525] border-l border-[#333] overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#333] shrink-0">
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setRightPanelTab("order")}
+                  className={`px-3 py-1.5 rounded text-sm font-medium ${
+                    rightPanelTab === "order"
+                      ? "bg-[#383838] text-[#f5f5f5]"
+                      : "text-[#ababab] hover:text-[#f5f5f5]"
+                  }`}
+                >
+                  {t("tables.panelOrderDetails")}
+                </button>
+                <button
+                  onClick={() => {
+                    if (!settleTarget) openSettlementModal();
+                    else setRightPanelTab("payment");
+                  }}
+                  className={`px-3 py-1.5 rounded text-sm font-medium ${
+                    rightPanelTab === "payment"
+                      ? "bg-[#383838] text-[#f5f5f5]"
+                      : "text-[#ababab] hover:text-[#f5f5f5]"
+                  }`}
+                >
+                  {t("tables.panelPayment")}
+                </button>
+              </div>
+              <button
+                onClick={closeBookedDetailModal}
+                className="p-1.5 text-[#ababab] hover:text-[#f5f5f5] rounded"
+                aria-label={t("common.close")}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto">
+              {rightPanelTab === "order" ? (
+                <div className="p-4 space-y-2 text-sm text-[#f5f5f5]">
+                  <p>{t("tables.table")}: #{bookedTableTarget?.tableNo}</p>
+                  <p>{t("tables.seats")}: {bookedTableTarget?.seats}</p>
+                  <p>
+                    {t("tables.order")} {formatReadableOrderId(bookedTableTarget?.currentOrder?._id)}
+                  </p>
+                  <p>
+                    {t("tables.customer")}{" "}
+                    {getReadableCustomerName(
+                      bookedTableTarget?.currentOrder?.customerDetails?.name,
+                      bookedTableTarget?.currentOrder?.customerDetails?.phone
+                    )}
+                  </p>
+                  <p>{t("tables.phoneLabel")} {bookedTableTarget?.currentOrder?.customerDetails?.phone || "N/A"}</p>
+                  <p>{t("tables.guestsLabel")} {bookedTableTarget?.currentOrder?.customerDetails?.guests || "N/A"}</p>
+                  <p>
+                    {t("tables.bookedAt")}{" "}
+                    {bookedTableTarget?.currentOrder?.orderDate
+                      ? formatDateAndTime(bookedTableTarget.currentOrder.orderDate)
+                      : "N/A"}
+                  </p>
+                  <p>{t("tables.statusLabel")} {bookedTableTarget?.currentOrder?.orderStatus || "N/A"}</p>
+                  <p>
+                    {t("tables.itemsLabel")}{" "}
+                    {Array.isArray(bookedTableTarget?.currentOrder?.items)
+                      ? bookedTableTarget.currentOrder.items.length
+                      : 0}
+                  </p>
+                  <p>
+                    {t("tables.currentBill")} €
+                    {Number(bookedTableTarget?.currentOrder?.bills?.totalWithTax || 0).toFixed(2)}
+                  </p>
+
+                  <div className="pt-3 flex gap-3">
+                    <button
+                      onClick={enterBookedOrderMenu}
+                      className="flex-1 bg-[#2f4f7a] text-[#e6f0ff] py-2 rounded-lg font-semibold"
+                    >
+                      {t("tables.addEditItems")}
+                    </button>
+                    <button
+                      onClick={openSettlementModal}
+                      className="flex-1 bg-[#F6B100] text-[#1f1f1f] py-2 rounded-lg font-semibold"
+                    >
+                      {t("tables.checkout")}
+                    </button>
+                  </div>
+
+                  {/* 转台 */}
+                  <div className="pt-3 border-t border-[#333] mt-3">
+                    {!showTransferUI ? (
+                      <button
+                        onClick={() => setShowTransferUI(true)}
+                        className="w-full bg-[#333] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm"
+                      >
+                        {t("tables.transferTable")}
+                      </button>
+                    ) : (
+                      <div className="space-y-2">
+                        <label className="block text-[#ababab] text-sm font-medium">
+                          {t("tables.transferTo")}
+                        </label>
+                        <select
+                          value={transferTargetId}
+                          onChange={(e) => setTransferTargetId(e.target.value)}
+                          className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
+                        >
+                          <option value="">{t("tables.selectAvailableTable")}</option>
+                          {transferCandidateTables.map((tbl) => (
+                            <option key={tbl._id} value={tbl._id}>
+                              {t("tables.table")} #{tbl.tableNo} · {tbl.seats} {t("tables.seats")}
+                            </option>
+                          ))}
+                        </select>
+                        {transferCandidateTables.length === 0 && (
+                          <p className="text-xs text-red-400">{t("tables.noTransferTable")}</p>
+                        )}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              setShowTransferUI(false);
+                              setTransferTargetId("");
+                            }}
+                            className="flex-1 bg-[#333] text-[#ababab] py-2 rounded-lg font-semibold text-sm"
+                          >
+                            {t("common.cancel")}
+                          </button>
+                          <button
+                            onClick={handleTransfer}
+                            disabled={!transferTargetId || transferMutation.isPending}
+                            className={`flex-1 bg-[#025cca] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm ${
+                              !transferTargetId || transferMutation.isPending
+                                ? "opacity-60 cursor-not-allowed"
+                                : ""
+                            }`}
+                          >
+                            {transferMutation.isPending ? t("tables.transferring") : t("tables.confirmTransfer")}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* 并台 */}
+                  {supportsMerge && (
+                    <div className="pt-3 border-t border-[#333] mt-3">
+                      {!showMergeUI ? (
+                        <button
+                          onClick={() => setShowMergeUI(true)}
+                          className="w-full bg-[#333] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm"
+                          disabled={mergeCandidateBookedTables.length === 0}
+                        >
+                          {t("tables.mergeTable")}
+                        </button>
+                      ) : (
+                        <div className="space-y-2">
+                          <label className="block text-[#ababab] text-sm font-medium">
+                            {t("tables.mergeInto")}
+                          </label>
+                          <select
+                            value={mergeTargetId}
+                            onChange={(e) => setMergeTargetId(e.target.value)}
+                            className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
+                          >
+                            <option value="">{t("tables.selectBookedTable")}</option>
+                            {mergeCandidateBookedTables.map((tbl) => (
+                              <option key={tbl._id} value={tbl._id}>
+                                {t("tables.table")} #{tbl.tableNo} · {tbl.seats} {t("tables.seats")}
+                              </option>
+                            ))}
+                          </select>
+                          {mergeCandidateBookedTables.length === 0 && (
+                            <p className="text-xs text-red-400">{t("tables.noMergeTarget")}</p>
+                          )}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                setShowMergeUI(false);
+                                setMergeTargetId("");
+                              }}
+                              className="flex-1 bg-[#333] text-[#ababab] py-2 rounded-lg font-semibold text-sm"
+                            >
+                              {t("common.cancel")}
+                            </button>
+                            <button
+                              onClick={handleMerge}
+                              disabled={!mergeTargetId || mergeMutation.isPending}
+                              className={`flex-1 bg-[#2e4a40] text-[#9ef0bb] py-2 rounded-lg font-semibold text-sm ${
+                                !mergeTargetId || mergeMutation.isPending
+                                  ? "opacity-60 cursor-not-allowed"
+                                  : ""
+                              }`}
+                            >
+                              {mergeMutation.isPending ? t("tables.merging") : t("tables.confirmMerge")}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 拆台 */}
+                  {supportsMerge && (
+                    <div className="pt-3 border-t border-[#333] mt-3">
+                      {!showSplitUI ? (
+                        <button
+                          onClick={() => setShowSplitUI(true)}
+                          className="w-full bg-[#333] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm"
+                          disabled={
+                            splitTargetTables.length === 0 ||
+                            !(bookedTableTarget?.currentOrder?.items?.length > 0)
+                          }
+                        >
+                          {t("tables.splitTable")}
+                        </button>
+                      ) : (
+                        <div className="space-y-2">
+                          <label className="block text-[#ababab] text-sm font-medium">
+                            {t("tables.splitTo")}
+                          </label>
+                          <select
+                            value={splitTargetId}
+                            onChange={(e) => setSplitTargetId(e.target.value)}
+                            className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
+                          >
+                            <option value="">{t("tables.selectAvailableTable")}</option>
+                            {splitTargetTables.map((tbl) => (
+                              <option key={tbl._id} value={tbl._id}>
+                                {t("tables.table")} #{tbl.tableNo} · {tbl.seats} {t("tables.seats")}
+                              </option>
+                            ))}
+                          </select>
+                          <label className="block text-[#ababab] text-sm font-medium mt-2">
+                            {t("tables.selectItemsForSplit")}
+                          </label>
+                          <div className="max-h-[120px] overflow-y-auto space-y-1 bg-[#1f1f1f] rounded-lg p-2">
+                            {splitSelectedItems.map((item) => (
+                              <div key={item.key} className="flex items-center justify-between gap-2 text-sm">
+                                <span className="text-[#f5f5f5] truncate flex-1">
+                                  {item.name} ×{item.maxQty}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setSplitSelectedItems((prev) =>
+                                        prev.map((p) =>
+                                          p.key === item.key
+                                            ? { ...p, splitQty: Math.max(0, p.splitQty - 1) }
+                                            : p
+                                        )
+                                      )
+                                    }
+                                    className="bg-[#333] text-[#f5f5f5] w-7 h-7 rounded text-center"
+                                  >
+                                    −
+                                  </button>
+                                  <span className="text-[#f5f5f5] w-6 text-center">{item.splitQty}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setSplitSelectedItems((prev) =>
+                                        prev.map((p) =>
+                                          p.key === item.key
+                                            ? { ...p, splitQty: Math.min(p.maxQty, p.splitQty + 1) }
+                                            : p
+                                        )
+                                      )
+                                    }
+                                    className="bg-[#333] text-[#f5f5f5] w-7 h-7 rounded text-center"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <label className="block text-[#ababab] text-sm font-medium">
+                            {t("tables.splitGuests")}
+                          </label>
+                          <input
+                            type="number"
+                            min={1}
+                            value={splitGuests}
+                            onChange={(e) => setSplitGuests(Math.max(1, Number(e.target.value) || 1))}
+                            className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-2 rounded-lg outline-none"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                setShowSplitUI(false);
+                                setSplitTargetId("");
+                                setSplitSelectedItems([]);
+                              }}
+                              className="flex-1 bg-[#333] text-[#ababab] py-2 rounded-lg font-semibold text-sm"
+                            >
+                              {t("common.cancel")}
+                            </button>
+                            <button
+                              onClick={handleSplit}
+                              disabled={
+                                !splitTargetId ||
+                                splitMutation.isPending ||
+                                splitSelectedItems.every((s) => s.splitQty === 0)
+                              }
+                              className={`flex-1 bg-[#025cca] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm ${
+                                !splitTargetId ||
+                                splitMutation.isPending ||
+                                splitSelectedItems.every((s) => s.splitQty === 0)
+                                  ? "opacity-60 cursor-not-allowed"
+                                  : ""
+                              }`}
+                            >
+                              {splitMutation.isPending ? t("tables.splitting") : t("tables.confirmSplit")}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 按座位拆台 */}
+                  {supportsSeatSplit && (
+                    <div className="pt-3 border-t border-[#333] mt-3">
+                      {!showSplitBySeatUI ? (
+                        <button
+                          onClick={() => setShowSplitBySeatUI(true)}
+                          className="w-full bg-[#333] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm"
+                          disabled={
+                            splitTargetTables.length === 0 ||
+                            orderSeatNos.length === 0
+                          }
+                        >
+                          {t("tables.splitBySeat")}
+                        </button>
+                      ) : (
+                        <div className="space-y-2">
+                          <label className="block text-[#ababab] text-sm font-medium">
+                            {t("tables.splitTo")}
+                          </label>
+                          <select
+                            value={splitBySeatTargetId}
+                            onChange={(e) => setSplitBySeatTargetId(e.target.value)}
+                            className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
+                          >
+                            <option value="">{t("tables.selectAvailableTable")}</option>
+                            {splitTargetTables.map((tbl) => (
+                              <option key={tbl._id} value={tbl._id}>
+                                {t("tables.table")} #{tbl.tableNo} · {tbl.seats} {t("tables.seats")}
+                              </option>
+                            ))}
+                          </select>
+                          <label className="block text-[#ababab] text-sm font-medium">
+                            {t("tables.seatNosHint")}
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="1,2,3"
+                            value={splitBySeatNos}
+                            onChange={(e) => setSplitBySeatNos(e.target.value)}
+                            className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
+                          />
+                          {orderSeatNos.length > 0 && (
+                            <p className="text-xs text-[#9ed4ff]">
+                              {t("tables.availableSeats")}: {orderSeatNos.join(", ")}
+                            </p>
+                          )}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => {
+                                setShowSplitBySeatUI(false);
+                                setSplitBySeatTargetId("");
+                                setSplitBySeatNos("");
+                              }}
+                              className="flex-1 bg-[#333] text-[#ababab] py-2 rounded-lg font-semibold text-sm"
+                            >
+                              {t("common.cancel")}
+                            </button>
+                            <button
+                              onClick={handleSplitBySeat}
+                              disabled={
+                                !splitBySeatTargetId ||
+                                splitBySeatMutation.isPending ||
+                                !splitBySeatNos.trim()
+                              }
+                              className={`flex-1 bg-[#025cca] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm ${
+                                !splitBySeatTargetId ||
+                                splitBySeatMutation.isPending ||
+                                !splitBySeatNos.trim()
+                                  ? "opacity-60 cursor-not-allowed"
+                                  : ""
+                              }`}
+                            >
+                              {splitBySeatMutation.isPending
+                                ? t("tables.splitting")
+                                : t("tables.confirmSplitBySeat")}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 撤销并台 */}
+                  {supportsMerge && hasMergeHistory && (
+                    <div className="pt-3 border-t border-[#333] mt-3">
+                      {!showUnmergeUI ? (
+                        <button
+                          onClick={() => setShowUnmergeUI(true)}
+                          className="w-full bg-[#333] text-[#f5c6c6] py-2 rounded-lg font-semibold text-sm"
+                        >
+                          {t("tables.unmergeTable")}
+                        </button>
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-xs text-[#ababab]">{t("operations.unmergeDesc")}</p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setShowUnmergeUI(false)}
+                              className="flex-1 bg-[#333] text-[#ababab] py-2 rounded-lg font-semibold text-sm"
+                            >
+                              {t("common.cancel")}
+                            </button>
+                            <button
+                              onClick={handleUnmerge}
+                              disabled={unmergeMutation.isPending}
+                              className={`flex-1 bg-[#5c2a2a] text-[#f5c6c6] py-2 rounded-lg font-semibold text-sm ${
+                                unmergeMutation.isPending ? "opacity-60 cursor-not-allowed" : ""
+                              }`}
+                            >
+                              {unmergeMutation.isPending
+                                ? t("tables.unmerging")
+                                : t("tables.confirmUnmerge")}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : !settleTarget ? (
+                <div className="p-4 text-[#ababab] text-sm">
+                  <button
+                    onClick={openSettlementModal}
+                    className="w-full bg-[#F6B100] text-[#1f1f1f] py-3 rounded-lg font-semibold"
+                  >
+                    {t("tables.checkout")}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4 p-4 max-h-full overflow-y-auto">
+                  <div className="space-y-2 text-sm text-[#f5f5f5] border-b border-[#333] pb-4">
+                    <p>{t("tables.order")} {settleTarget?.readableOrderId}</p>
+                    <p>{t("tables.customer")} {settleTarget?.customerName}</p>
+                    <p>{t("tables.table")}: #{settleTarget?.tableNo}</p>
+                    <p className="font-bold">{t("common.total")}: €{Number(settleTarget?.totalWithTax || 0).toFixed(2)}</p>
+                  </div>
+                  <PaymentTenderPanel
+                    total={settleTarget?.totalWithTax}
+                    onPayCash={() => confirmSettlement()}
+                    disabled={settleMutation.isPending}
+                    currencySymbol="€"
+                  />
+                </div>
+              )}
+            </div>
+          </aside>
         )}
       </div>
 
@@ -684,455 +1168,6 @@ const Tables = () => {
             className="w-full bg-[#F6B100] text-[#1f1f1f] rounded-lg py-3 mt-2 font-semibold"
           >
             {t("tables.openTableAndStartOrder")}
-          </button>
-        </div>
-      </Modal>
-
-      <Modal
-        isOpen={Boolean(bookedTableTarget)}
-        onClose={closeBookedDetailModal}
-        title={t("tables.tableDetails")}
-      >
-        <div className="space-y-2 text-sm text-[#f5f5f5]">
-          <p>{t("tables.table")}: #{bookedTableTarget?.tableNo}</p>
-          <p>{t("tables.seats")}: {bookedTableTarget?.seats}</p>
-          <p>
-            {t("tables.order")} {formatReadableOrderId(bookedTableTarget?.currentOrder?._id)}
-          </p>
-          <p>
-            {t("tables.customer")}{" "}
-            {getReadableCustomerName(
-              bookedTableTarget?.currentOrder?.customerDetails?.name,
-              bookedTableTarget?.currentOrder?.customerDetails?.phone
-            )}
-          </p>
-          <p>{t("tables.phoneLabel")} {bookedTableTarget?.currentOrder?.customerDetails?.phone || "N/A"}</p>
-          <p>{t("tables.guestsLabel")} {bookedTableTarget?.currentOrder?.customerDetails?.guests || "N/A"}</p>
-          <p>
-            {t("tables.bookedAt")}{" "}
-            {bookedTableTarget?.currentOrder?.orderDate
-              ? formatDateAndTime(bookedTableTarget.currentOrder.orderDate)
-              : "N/A"}
-          </p>
-          <p>{t("tables.statusLabel")} {bookedTableTarget?.currentOrder?.orderStatus || "N/A"}</p>
-          <p>
-            {t("tables.itemsLabel")}{" "}
-            {Array.isArray(bookedTableTarget?.currentOrder?.items)
-              ? bookedTableTarget.currentOrder.items.length
-              : 0}
-          </p>
-          <p>
-            {t("tables.currentBill")} €
-            {Number(bookedTableTarget?.currentOrder?.bills?.totalWithTax || 0).toFixed(2)}
-          </p>
-
-          <div className="pt-3 flex gap-3">
-            <button
-              onClick={enterBookedOrderMenu}
-              className="flex-1 bg-[#2f4f7a] text-[#e6f0ff] py-2 rounded-lg font-semibold"
-            >
-              {t("tables.addEditItems")}
-            </button>
-            <button
-              onClick={openSettlementModal}
-              className="flex-1 bg-[#F6B100] text-[#1f1f1f] py-2 rounded-lg font-semibold"
-            >
-              {t("tables.checkout")}
-            </button>
-          </div>
-
-          {/* 2026-02-24T12:00:40Z: 转台 */}
-          <div className="pt-3 border-t border-[#333] mt-3">
-            {!showTransferUI ? (
-              <button
-                onClick={() => setShowTransferUI(true)}
-                className="w-full bg-[#333] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm"
-              >
-                {t("tables.transferTable")}
-              </button>
-            ) : (
-              <div className="space-y-2">
-                <label className="block text-[#ababab] text-sm font-medium">
-                  {t("tables.transferTo")}
-                </label>
-                <select
-                  value={transferTargetId}
-                  onChange={(e) => setTransferTargetId(e.target.value)}
-                  className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
-                >
-                  <option value="">{t("tables.selectAvailableTable")}</option>
-                  {transferCandidateTables.map((tbl) => (
-                    <option key={tbl._id} value={tbl._id}>
-                      {t("tables.table")} #{tbl.tableNo} · {tbl.seats} {t("tables.seats")}
-                    </option>
-                  ))}
-                </select>
-                {transferCandidateTables.length === 0 && (
-                  <p className="text-xs text-red-400">{t("tables.noTransferTable")}</p>
-                )}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setShowTransferUI(false);
-                      setTransferTargetId("");
-                    }}
-                    className="flex-1 bg-[#333] text-[#ababab] py-2 rounded-lg font-semibold text-sm"
-                  >
-                    {t("common.cancel")}
-                  </button>
-                  <button
-                    onClick={handleTransfer}
-                    disabled={!transferTargetId || transferMutation.isPending}
-                    className={`flex-1 bg-[#025cca] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm ${
-                      !transferTargetId || transferMutation.isPending
-                        ? "opacity-60 cursor-not-allowed"
-                        : ""
-                    }`}
-                  >
-                    {transferMutation.isPending ? t("tables.transferring") : t("tables.confirmTransfer")}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 2026-02-24T12:00:45Z: 并台 - 2026-02-28: 按 supportsTableMerge 显示 */}
-          {supportsMerge && (
-          <div className="pt-3 border-t border-[#333] mt-3">
-            {!showMergeUI ? (
-              <button
-                onClick={() => setShowMergeUI(true)}
-                className="w-full bg-[#333] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm"
-                disabled={mergeCandidateBookedTables.length === 0}
-              >
-                {t("tables.mergeTable")}
-              </button>
-            ) : (
-              <div className="space-y-2">
-                <label className="block text-[#ababab] text-sm font-medium">
-                  {t("tables.mergeInto")}
-                </label>
-                <select
-                  value={mergeTargetId}
-                  onChange={(e) => setMergeTargetId(e.target.value)}
-                  className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
-                >
-                  <option value="">{t("tables.selectBookedTable")}</option>
-                  {mergeCandidateBookedTables.map((tbl) => (
-                    <option key={tbl._id} value={tbl._id}>
-                      {t("tables.table")} #{tbl.tableNo} · {tbl.seats} {t("tables.seats")}
-                    </option>
-                  ))}
-                </select>
-                {mergeCandidateBookedTables.length === 0 && (
-                  <p className="text-xs text-red-400">{t("tables.noMergeTarget")}</p>
-                )}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setShowMergeUI(false);
-                      setMergeTargetId("");
-                    }}
-                    className="flex-1 bg-[#333] text-[#ababab] py-2 rounded-lg font-semibold text-sm"
-                  >
-                    {t("common.cancel")}
-                  </button>
-                  <button
-                    onClick={handleMerge}
-                    disabled={!mergeTargetId || mergeMutation.isPending}
-                    className={`flex-1 bg-[#2e4a40] text-[#9ef0bb] py-2 rounded-lg font-semibold text-sm ${
-                      !mergeTargetId || mergeMutation.isPending
-                        ? "opacity-60 cursor-not-allowed"
-                        : ""
-                    }`}
-                  >
-                    {mergeMutation.isPending ? t("tables.merging") : t("tables.confirmMerge")}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-          )}
-
-          {/* 2026-02-24T12:00:50Z: 拆台 - 2026-02-28: 按 supportsTableMerge 显示 */}
-          {supportsMerge && (
-          <div className="pt-3 border-t border-[#333] mt-3">
-            {!showSplitUI ? (
-              <button
-                onClick={() => setShowSplitUI(true)}
-                className="w-full bg-[#333] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm"
-                disabled={
-                  splitTargetTables.length === 0 ||
-                  !(bookedTableTarget?.currentOrder?.items?.length > 0)
-                }
-              >
-                {t("tables.splitTable")}
-              </button>
-            ) : (
-              <div className="space-y-2">
-                <label className="block text-[#ababab] text-sm font-medium">
-                  {t("tables.splitTo")}
-                </label>
-                <select
-                  value={splitTargetId}
-                  onChange={(e) => setSplitTargetId(e.target.value)}
-                  className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
-                >
-                  <option value="">{t("tables.selectAvailableTable")}</option>
-                  {splitTargetTables.map((tbl) => (
-                    <option key={tbl._id} value={tbl._id}>
-                      {t("tables.table")} #{tbl.tableNo} · {tbl.seats} {t("tables.seats")}
-                    </option>
-                  ))}
-                </select>
-                <label className="block text-[#ababab] text-sm font-medium mt-2">
-                  {t("tables.selectItemsForSplit")}
-                </label>
-                <div className="max-h-[120px] overflow-y-auto space-y-1 bg-[#1f1f1f] rounded-lg p-2">
-                  {splitSelectedItems.map((item) => (
-                    <div key={item.key} className="flex items-center justify-between gap-2 text-sm">
-                      <span className="text-[#f5f5f5] truncate flex-1">
-                        {item.name} ×{item.maxQty}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setSplitSelectedItems((prev) =>
-                              prev.map((p) =>
-                                p.key === item.key
-                                  ? { ...p, splitQty: Math.max(0, p.splitQty - 1) }
-                                  : p
-                              )
-                            )
-                          }
-                          className="bg-[#333] text-[#f5f5f5] w-7 h-7 rounded text-center"
-                        >
-                          −
-                        </button>
-                        <span className="text-[#f5f5f5] w-6 text-center">{item.splitQty}</span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setSplitSelectedItems((prev) =>
-                              prev.map((p) =>
-                                p.key === item.key
-                                  ? { ...p, splitQty: Math.min(p.maxQty, p.splitQty + 1) }
-                                  : p
-                              )
-                            )
-                          }
-                          className="bg-[#333] text-[#f5f5f5] w-7 h-7 rounded text-center"
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <label className="block text-[#ababab] text-sm font-medium">
-                  {t("tables.splitGuests")}
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  value={splitGuests}
-                  onChange={(e) => setSplitGuests(Math.max(1, Number(e.target.value) || 1))}
-                  className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-2 rounded-lg outline-none"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setShowSplitUI(false);
-                      setSplitTargetId("");
-                      setSplitSelectedItems([]);
-                    }}
-                    className="flex-1 bg-[#333] text-[#ababab] py-2 rounded-lg font-semibold text-sm"
-                  >
-                    {t("common.cancel")}
-                  </button>
-                  <button
-                    onClick={handleSplit}
-                    disabled={
-                      !splitTargetId ||
-                      splitMutation.isPending ||
-                      splitSelectedItems.every((s) => s.splitQty === 0)
-                    }
-                    className={`flex-1 bg-[#025cca] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm ${
-                      !splitTargetId ||
-                      splitMutation.isPending ||
-                      splitSelectedItems.every((s) => s.splitQty === 0)
-                        ? "opacity-60 cursor-not-allowed"
-                        : ""
-                    }`}
-                  >
-                    {splitMutation.isPending ? t("tables.splitting") : t("tables.confirmSplit")}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-          )}
-
-          {/* 2026-02-24T12:00:55Z: 按座位拆台 - 2026-02-28: 按 supportsSeatSplit 显示 */}
-          {supportsSeatSplit && (
-          <div className="pt-3 border-t border-[#333] mt-3">
-            {!showSplitBySeatUI ? (
-              <button
-                onClick={() => setShowSplitBySeatUI(true)}
-                className="w-full bg-[#333] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm"
-                disabled={
-                  splitTargetTables.length === 0 ||
-                  orderSeatNos.length === 0
-                }
-              >
-                {t("tables.splitBySeat")}
-              </button>
-            ) : (
-              <div className="space-y-2">
-                <label className="block text-[#ababab] text-sm font-medium">
-                  {t("tables.splitTo")}
-                </label>
-                <select
-                  value={splitBySeatTargetId}
-                  onChange={(e) => setSplitBySeatTargetId(e.target.value)}
-                  className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
-                >
-                  <option value="">{t("tables.selectAvailableTable")}</option>
-                  {splitTargetTables.map((tbl) => (
-                    <option key={tbl._id} value={tbl._id}>
-                      {t("tables.table")} #{tbl.tableNo} · {tbl.seats} {t("tables.seats")}
-                    </option>
-                  ))}
-                </select>
-                <label className="block text-[#ababab] text-sm font-medium">
-                  {t("tables.seatNosHint")}
-                </label>
-                <input
-                  type="text"
-                  placeholder="1,2,3"
-                  value={splitBySeatNos}
-                  onChange={(e) => setSplitBySeatNos(e.target.value)}
-                  className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-4 py-3 rounded-lg outline-none"
-                />
-                {orderSeatNos.length > 0 && (
-                  <p className="text-xs text-[#9ed4ff]">
-                    {t("tables.availableSeats")}: {orderSeatNos.join(", ")}
-                  </p>
-                )}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => {
-                      setShowSplitBySeatUI(false);
-                      setSplitBySeatTargetId("");
-                      setSplitBySeatNos("");
-                    }}
-                    className="flex-1 bg-[#333] text-[#ababab] py-2 rounded-lg font-semibold text-sm"
-                  >
-                    {t("common.cancel")}
-                  </button>
-                  <button
-                    onClick={handleSplitBySeat}
-                    disabled={
-                      !splitBySeatTargetId ||
-                      splitBySeatMutation.isPending ||
-                      !splitBySeatNos.trim()
-                    }
-                    className={`flex-1 bg-[#025cca] text-[#f5f5f5] py-2 rounded-lg font-semibold text-sm ${
-                      !splitBySeatTargetId ||
-                      splitBySeatMutation.isPending ||
-                      !splitBySeatNos.trim()
-                        ? "opacity-60 cursor-not-allowed"
-                        : ""
-                    }`}
-                  >
-                    {splitBySeatMutation.isPending
-                      ? t("tables.splitting")
-                      : t("tables.confirmSplitBySeat")}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-          )}
-
-          {/* 2026-02-24T12:01:00Z: 撤销并台 - 2026-02-28: 按 supportsTableMerge 显示 */}
-          {supportsMerge && hasMergeHistory && (
-            <div className="pt-3 border-t border-[#333] mt-3">
-              {!showUnmergeUI ? (
-                <button
-                  onClick={() => setShowUnmergeUI(true)}
-                  className="w-full bg-[#5c2a2a] text-[#f5c6c6] py-2 rounded-lg font-semibold text-sm"
-                >
-                  {t("tables.unmergeTable")}
-                </button>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-xs text-[#ababab]">{t("operations.unmergeDesc")}</p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setShowUnmergeUI(false)}
-                      className="flex-1 bg-[#333] text-[#ababab] py-2 rounded-lg font-semibold text-sm"
-                    >
-                      {t("common.cancel")}
-                    </button>
-                    <button
-                      onClick={handleUnmerge}
-                      disabled={unmergeMutation.isPending}
-                      className={`flex-1 bg-[#5c2a2a] text-[#f5c6c6] py-2 rounded-lg font-semibold text-sm ${
-                        unmergeMutation.isPending ? "opacity-60 cursor-not-allowed" : ""
-                      }`}
-                    >
-                      {unmergeMutation.isPending
-                        ? t("tables.unmerging")
-                        : t("tables.confirmUnmerge")}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </Modal>
-
-      <Modal isOpen={Boolean(settleTarget)} onClose={() => setSettleTarget(null)} title={t("tables.settlePayment")}>
-        <div className="space-y-3 text-sm text-[#f5f5f5]">
-          <p>{t("tables.order")} {settleTarget?.readableOrderId}</p>
-          <p>{t("tables.customer")} {settleTarget?.customerName}</p>
-          <p>{t("tables.table")}: #{settleTarget?.tableNo}</p>
-          <p>{t("common.total")}: €{Number(settleTarget?.totalWithTax || 0).toFixed(2)}</p>
-
-          <div>
-            <label className="block text-[#ababab] mb-2 text-sm font-medium">{t("tables.paymentMethod")}</label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setSettlePaymentMethod("Cash")}
-                className={`px-4 py-2 rounded-lg ${
-                  settlePaymentMethod === "Cash"
-                    ? "bg-[#2e4a40] text-[#9ef0bb]"
-                    : "bg-[#1f1f1f] text-[#ababab]"
-                }`}
-              >
-                {t("tables.cash")}
-              </button>
-              <button
-                disabled
-                className="px-4 py-2 rounded-lg bg-[#2a2a2a] text-[#686868] cursor-not-allowed"
-                title="Enable after Stripe environment configuration"
-              >
-                {t("tables.onlineStripe")}
-              </button>
-            </div>
-          </div>
-
-          <button
-            onClick={confirmSettlement}
-            disabled={settleMutation.isPending}
-            className={`w-full bg-[#F6B100] text-[#1f1f1f] rounded-lg py-3 mt-2 font-semibold ${
-              settleMutation.isPending ? "opacity-60 cursor-not-allowed" : ""
-            }`}
-          >
-            {settleMutation.isPending ? t("tables.checkingOut") : t("tables.confirmCheckout")}
           </button>
         </div>
       </Modal>

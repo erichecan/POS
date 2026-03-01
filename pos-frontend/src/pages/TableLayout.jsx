@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { QRCodeSVG } from "qrcode.react";
 import BackButton from "../components/shared/BackButton";
 import BottomNav from "../components/shared/BottomNav";
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addTable, getTables, updateTable } from "../https";
+import { addTable, getTables, updateTable, generateTableQrSession } from "../https";
 import { enqueueSnackbar } from "notistack";
 
 // 2026-02-24T13:00:00+08:00: 家具面板 - 不同形状桌子/椅子拖拽填满区域，保留新建表单
@@ -94,6 +95,8 @@ const TableLayout = () => {
   const [touchPlacementMode, setTouchPlacementMode] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [addFormData, setAddFormData] = useState({ tableNo: "", seats: "4", shape: "round", zone: "MAIN" });
+  // 2026-02-28T18:52:00+08:00 Phase B2 - 桌码 QR: { tableId -> { token, tableNo } }
+  const [qrSessions, setQrSessions] = useState({});
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -142,6 +145,23 @@ const TableLayout = () => {
     },
     onError: () => {
       enqueueSnackbar("Failed to update table.", { variant: "error" });
+    },
+  });
+
+  // 2026-02-28T18:53:00+08:00 Phase B2 - 生成桌码
+  const qrSessionMutation = useMutation({
+    mutationFn: ({ tableId }) =>
+      generateTableQrSession({ tableId, locationId: "default", expiresMinutes: 24 * 60 }),
+    onSuccess: (res, { tableId }) => {
+      const { token, tableNo } = res?.data?.data || {};
+      if (token) {
+        setQrSessions((prev) => ({ ...prev, [tableId]: { token, tableNo } }));
+        enqueueSnackbar(`QR generated for Table ${tableNo}`, { variant: "success" });
+      }
+    },
+    onError: (err) => {
+      const msg = err?.response?.data?.message || "Failed to generate QR";
+      enqueueSnackbar(msg, { variant: "error" });
     },
   });
 
@@ -593,6 +613,27 @@ const TableLayout = () => {
                     <p className="text-xs text-[#9ec7ff] mt-1">
                       {t("tableLayout.touchPlacementHint")}
                     </p>
+                  )}
+                </div>
+                {/* 2026-02-28T18:54:00+08:00 Phase B2 - 桌码 QR */}
+                <div className="pt-2 border-t border-t-[#333] mt-2">
+                  <p className="text-xs text-[#ababab] mb-2">{t("tableLayout.tableQr") || "Table QR"}</p>
+                  <button
+                    onClick={() => qrSessionMutation.mutate({ tableId: selectedTable._id })}
+                    disabled={qrSessionMutation.isPending}
+                    className="w-full bg-[#2e4a40] hover:bg-[#3d5c50] text-[#9ef0bb] px-3 py-2 rounded-lg text-sm min-h-[40px] disabled:opacity-50"
+                  >
+                    {qrSessionMutation.isPending ? t("common.creating") || "..." : (t("tableLayout.generateQr") || "Generate QR")}
+                  </button>
+                  {qrSessions[selectedTable._id] && (
+                    <div className="mt-2 p-2 bg-[#1a1a1a] rounded-lg flex flex-col items-center">
+                      <QRCodeSVG
+                        value={`${typeof window !== "undefined" ? window.location.origin : ""}/order/qr?token=${qrSessions[selectedTable._id].token}`}
+                        size={120}
+                        level="M"
+                      />
+                      <p className="text-[#8a8a8a] text-xs mt-1">Table {qrSessions[selectedTable._id].tableNo}</p>
+                    </div>
                   )}
                 </div>
                 <div className="pt-2 border-t border-t-[#333]">

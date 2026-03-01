@@ -18,6 +18,7 @@ import {
   updateChannelMappingRule,
   ingestChannelOrder,
   getChannelDeadLetters,
+  getMenuSyncStatusSummary,
   getChannelDeadLetterInsights,
   replayChannelDeadLetter,
   discardChannelDeadLetter,
@@ -142,6 +143,17 @@ const ChannelConfig = ({ initialSection }) => {
       }),
     refetchInterval: 15000,
   });
+
+  // 2026-02-28T16:35:00+08:00 Phase E2.2 菜单同步状态展示
+  const syncStatusQuery = useQuery({
+    queryKey: ["menu-sync-status"],
+    queryFn: () => getMenuSyncStatusSummary({ locationId: "default" }),
+    refetchInterval: 30000,
+  });
+  const syncStatusList = useMemo(
+    () => (Array.isArray(syncStatusQuery.data?.data?.data) ? syncStatusQuery.data.data : []),
+    [syncStatusQuery.data]
+  );
 
   const providers = useMemo(() => getRows(providersQuery.data), [providersQuery.data]);
   const markets = useMemo(() => getRows(marketsQuery.data), [marketsQuery.data]);
@@ -521,6 +533,28 @@ const ChannelConfig = ({ initialSection }) => {
       )}
 
       {showSection("connections") && (
+      <>
+      {/* 2026-02-28T16:35:00+08:00 Phase E2.2 菜单同步状态 */}
+      {syncStatusList.length > 0 && (
+        <div className={cardClass}>
+          <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("channel.menuSyncStatus", "Menu Sync Status")}</h2>
+          <div className="space-y-2">
+            {syncStatusList.map((row) => (
+              <div key={row.providerCode} className="flex items-center justify-between bg-[#1f1f1f] px-3 py-2 rounded-md">
+                <span className="text-[#f5f5f5] font-semibold">{row.providerCode}</span>
+                <div className="flex gap-3 text-sm">
+                  <span className="text-green-500">{row.synced} synced</span>
+                  {row.failed > 0 && <span className="text-amber-500">{row.failed} failed</span>}
+                  {row.pending > 0 && <span className="text-[#ababab]">{row.pending} pending</span>}
+                </div>
+                <span className="text-[#9f9f9f] text-xs">
+                  {row.lastSyncAt ? new Date(row.lastSyncAt).toLocaleString() : t("channel.neverSynced", "Never")}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className={cardClass}>
         <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("channel.storeConnections")}</h2>
         <form className="grid grid-cols-4 gap-3 mb-4" onSubmit={handleCreateConnection}>
@@ -613,6 +647,7 @@ const ChannelConfig = ({ initialSection }) => {
           {connections.length === 0 && <p className="text-[#ababab] text-sm">{t("channel.noConnections")}</p>}
         </div>
       </div>
+      </>
       )}
 
       {showSection("mappings") && (

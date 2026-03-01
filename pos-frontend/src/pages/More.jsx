@@ -4,7 +4,7 @@ import BackButton from "../components/shared/BackButton";
 import BottomNav from "../components/shared/BottomNav";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { MdDashboard, MdTableBar, MdOutlineReorder, MdSettings, MdDevices, MdStorefront, MdReceipt } from "react-icons/md";
+import { MdDashboard, MdTableBar, MdOutlineReorder, MdSettings, MdDevices, MdStorefront, MdReceipt, MdPointOfSale, MdPhoneIphone, MdFormatListNumbered } from "react-icons/md";
 import { LuLayoutGrid } from "react-icons/lu";
 
 const More = () => {
@@ -23,6 +23,20 @@ const More = () => {
 
   const actionItems = useMemo(() => {
     const baseItems = [
+      ...((isCashier || isAdmin) ? [{
+        key: "cashier",
+        label: t("cashier.title") || "Cashier Station",
+        description: t("cashier.desc") || "Order queue and checkout",
+        icon: <MdPointOfSale size={22} />,
+        route: "/cashier",
+      }] : []),
+      {
+        key: "handheld",
+        label: t("handheld.title") || "Handheld POS",
+        description: t("handheld.desc") || "Mobile ordering, scan table/item",
+        icon: <MdPhoneIphone size={22} />,
+        route: "/handheld",
+      },
       {
         key: "tables",
         label: t("nav.tables"),
@@ -43,6 +57,13 @@ const More = () => {
         description: t("more.tableLayoutDesc"),
         icon: <LuLayoutGrid size={22} />,
         route: "/tables/layout",
+      },
+      {
+        key: "queue",
+        label: t("queue.manage", "Queue Management"),
+        description: t("queue.manageDesc", "Call numbers, manage queue"),
+        icon: <MdFormatListNumbered size={22} />,
+        route: "/queue/manage",
       },
     ];
 

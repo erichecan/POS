@@ -60,6 +60,8 @@ app.use("/api/channel-config", require("./routes/channelConfigRoute"));
 app.use("/api/menu/categories", require("./routes/menuCategoryRoute"));
 app.use("/api/menu", require("./routes/menuRoute"));
 app.use("/api/member", require("./routes/memberRoute"));
+// 2026-02-28T18:05:00+08:00 Phase D1 会员端 H5 公开 API（无需员工登录）
+app.use("/api/public/member", require("./routes/publicMemberRoute"));
 app.use("/api/promotion", require("./routes/promotionRoute"));
 app.use("/api/finance", require("./routes/financeRoute"));
 app.use("/api/organization", require("./routes/organizationRoute"));
@@ -83,8 +85,13 @@ app.use("/api/compliance", require("./routes/complianceRoute"));
 app.use("/api/partner", require("./routes/partnerRoute"));
 // 2026-02-28T13:00:00+08:00: PRD 7.23 品牌与触点管理
 app.use("/api/brand", require("./routes/brandRoute"));
+// 2026-02-28T15:00:00+08:00: PRD 7.24 收银与费用配置 M22
+app.use("/api/till-rules", require("./routes/tillRulesRoute"));
 app.use("/api/signage", require("./routes/signageRoute"));
 app.use("/api/ad-material", require("./routes/adMaterialRoute"));
+// 2026-02-28T16:15:00+08:00 Phase C: 在线订餐 + 排队叫号
+app.use("/api/public", require("./routes/publicRoute"));
+app.use("/api/queue", require("./routes/queueRoute"));
 
 // Global Error Handler
 app.use(globalErrorHandler);

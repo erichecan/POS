@@ -115,6 +115,11 @@ const orderSchema = new mongoose.Schema({
         stripe_payment_intent_id: { type: String },
         stripe_charge_id: { type: String }
     },
+    // 2026-02-28T16:00:00+08:00 Phase C1 在线订餐：外带/配送信息
+    fulfillmentDetails: {
+        pickupAt: { type: Date },
+        deliveryAddress: { type: String, trim: true },
+    },
     mergeHistory: { type: [orderMergeHistorySchema], default: [] },
 }, { timestamps : true } );
 

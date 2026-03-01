@@ -22,23 +22,26 @@ const parsePagination = (req) => {
   };
 };
 
+// 2026-02-28T17:05:00+08:00: Phase A2 - businessType 筛选
 const listVerticalTemplateCatalog = async (req, res, next) => {
   try {
     const countryCode = normalizeCountryCode(req.query.countryCode);
     const typeGroup = `${req.query.typeGroup || ""}`.trim().toUpperCase();
     const keyword = `${req.query.keyword || ""}`.trim();
+    const businessType = `${req.query.businessType || ""}`.trim();
 
     const templates = listVerticalTemplates({
       countryCode,
       typeGroup,
       keyword,
+      businessType,
     });
 
     return res.status(200).json({
       success: true,
       data: {
         catalogVersion: VERTICAL_TEMPLATE_VERSION,
-        filters: { countryCode, typeGroup, keyword },
+        filters: { countryCode, typeGroup, keyword, businessType },
         templates,
       },
     });

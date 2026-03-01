@@ -18,10 +18,14 @@ const isTemplateAllowedInCountry = (template, countryCode) => {
   return supportedCountries.includes(countryCode);
 };
 
-const listVerticalTemplates = ({ countryCode = "", typeGroup = "", keyword = "" } = {}) => {
+/**
+ * 2026-02-28T17:05:00+08:00: Phase A2 - businessType 筛选（ABCPOS 7 种业态）
+ */
+const listVerticalTemplates = ({ countryCode = "", typeGroup = "", keyword = "", businessType = "" } = {}) => {
   const normalizedCountry = normalizeCountryCode(countryCode);
   const normalizedTypeGroup = `${typeGroup || ""}`.trim().toUpperCase();
   const normalizedKeyword = `${keyword || ""}`.trim().toLowerCase();
+  const normalizedBusinessType = `${businessType || ""}`.trim().toUpperCase();
 
   return VERTICAL_TEMPLATES.filter((template) => {
     if (!isTemplateAllowedInCountry(template, normalizedCountry)) {
@@ -29,6 +33,10 @@ const listVerticalTemplates = ({ countryCode = "", typeGroup = "", keyword = "" 
     }
 
     if (normalizedTypeGroup && `${template.typeGroup || ""}`.trim().toUpperCase() !== normalizedTypeGroup) {
+      return false;
+    }
+
+    if (normalizedBusinessType && `${template.businessType || ""}`.trim().toUpperCase() !== normalizedBusinessType) {
       return false;
     }
 
@@ -41,6 +49,7 @@ const listVerticalTemplates = ({ countryCode = "", typeGroup = "", keyword = "" 
       template.displayName,
       template.displayNameEn,
       template.typeGroup,
+      template.businessType,
     ]
       .map((value) => `${value || ""}`.toLowerCase())
       .join(" ");

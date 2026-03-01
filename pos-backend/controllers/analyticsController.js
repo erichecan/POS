@@ -2,6 +2,7 @@ const createHttpError = require("http-errors");
 const Order = require("../models/orderModel");
 const Payment = require("../models/paymentModel");
 const KitchenTicket = require("../models/kitchenTicketModel");
+const PromotionRule = require("../models/promotionRuleModel");
 
 const normalizeLocationId = (value) => `${value || ""}`.trim() || "default";
 
@@ -170,8 +171,77 @@ const exportOrdersCsv = async (req, res, next) => {
   }
 };
 
+/**
+ * Phase D2 活动效果概览 - 2026-02-28T18:10:00+08:00
+ * 按 promotionId 汇总参与订单数、优惠金额
+ */
+const getPromotionEffects = async (req, res, next) => {
+  try {
+    const locationId = normalizeLocationId(req.query.locationId);
+    const { fromDate, toDate } = parseDateRange(req.query.from, req.query.to);
+
+    const orders = await Order.find({
+      locationId,
+      createdAt: { $gte: fromDate, $lt: toDate },
+      appliedPromotions: { $exists: true, $ne: [] },
+    })
+      .select("appliedPromotions bills.discountTotal")
+      .lean();
+
+    const byPromo = new Map();
+    for (const order of orders) {
+      const promos = order.appliedPromotions || [];
+      const orderDiscount = Number(order?.bills?.discountTotal || 0) || 0;
+      for (const p of promos) {
+        const pid = `${p.promotionId || ""}`;
+        if (!pid) continue;
+        const entry = byPromo.get(pid) || { promotionId: pid, orderCount: 0, discountTotal: 0 };
+        entry.orderCount += 1;
+        entry.discountTotal += Number(p.discountAmount || 0) || 0;
+        byPromo.set(pid, entry);
+      }
+    }
+
+    const ruleIds = Array.from(byPromo.keys()).filter((id) => id.length === 24);
+    const rules = ruleIds.length
+      ? await PromotionRule.find({ _id: { $in: ruleIds } })
+        .select("code name promoType status startAt endAt")
+        .lean()
+      : [];
+
+    const ruleMap = new Map(rules.map((r) => [`${r._id}`, r]));
+    const rows = Array.from(byPromo.entries()).map(([pid, v]) => {
+      const rule = ruleMap.get(pid) || {};
+      return {
+        promotionId: pid,
+        code: rule.code,
+        name: rule.name,
+        promoType: rule.promoType,
+        status: rule.status,
+        startAt: rule.startAt,
+        endAt: rule.endAt,
+        orderCount: v.orderCount,
+        discountTotal: roundToTwo(v.discountTotal),
+      };
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        locationId,
+        from: fromDate,
+        to: toDate,
+        effects: rows.sort((a, b) => b.orderCount - a.orderCount),
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getOverview,
   getSalesByItem,
   exportOrdersCsv,
+  getPromotionEffects,
 };
