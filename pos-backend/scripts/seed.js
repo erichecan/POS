@@ -719,9 +719,21 @@ const resetCollections = async () => {
   await User.deleteMany({});
 };
 
-const printSummary = (result) => {
+// 2026-03-01: 显示实际连接库（脱敏），避免误以为连到本地
+const redactUri = (uri) => {
+  if (!uri || typeof uri !== "string") return "(unknown)";
+  try {
+    const u = new URL(uri.replace(/^mongodb\+srv:/, "https:"));
+    const host = u.hostname || u.host || "?";
+    return uri.includes("localhost") || uri.includes("127.0.0.1") ? "local" : host;
+  } catch {
+    return uri.includes("localhost") ? "local" : "Atlas";
+  }
+};
+
+const printSummary = (result, actualUri) => {
   console.log("\nSeed completed successfully. 2026-02-28 演示数据（中餐正餐）");
-  console.log("Database:", config.databaseURI);
+  console.log("Database:", redactUri(actualUri));
   console.log("Organizations:", result.organizationsCount);
   console.log("Regions:", result.regionsCount);
   console.log("Stores:", result.storesCount);
@@ -777,20 +789,23 @@ const run = async () => {
     await seedSettlements();
     await seedTableQrSessions(tableByNo);
 
-    printSummary({
-      users,
-      organizationsCount: 1,
-      regionsCount: regions.length,
-      storesCount: stores.length,
-      workforceShiftsCount: workforceShifts.length,
-      tablesCount: tableByNo.size,
-      orders,
-      payments,
-      partnerKeys,
-      partnerPlainKeys,
-      menuCategoriesCount: menuSeed.categoriesCount,
-      menuItemsCount: menuSeed.itemsCount,
-    });
+    printSummary(
+      {
+        users,
+        organizationsCount: 1,
+        regionsCount: regions.length,
+        storesCount: stores.length,
+        workforceShiftsCount: workforceShifts.length,
+        tablesCount: tableByNo.size,
+        orders,
+        payments,
+        partnerKeys,
+        partnerPlainKeys,
+        menuCategoriesCount: menuSeed.categoriesCount,
+        menuItemsCount: menuSeed.itemsCount,
+      },
+      normalizedUri
+    );
   } catch (error) {
     console.error("Seed failed:", error.message || error);
 
