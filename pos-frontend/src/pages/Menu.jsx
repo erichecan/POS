@@ -1,3 +1,4 @@
+// 2026-02-28T12:30:00+08:00: PRD 7.22 - 与 tableService 联动
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import BottomNav from "../components/shared/BottomNav";
@@ -8,11 +9,14 @@ import CustomerInfo from "../components/menu/CustomerInfo";
 import CartInfo from "../components/menu/CartInfo";
 import Bill from "../components/menu/Bill";
 import { useSelector } from "react-redux";
+import { useVerticalProfile } from "../contexts/VerticalProfileContext";
 
 const Menu = () => {
   // 2026-02-26T21:00:00+08:00: i18n internationalization
   const { t } = useTranslation();
   const [isCartPanelOpen, setIsCartPanelOpen] = useState(false);
+  const { resolved } = useVerticalProfile();
+  const tableServiceEnabled = resolved?.tableServiceProfile?.enabled !== false;
 
   useEffect(() => {
     document.title = `POS | ${t("menu.title")}`;
@@ -39,7 +43,11 @@ const Menu = () => {
                 <h1 className="text-sm md:text-md text-[#f5f5f5] font-semibold tracking-wide">
                   {customerData.customerName || t("tables.customerName")}
                 </h1>
-                <p className="text-xs text-[#ababab] font-medium">{t("tables.table")} : {customerData.table?.tableNo || "N/A"}</p>
+                {tableServiceEnabled ? (
+                  <p className="text-xs text-[#ababab] font-medium">{t("tables.table")} : {customerData.table?.tableNo || "N/A"}</p>
+                ) : (
+                  <p className="text-xs text-[#ababab] font-medium">{t("customerInfo.takeaway")}</p>
+                )}
               </div>
             </div>
             <button
