@@ -1,9 +1,11 @@
 // 2026-02-26T21:00:00+08:00: i18n
+// 2026-02-28T12:25:00+08:00: PRD 7.22 - operatingModes 差异化展示
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { formatDate, getAvatarName } from "../../utils";
 import { updateCustomerDraft } from "../../redux/slices/customerSlice";
+import { useVerticalProfile } from "../../contexts/VerticalProfileContext";
 
 const CustomerInfo = () => {
   const { t } = useTranslation();
@@ -11,6 +13,19 @@ const CustomerInfo = () => {
   const [isEditing, setIsEditing] = useState(false);
   const customerData = useSelector((state) => state.customer);
   const dispatch = useDispatch();
+  const { resolved } = useVerticalProfile();
+  const modes = resolved?.operatingModes || ["DINE_IN"];
+  const hasDineIn = modes.includes("DINE_IN");
+  const hasTakeaway = modes.includes("TAKEAWAY") || modes.includes("SELF_PICKUP");
+  const hasDelivery = modes.includes("DELIVERY");
+  const isDineInContext = Boolean(customerData?.table);
+  const modeLabel = isDineInContext && hasDineIn
+    ? t("customerInfo.dineIn")
+    : hasTakeaway
+      ? t("customerInfo.takeaway")
+      : hasDelivery
+        ? t("customerInfo.delivery")
+        : t("customerInfo.dineIn");
   const [draft, setDraft] = useState({
     name: customerData.customerName || "",
     phone: customerData.customerPhone || "",
@@ -53,7 +68,7 @@ const CustomerInfo = () => {
           />
         )}
         <p className="text-xs text-[#ababab] font-medium mt-1">
-          #{customerData.orderId || t("customerInfo.na")} / {t("customerInfo.dineIn")}
+          #{customerData.orderId || t("customerInfo.na")} / {modeLabel}
         </p>
         {!isEditing ? (
           <>
