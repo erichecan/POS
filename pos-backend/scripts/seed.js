@@ -30,6 +30,14 @@ const CashShift = require("../models/cashShiftModel");
 const CashMovement = require("../models/cashMovementModel");
 const SettlementBatch = require("../models/settlementBatchModel");
 const TableQrSession = require("../models/tableQrSessionModel");
+const Position = require("../models/positionModel");
+const ShiftTemplate = require("../models/shiftTemplateModel");
+const EmployeeProfile = require("../models/employeeProfileModel");
+const EmployeeWorkScope = require("../models/employeeWorkScopeModel");
+const ScheduleSlot = require("../models/scheduleSlotModel");
+const LeaveRequest = require("../models/leaveRequestModel");
+const WorkHourRecord = require("../models/workHourRecordModel");
+const WageRule = require("../models/wageRuleModel");
 const { calculateOrderSummaryFromCatalog } = require("../utils/orderPricing");
 const { hashApiKey, deriveKeyPrefix } = require("../utils/developerAuthService");
 const { resolveMongoUri } = require("../utils/resolveMongoUri");
@@ -127,6 +135,32 @@ const seedUsers = async () => {
   }
 
   return savedUsers;
+};
+
+// 2026-02-28: 团队管理 Phase 1 - 岗位与班次模板
+const seedPositionsAndShiftTemplates = async () => {
+  const LOCATION_ID = "default";
+  const positions = [
+    { name: "服务员", code: "WAITER", scopeType: "TABLES", scopeConfig: {}, defaultHourlyRate: 0 },
+    { name: "Runner/传菜", code: "RUNNER", scopeType: "RUNNER", scopeConfig: {}, defaultHourlyRate: 0 },
+    { name: "帮炒", code: "WOK", scopeType: "KITCHEN", scopeConfig: { stationCode: "WOK" }, defaultHourlyRate: 0 },
+    { name: "外卖打包员", code: "PACKER", scopeType: "TAKEOUT", scopeConfig: { stationCode: "PACK" }, defaultHourlyRate: 0 },
+    { name: "吧台", code: "BAR", scopeType: "BAR", scopeConfig: { stationCode: "BAR" }, defaultHourlyRate: 0 },
+    { name: "收银", code: "CASHIER", scopeType: "CASHIER", scopeConfig: {}, defaultHourlyRate: 0 },
+    { name: "店长", code: "MANAGER", scopeType: "MANAGER", scopeConfig: {}, defaultHourlyRate: 0 },
+  ];
+  const templates = [
+    { name: "早班", code: "MORNING", startTime: "09:00", endTime: "14:00", breakMinutes: 30 },
+    { name: "午班", code: "AFTERNOON", startTime: "14:00", endTime: "18:00", breakMinutes: 0 },
+    { name: "晚班", code: "EVENING", startTime: "18:00", endTime: "22:00", breakMinutes: 30 },
+    { name: "全天", code: "FULL", startTime: "09:00", endTime: "22:00", breakMinutes: 60 },
+  ];
+  for (const p of positions) {
+    await Position.create({ ...p, locationId: LOCATION_ID });
+  }
+  for (const t of templates) {
+    await ShiftTemplate.create({ ...t, locationId: LOCATION_ID });
+  }
 };
 
 const seedOrganization = async () => {
@@ -674,6 +708,14 @@ const resetCollections = async () => {
   await Payment.deleteMany({});
   await Order.deleteMany({});
   await Table.deleteMany({});
+  await WageRule.deleteMany({});
+  await WorkHourRecord.deleteMany({});
+  await ScheduleSlot.deleteMany({});
+  await LeaveRequest.deleteMany({});
+  await EmployeeWorkScope.deleteMany({});
+  await EmployeeProfile.deleteMany({});
+  await ShiftTemplate.deleteMany({});
+  await Position.deleteMany({});
   await User.deleteMany({});
 };
 
@@ -711,6 +753,7 @@ const run = async () => {
     await resetCollections();
 
     const users = await seedUsers();
+    await seedPositionsAndShiftTemplates();
     const org = await seedOrganization();
     const regions = await seedRegions(org._id);
     const stores = await seedStores(org._id, regions);

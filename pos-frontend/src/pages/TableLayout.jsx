@@ -6,9 +6,20 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { addTable, getTables, updateTable } from "../https";
 import { enqueueSnackbar } from "notistack";
 
-// 2026-02-26T12:00:00+08:00: Table Layout editor enhancements - add table, shape, seats
+// 2026-02-24T13:00:00+08:00: 家具面板 - 不同形状桌子/椅子拖拽填满区域，保留新建表单
 
 const LAYOUT_STORAGE_KEY = "pos_table_layout_v2";
+
+/** 可拖拽的桌型/椅型（从面板拖到区域即创建） */
+const PALETTE_ITEMS = [
+  { id: "round2", shape: "round", seats: 2, labelKey: "tableLayout.round2Seats" },
+  { id: "round4", shape: "round", seats: 4, labelKey: "tableLayout.round4Seats" },
+  { id: "round6", shape: "round", seats: 6, labelKey: "tableLayout.round6Seats" },
+  { id: "square4", shape: "square", seats: 4, labelKey: "tableLayout.square4Seats" },
+  { id: "rect6", shape: "long", seats: 6, labelKey: "tableLayout.rect6Seats" },
+  { id: "oval4", shape: "oval", seats: 4, labelKey: "tableLayout.oval4Seats" },
+  { id: "stool1", shape: "stool", seats: 1, labelKey: "tableLayout.barStool" },
+];
 const ZONES = [
   { id: "ALL", nameKey: "tableLayout.allZones" },
   { id: "MAIN", nameKey: "tableLayout.mainHall" },
@@ -51,9 +62,24 @@ const getTableSize = (seats, shape) => {
       return { width: base, height: base, radius: "14px" };
     case "long":
       return { width: Math.round(base * 1.7), height: base - 4, radius: "14px" };
+    case "oval":
+      return { width: Math.round(base * 1.3), height: Math.round(base * 0.85), radius: "999px" };
+    case "stool":
+      return { width: 56, height: 56, radius: "999px" };
     default:
       return getShapeSizeBySeats(seats);
   }
+};
+
+/** 计算桌子周围椅子/座位的相对位置（用于视觉示意） */
+const getChairOffsets = (seats, tableW, tableH, shape) => {
+  const n = Math.min(Math.max(Number(seats) || 0, 0), 12);
+  if (n <= 0) return [];
+  const radius = Math.max(tableW, tableH) * 0.65;
+  return Array.from({ length: n }, (_, i) => {
+    const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+    return { x: radius * Math.cos(angle), y: radius * Math.sin(angle) };
+  });
 };
 
 const TableLayout = () => {
@@ -64,6 +90,7 @@ const TableLayout = () => {
   const [activeZone, setActiveZone] = useState("ALL");
   const [selectedTableId, setSelectedTableId] = useState("");
   const [draggingTableId, setDraggingTableId] = useState("");
+  const [draggingFromPalette, setDraggingFromPalette] = useState(null); // { shape, seats }
   const [touchPlacementMode, setTouchPlacementMode] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [addFormData, setAddFormData] = useState({ tableNo: "", seats: "4", shape: "round", zone: "MAIN" });
@@ -206,17 +233,57 @@ const TableLayout = () => {
     moveTableTo(tableId, Number(current.x || 0) + dx, Number(current.y || 0) + dy);
   };
 
-  const handleFloorDrop = (event) => {
+  const handleFloorDrop = async (event) => {
     event.preventDefault();
-    const tableId = event.dataTransfer.getData("text/table-id") || draggingTableId;
-    if (!tableId || !floorRef.current) {
-      return;
-    }
+    if (!floorRef.current) return;
+
     const rect = floorRef.current.getBoundingClientRect();
-    const x = event.clientX - rect.left - 70;
-    const y = event.clientY - rect.top - 45;
-    moveTableTo(tableId, x, y);
-    setDraggingTableId("");
+    const centerX = event.clientX - rect.left;
+    const centerY = event.clientY - rect.top;
+
+    const paletteData = event.dataTransfer.getData("application/json");
+    if (paletteData) {
+      try {
+        const { shape, seats } = JSON.parse(paletteData);
+        if (shape && seats >= 1 && seats <= 20) {
+          const size = getTableSize(seats, shape);
+          const x = Math.max(0, centerX - size.width / 2);
+          const y = Math.max(0, centerY - size.height / 2);
+          const zone = activeZone === "ALL" ? "MAIN" : activeZone;
+          try {
+            const res = await addTableMutation.mutateAsync({
+              tableNo: Number(nextTableNo),
+              seats: Number(seats),
+            });
+            const newTableId = res?.data?.data?._id;
+            if (newTableId) {
+              setLayoutMap((prev) => ({
+                ...prev,
+                [newTableId]: { x, y, zone, shape },
+              }));
+            }
+          } catch (_) {
+            // mutation onError handles
+          }
+          setDraggingFromPalette(null);
+          return;
+        }
+      } catch (_) {
+        // ignore invalid json
+      }
+    }
+
+    const tableId = event.dataTransfer.getData("text/table-id") || draggingTableId;
+    if (tableId) {
+      const size = getTableSize(
+        tables.find((t) => t._id === tableId)?.seats || 4,
+        layoutMap[tableId]?.shape || "round"
+      );
+      const x = Math.max(0, centerX - size.width / 2);
+      const y = Math.max(0, centerY - size.height / 2);
+      moveTableTo(tableId, x, y);
+      setDraggingTableId("");
+    }
   };
 
   const handleFloorTap = (event) => {
@@ -345,6 +412,42 @@ const TableLayout = () => {
             ))}
           </div>
 
+          {/* 2026-02-24T13:00:10Z: 家具面板 - 拖拽到区域创建桌台 */}
+          <div className="mt-3 pt-3 border-t border-[#333]">
+            <h3 className="text-[#f5f5f5] text-sm font-semibold mb-2">{t("tableLayout.furniturePalette")}</h3>
+            <p className="text-xs text-[#8a8a8a] mb-2">{t("tableLayout.dragToFloor")}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {PALETTE_ITEMS.map((item) => {
+                const size = getTableSize(item.seats, item.shape);
+                return (
+                  <div
+                    key={item.id}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("application/json", JSON.stringify({ shape: item.shape, seats: item.seats }));
+                      e.dataTransfer.effectAllowed = "copy";
+                      setDraggingFromPalette({ shape: item.shape, seats: item.seats });
+                    }}
+                    onDragEnd={() => setDraggingFromPalette(null)}
+                    className="flex flex-col items-center justify-center cursor-grab active:cursor-grabbing bg-[#1f1f1f] border border-[#444] hover:border-[#F6B100] rounded-lg p-2 min-h-[64px]"
+                  >
+                    <div
+                      className="border border-[#4e8a72] bg-[#2b4f40] flex items-center justify-center"
+                      style={{
+                        width: Math.min(size.width, 48),
+                        height: Math.min(size.height, 48),
+                        borderRadius: size.radius,
+                      }}
+                    >
+                      <span className="text-[10px] text-[#e8f5e9] font-medium">{item.seats}</span>
+                    </div>
+                    <span className="text-[10px] text-[#ababab] mt-1 truncate max-w-full">{t(item.labelKey)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="mt-3">
             <button
               onClick={openAddForm}
@@ -374,6 +477,7 @@ const TableLayout = () => {
                   onChange={(e) => setAddFormData((prev) => ({ ...prev, seats: e.target.value }))}
                   className="w-full bg-[#252525] text-[#f5f5f5] px-3 py-2 rounded-lg outline-none text-sm"
                 >
+                  <option value="1">1</option>
                   <option value="2">2</option>
                   <option value="4">4</option>
                   <option value="6">6</option>
@@ -390,6 +494,8 @@ const TableLayout = () => {
                   <option value="round">{t("tableLayout.round")}</option>
                   <option value="square">{t("tableLayout.square")}</option>
                   <option value="long">{t("tableLayout.rectangle")}</option>
+                  <option value="oval">{t("tableLayout.oval")}</option>
+                  <option value="stool">{t("tableLayout.barStool")}</option>
                 </select>
               </div>
               <div>
@@ -437,6 +543,7 @@ const TableLayout = () => {
                     className="w-full bg-[#1f1f1f] text-[#f5f5f5] px-3 py-2 rounded-lg outline-none text-sm"
                     disabled={updateTableMutation.isPending}
                   >
+                    <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="4">4</option>
                     <option value="6">6</option>
@@ -454,6 +561,8 @@ const TableLayout = () => {
                     <option value="round">{t("tableLayout.round")}</option>
                     <option value="square">{t("tableLayout.square")}</option>
                     <option value="long">{t("tableLayout.rectangle")}</option>
+                    <option value="oval">{t("tableLayout.oval")}</option>
+                    <option value="stool">{t("tableLayout.barStool")}</option>
                   </select>
                 </div>
                 <label className="block text-xs text-[#ababab]">{t("tableLayout.assignZone")}</label>
@@ -524,8 +633,13 @@ const TableLayout = () => {
 
         <div
           ref={floorRef}
-          className="flex-1 min-h-[420px] bg-[#1b1b1b] border border-[#333] rounded-xl relative overflow-hidden"
-          onDragOver={(event) => event.preventDefault()}
+          className={`flex-1 min-h-[420px] rounded-xl relative overflow-hidden transition-colors ${
+            draggingFromPalette ? "bg-[#1e3329] border-2 border-dashed border-[#4e8a72]" : "bg-[#1b1b1b] border border-[#333]"
+          }`}
+          onDragOver={(event) => {
+            event.preventDefault();
+            if (draggingFromPalette) event.dataTransfer.dropEffect = "copy";
+          }}
           onDrop={handleFloorDrop}
           onClick={handleFloorTap}
         >
@@ -547,15 +661,15 @@ const TableLayout = () => {
             const isBooked = table.status === "Booked";
             const isSelected = `${selectedTableId}` === `${table._id}`;
             const zoneLabel = t(ZONES.find((zone) => zone.id === layout.zone)?.nameKey || "tableLayout.mainHall");
+            const chairOffsets = getChairOffsets(table.seats, size.width, size.height, layout.shape);
+            const showChairs = table.seats <= 8 && table.seats >= 2 && layout.shape !== "stool";
             return (
               <div
                 key={table._id}
                 data-table-shape="true"
                 draggable={!touchPlacementMode}
                 onDragStart={(event) => {
-                  if (touchPlacementMode) {
-                    return;
-                  }
+                  if (touchPlacementMode) return;
                   event.dataTransfer.setData("text/table-id", table._id);
                   setDraggingTableId(table._id);
                 }}
@@ -574,7 +688,22 @@ const TableLayout = () => {
                   borderRadius: size.radius,
                 }}
               >
-                <div className="w-full h-full flex flex-col items-center justify-center text-center p-2">
+                {/* 2026-02-24T13:00:15Z: 椅子/座位示意（小圆点围绕桌边） */}
+                {showChairs && (
+                  <div className="absolute inset-0 pointer-events-none">
+                    {chairOffsets.map((off, idx) => (
+                      <div
+                        key={idx}
+                        className="absolute w-3 h-3 rounded-full bg-[#3d6b5a] border border-[#5a9a82]"
+                        style={{
+                          left: `calc(50% + ${off.x}px - 6px)`,
+                          top: `calc(50% + ${off.y}px - 6px)`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+                <div className="w-full h-full flex flex-col items-center justify-center text-center p-2 relative z-[1]">
                   <p className="text-[#f5f5f5] font-semibold text-sm">#{table.tableNo}</p>
                   <p className="text-[#d5d5d5] text-xs">{table.seats} {t("tableLayout.seats")}</p>
                   <p className="text-[#c9e5ff] text-[10px] truncate max-w-full">{zoneLabel}</p>

@@ -191,10 +191,35 @@ const Bill = () => {
       queryClient.invalidateQueries({ queryKey: ["orders"] });
     },
     onError: (error) => {
-      const message = error.response?.data?.message || "Failed to submit order!";
-      enqueueSnackbar(message, { variant: "error" });
+      const msg = error.response?.data?.message || error?.message || "Failed to submit order!";
+      enqueueSnackbar(msg, { variant: "error", autoHideDuration: 5000 });
     },
   });
+
+  // 2026-02-28T12:46:00+08:00: 分单 400 修复 - 规范化 items 供后端校验（仅传 name/quantity/modifiers/note/seatNo）
+  const buildItemsForApi = (items) => {
+    if (!Array.isArray(items) || items.length === 0) return [];
+    return items.map((item) => {
+      const qty = Math.max(1, Math.min(20, Math.floor(Number(item.quantity) || 1)));
+      const seatNo = item.seatNo;
+      const validSeatNo =
+        seatNo !== undefined &&
+        seatNo !== null &&
+        `${seatNo}`.trim() !== "" &&
+        Number.isInteger(Number(seatNo)) &&
+        Number(seatNo) >= 1 &&
+        Number(seatNo) <= 50
+          ? Number(seatNo)
+          : undefined;
+      return {
+        name: `${item.name || ""}`.trim() || "Unknown",
+        quantity: qty,
+        note: `${item.note || ""}`.trim().slice(0, 200) || undefined,
+        modifiers: Array.isArray(item.modifiers) ? item.modifiers : [],
+        ...(validSeatNo !== undefined ? { seatNo: validSeatNo } : {}),
+      };
+    });
+  };
 
   const handlePlaceOrder = async () => {
     if (!customerData?.table?.tableId) {
@@ -226,13 +251,19 @@ const Bill = () => {
       return;
     }
 
+    const apiItems = buildItemsForApi(cartData);
+    if (apiItems.length === 0) {
+      enqueueSnackbar("No valid items to submit. Please check the cart.", { variant: "error" });
+      return;
+    }
+
     const payload = {
       customerDetails: {
         name: customerData.customerName,
         phone: customerData.customerPhone,
         guests: customerData.guests,
       },
-      items: cartData,
+      items: apiItems,
       table: customerData.table.tableId,
       paymentMethod: "Pending",
     };

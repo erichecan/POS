@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { enqueueSnackbar } from "notistack";
+// 2026-02-24T12:01:10Z: 转台/并台/拆台/撤销并台已迁移至 Tables 页
 import {
   bootstrapInventory,
   getInventoryItems,
@@ -11,11 +12,6 @@ import {
   getCashShiftById,
   addCashShiftMovement,
   closeCashShift,
-  transferTableOrder,
-  mergeTableOrders,
-  splitTableOrder,
-  splitTableOrderBySeat,
-  unmergeTableOrders,
 } from "../../https";
 
 const cardClass = "bg-[#262626] rounded-lg p-4 border border-[#333]";
@@ -53,31 +49,6 @@ const OperationsCenter = () => {
     direction: "IN",
     amount: "",
     reason: "",
-  });
-
-  const [transferForm, setTransferForm] = useState({
-    fromTableId: "",
-    toTableId: "",
-  });
-  const [mergeForm, setMergeForm] = useState({
-    fromTableId: "",
-    toTableId: "",
-  });
-  const [splitForm, setSplitForm] = useState({
-    fromTableId: "",
-    toTableId: "",
-    splitGuests: "",
-    itemsJson: '[{"name":"Paneer Tikka","quantity":1}]',
-  });
-  const [splitBySeatForm, setSplitBySeatForm] = useState({
-    fromTableId: "",
-    toTableId: "",
-    seatNosCsv: "1,2",
-  });
-  const [unmergeForm, setUnmergeForm] = useState({
-    targetOrderId: "",
-    sourceOrderId: "",
-    restoreTableId: "",
   });
 
   const inventoryQuery = useQuery({
@@ -178,74 +149,6 @@ const OperationsCenter = () => {
       }));
     },
     onError: (error) => handleError(error, "Failed to add cash movement"),
-  });
-
-  const transferMutation = useMutation({
-    mutationFn: transferTableOrder,
-    onSuccess: () => {
-      enqueueSnackbar("Table transfer completed", { variant: "success" });
-      queryClient.invalidateQueries({ queryKey: ["tables"] });
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      setTransferForm({ fromTableId: "", toTableId: "" });
-    },
-    onError: (error) => handleError(error, "Failed to transfer table order"),
-  });
-
-  const mergeMutation = useMutation({
-    mutationFn: mergeTableOrders,
-    onSuccess: () => {
-      enqueueSnackbar("Table orders merged", { variant: "success" });
-      queryClient.invalidateQueries({ queryKey: ["tables"] });
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      setMergeForm({ fromTableId: "", toTableId: "" });
-    },
-    onError: (error) => handleError(error, "Failed to merge table orders"),
-  });
-
-  const splitMutation = useMutation({
-    mutationFn: splitTableOrder,
-    onSuccess: () => {
-      enqueueSnackbar("Table order split completed", { variant: "success" });
-      queryClient.invalidateQueries({ queryKey: ["tables"] });
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      setSplitForm({
-        fromTableId: "",
-        toTableId: "",
-        splitGuests: "",
-        itemsJson: '[{"name":"Paneer Tikka","quantity":1}]',
-      });
-    },
-    onError: (error) => handleError(error, "Failed to split table order"),
-  });
-
-  const splitBySeatMutation = useMutation({
-    mutationFn: splitTableOrderBySeat,
-    onSuccess: () => {
-      enqueueSnackbar("Table order split by seat completed", { variant: "success" });
-      queryClient.invalidateQueries({ queryKey: ["tables"] });
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      setSplitBySeatForm({
-        fromTableId: "",
-        toTableId: "",
-        seatNosCsv: "1,2",
-      });
-    },
-    onError: (error) => handleError(error, "Failed to split order by seats"),
-  });
-
-  const unmergeMutation = useMutation({
-    mutationFn: unmergeTableOrders,
-    onSuccess: () => {
-      enqueueSnackbar("Table orders unmerged", { variant: "success" });
-      queryClient.invalidateQueries({ queryKey: ["tables"] });
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      setUnmergeForm({
-        targetOrderId: "",
-        sourceOrderId: "",
-        restoreTableId: "",
-      });
-    },
-    onError: (error) => handleError(error, "Failed to unmerge table orders"),
   });
 
   return (
@@ -510,231 +413,6 @@ const OperationsCenter = () => {
         </div>
       </div>
 
-      <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.tableTransfer")}</h2>
-        <form
-          className="grid grid-cols-3 gap-3"
-          onSubmit={(event) => {
-            event.preventDefault();
-            transferMutation.mutate({
-              fromTableId: transferForm.fromTableId,
-              toTableId: transferForm.toTableId,
-            });
-          }}
-        >
-          <input
-            className={inputClass}
-            placeholder={t("operations.fromTableId")}
-            value={transferForm.fromTableId}
-            onChange={(e) => setTransferForm((prev) => ({ ...prev, fromTableId: e.target.value }))}
-          />
-          <input
-            className={inputClass}
-            placeholder={t("operations.toTableId")}
-            value={transferForm.toTableId}
-            onChange={(e) => setTransferForm((prev) => ({ ...prev, toTableId: e.target.value }))}
-          />
-          <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 font-semibold">
-            {t("operations.transfer")}
-          </button>
-        </form>
-      </div>
-
-      <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.tableMerge")}</h2>
-        <form
-          className="grid grid-cols-3 gap-3"
-          onSubmit={(event) => {
-            event.preventDefault();
-            mergeMutation.mutate({
-              fromTableId: mergeForm.fromTableId,
-              toTableId: mergeForm.toTableId,
-            });
-          }}
-        >
-          <input
-            className={inputClass}
-            placeholder={t("operations.sourceTableId")}
-            value={mergeForm.fromTableId}
-            onChange={(e) => setMergeForm((prev) => ({ ...prev, fromTableId: e.target.value }))}
-          />
-          <input
-            className={inputClass}
-            placeholder={t("operations.targetTableId")}
-            value={mergeForm.toTableId}
-            onChange={(e) => setMergeForm((prev) => ({ ...prev, toTableId: e.target.value }))}
-          />
-          <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 font-semibold">
-            {t("operations.merge")}
-          </button>
-        </form>
-        <p className="text-xs text-[#ababab] mt-2">
-          {t("operations.mergeDesc")}
-        </p>
-      </div>
-
-      <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.tableSplit")}</h2>
-        <form
-          className="space-y-3"
-          onSubmit={(event) => {
-            event.preventDefault();
-
-            let parsedItems;
-            try {
-              parsedItems = JSON.parse(splitForm.itemsJson);
-            } catch (error) {
-              enqueueSnackbar("Split items JSON is invalid.", { variant: "error" });
-              return;
-            }
-
-            if (!Array.isArray(parsedItems) || parsedItems.length === 0) {
-              enqueueSnackbar("Split items must be a non-empty JSON array.", { variant: "error" });
-              return;
-            }
-
-            splitMutation.mutate({
-              fromTableId: splitForm.fromTableId,
-              toTableId: splitForm.toTableId,
-              splitGuests: splitForm.splitGuests ? Number(splitForm.splitGuests) : undefined,
-              items: parsedItems,
-            });
-          }}
-        >
-          <div className="grid grid-cols-3 gap-3">
-            <input
-              className={inputClass}
-              placeholder={t("operations.sourceTableId")}
-              value={splitForm.fromTableId}
-              onChange={(e) => setSplitForm((prev) => ({ ...prev, fromTableId: e.target.value }))}
-            />
-            <input
-              className={inputClass}
-              placeholder={t("operations.targetTableId")}
-              value={splitForm.toTableId}
-              onChange={(e) => setSplitForm((prev) => ({ ...prev, toTableId: e.target.value }))}
-            />
-            <input
-              className={inputClass}
-              placeholder={t("operations.splitGuests")}
-              value={splitForm.splitGuests}
-              onChange={(e) => setSplitForm((prev) => ({ ...prev, splitGuests: e.target.value }))}
-            />
-          </div>
-          <textarea
-            className={`${inputClass} min-h-[110px]`}
-            value={splitForm.itemsJson}
-            onChange={(e) => setSplitForm((prev) => ({ ...prev, itemsJson: e.target.value }))}
-            placeholder='[{"name":"Paneer Tikka","quantity":1}]'
-          />
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-[#ababab]">
-              {t("operations.splitDesc")}
-            </p>
-            <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 px-4 font-semibold">
-              {t("operations.split")}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.tableSplitBySeats")}</h2>
-        <form
-          className="grid grid-cols-4 gap-3"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const seatNos = `${splitBySeatForm.seatNosCsv || ""}`
-              .split(",")
-              .map((item) => Number(item.trim()))
-              .filter((value) => Number.isInteger(value) && value > 0);
-
-            if (seatNos.length === 0) {
-              enqueueSnackbar("Please provide valid seat numbers (e.g. 1,2).", {
-                variant: "error",
-              });
-              return;
-            }
-
-            splitBySeatMutation.mutate({
-              fromTableId: splitBySeatForm.fromTableId,
-              toTableId: splitBySeatForm.toTableId,
-              seatNos,
-            });
-          }}
-        >
-          <input
-            className={inputClass}
-            placeholder={t("operations.sourceTableId")}
-            value={splitBySeatForm.fromTableId}
-            onChange={(e) =>
-              setSplitBySeatForm((prev) => ({ ...prev, fromTableId: e.target.value }))
-            }
-          />
-          <input
-            className={inputClass}
-            placeholder={t("operations.targetTableId")}
-            value={splitBySeatForm.toTableId}
-            onChange={(e) =>
-              setSplitBySeatForm((prev) => ({ ...prev, toTableId: e.target.value }))
-            }
-          />
-          <input
-            className={inputClass}
-            placeholder={t("operations.seatNosCsv")}
-            value={splitBySeatForm.seatNosCsv}
-            onChange={(e) =>
-              setSplitBySeatForm((prev) => ({ ...prev, seatNosCsv: e.target.value }))
-            }
-          />
-          <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 font-semibold">
-            {t("operations.splitBySeat")}
-          </button>
-        </form>
-        <p className="text-xs text-[#ababab] mt-2">
-          {t("operations.splitBySeatDesc")}
-        </p>
-      </div>
-
-      <div className={cardClass}>
-        <h2 className="text-[#f5f5f5] text-lg font-semibold mb-3">{t("operations.tableUnmerge")}</h2>
-        <form
-          className="grid grid-cols-4 gap-3"
-          onSubmit={(event) => {
-            event.preventDefault();
-            unmergeMutation.mutate({
-              targetOrderId: unmergeForm.targetOrderId,
-              sourceOrderId: unmergeForm.sourceOrderId || undefined,
-              restoreTableId: unmergeForm.restoreTableId || undefined,
-            });
-          }}
-        >
-          <input
-            className={inputClass}
-            placeholder={t("operations.targetOrderId")}
-            value={unmergeForm.targetOrderId}
-            onChange={(e) => setUnmergeForm((prev) => ({ ...prev, targetOrderId: e.target.value }))}
-          />
-          <input
-            className={inputClass}
-            placeholder={t("operations.sourceOrderId")}
-            value={unmergeForm.sourceOrderId}
-            onChange={(e) => setUnmergeForm((prev) => ({ ...prev, sourceOrderId: e.target.value }))}
-          />
-          <input
-            className={inputClass}
-            placeholder={t("operations.restoreTableId")}
-            value={unmergeForm.restoreTableId}
-            onChange={(e) => setUnmergeForm((prev) => ({ ...prev, restoreTableId: e.target.value }))}
-          />
-          <button type="submit" className="bg-[#025cca] text-white rounded-md py-2 font-semibold">
-            {t("operations.unmerge")}
-          </button>
-        </form>
-        <p className="text-xs text-[#ababab] mt-2">
-          {t("operations.unmergeDesc")}
-        </p>
-      </div>
     </div>
   );
 };

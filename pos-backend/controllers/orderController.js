@@ -513,11 +513,19 @@ const updateOrder = async (req, res, next) => {
   }
 };
 
+// 2026-02-28T12:45:00+08:00: 分单 400 修复 - 显式校验 items 并保留错误信息
 const updateOrderItems = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(createHttpError(404, "Invalid id!"));
+    }
+
+    const rawItems = req.body?.items;
+    if (!Array.isArray(rawItems) || rawItems.length === 0) {
+      return next(
+        createHttpError(400, "items is required and must be a non-empty array. Please ensure the cart has at least one item.")
+      );
     }
 
     const order = await Order.findById(id);
@@ -528,7 +536,7 @@ const updateOrderItems = async (req, res, next) => {
     }
 
     const nextLocationId = normalizeLocationId(req.body.locationId || order.locationId);
-    const pricing = await calculateOrderSummaryFromCatalog(req.body.items, {
+    const pricing = await calculateOrderSummaryFromCatalog(rawItems, {
       locationId: nextLocationId,
       channelProviderCode: "ALL",
       versionTag: req.body.menuVersion,

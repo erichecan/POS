@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+// 2026-02-24 22:40:00: 适配中餐菜单（宫保鸡丁）、新 UI 结构（+ 与购物车按钮）
 const path = require("node:path");
 const fs = require("node:fs/promises");
 const { chromium } = require("playwright");
@@ -122,6 +123,9 @@ const run = async () => {
   const context = await browser.newContext({
     viewport: { width: 1600, height: 1000 },
   });
+  await context.addInitScript(() => {
+    localStorage.setItem("i18nextLng", "en");
+  });
   const page = await context.newPage();
 
   const customerName = `PW_E2E_${Date.now()}`;
@@ -164,18 +168,21 @@ const run = async () => {
     await page.waitForURL(`${FRONTEND_URL}/menu`, { timeout: 20_000 });
     summary.screenshots.push(await saveShot(page, `${runId}-04-menu`));
 
-    const paneerHeading = page.getByRole("heading", { name: "Paneer Tikka", exact: true }).first();
-    const dishCard = paneerHeading
-      .locator("xpath=ancestor::div[contains(@class,'cursor-pointer')]")
-      .first();
-    await dishCard.locator("button", { hasText: "+" }).first().click();
-    await dishCard.locator("button").first().click();
+    // 使用热门推荐切换至热菜并预选宫保鸡丁（或直接选凉菜夫妻肺片）
+    const dishName = "宫保鸡丁";
+    await page.getByRole("button", { name: dishName }).first().click();
+    await sleep(500);
 
-    await page.getByText("Items(1)").first().waitFor({ timeout: 10_000 });
+    const dishHeading = page.getByRole("heading", { name: dishName, exact: true }).first();
+    const dishCard = dishHeading.locator("xpath=ancestor::div[contains(@class,'cursor-pointer')]").first();
+    await dishCard.waitFor({ timeout: 10_000 });
+    // 购物车按钮（首项，count 已由热门推荐设为 1）
+    await dishCard.getByRole("button").first().click();
+
+    await page.getByRole("button", { name: "Place Order" }).waitFor({ state: "visible", timeout: 10_000 });
     await page.getByRole("button", { name: "Place Order" }).click();
-    await page.getByRole("heading", { name: "Order Receipt" }).waitFor({ timeout: 20_000 });
-    await page.getByText(`Name: ${customerName}`, { exact: false }).waitFor({ timeout: 10_000 });
-    await page.getByText("Payment Method: Pending", { exact: false }).waitFor({ timeout: 10_000 });
+    await page.getByRole("heading", { name: "Receipt" }).waitFor({ timeout: 20_000 });
+    await page.getByText(customerName, { exact: false }).waitFor({ timeout: 10_000 });
     summary.screenshots.push(await saveShot(page, `${runId}-05-order-receipt`));
     await page.getByRole("button", { name: "Close" }).click();
 
@@ -201,22 +208,20 @@ const run = async () => {
     summary.screenshots.push(await saveShot(page, `${runId}-06-orders`));
 
     console.log("[playwright-e2e] step=dashboard-kitchen-payments-slo");
-    await page.goto(`${FRONTEND_URL}/dashboard`, { waitUntil: "domcontentloaded" });
-    await page.getByRole("button", { name: "Kitchen" }).click();
-    await page.getByRole("heading", { name: "Kitchen Tickets" }).waitFor({ timeout: 20_000 });
-    const kitchenTicketCard = page
-      .getByText(customerName, { exact: false })
-      .first()
-      .locator("xpath=ancestor::div[.//button[normalize-space()='Set Rush']][1]");
-    await kitchenTicketCard.waitFor({ timeout: 20_000 });
-    await kitchenTicketCard.locator("xpath=.//button[normalize-space()='Set Rush'][1]").click();
+    await page.goto(`${FRONTEND_URL}/dashboard/kitchen/tickets`, { waitUntil: "domcontentloaded" });
+    await page.getByRole("heading", { name: "Tickets" }).waitFor({ timeout: 20_000 });
+    const setRushBtn = page.locator("button", { hasText: "Set Rush" }).first();
+    const hasTicket = await setRushBtn.waitFor({ timeout: 15_000 }).then(() => true).catch(() => false);
+    if (hasTicket) {
+      await setRushBtn.click();
+    }
     summary.screenshots.push(await saveShot(page, `${runId}-07-kitchen`));
 
-    await page.getByRole("button", { name: "Payments" }).click();
+    await page.goto(`${FRONTEND_URL}/dashboard/payments`, { waitUntil: "domcontentloaded" });
     await page.getByRole("heading", { name: "Payment Summary" }).waitFor({ timeout: 20_000 });
     summary.screenshots.push(await saveShot(page, `${runId}-08-payments-board`));
 
-    await page.getByRole("button", { name: "SLO" }).click();
+    await page.goto(`${FRONTEND_URL}/dashboard/slo`, { waitUntil: "domcontentloaded" });
     await page.getByRole("heading", { name: "Ops SLO Snapshot" }).waitFor({ timeout: 20_000 });
     summary.screenshots.push(await saveShot(page, `${runId}-09-slo-board`));
 

@@ -118,6 +118,68 @@ export const addCashShiftMovement = ({ id, ...data }) =>
 export const closeCashShift = ({ id, ...data }) =>
   axiosWrapper.post(`/api/cash/shifts/${id}/close`, data);
 
+// 2026-02-28: 团队管理 - 岗位
+export const getPositions = (params) =>
+  axiosWrapper.get("/api/workforce/positions", { params });
+export const getPositionById = (id) =>
+  axiosWrapper.get(`/api/workforce/positions/${id}`);
+export const createPosition = (data) =>
+  axiosWrapper.post("/api/workforce/positions", data);
+export const updatePosition = ({ id, ...data }) =>
+  axiosWrapper.put(`/api/workforce/positions/${id}`, data);
+export const deletePosition = (id) =>
+  axiosWrapper.delete(`/api/workforce/positions/${id}`);
+
+export const getEmployeesWithScopes = (params) =>
+  axiosWrapper.get("/api/workforce/employees", { params });
+export const getEmployeeWorkScope = (userId, params) =>
+  axiosWrapper.get(`/api/workforce/employees/${userId}/work-scope`, { params });
+export const upsertEmployeeWorkScope = (userId, data) =>
+  axiosWrapper.put(`/api/workforce/employees/${userId}/work-scope`, data);
+
+export const getShiftTemplates = (params) =>
+  axiosWrapper.get("/api/workforce/shift-templates", { params });
+export const createShiftTemplate = (data) =>
+  axiosWrapper.post("/api/workforce/shift-templates", data);
+export const updateShiftTemplate = ({ id, ...data }) =>
+  axiosWrapper.put(`/api/workforce/shift-templates/${id}`, data);
+export const deleteShiftTemplate = (id) =>
+  axiosWrapper.delete(`/api/workforce/shift-templates/${id}`);
+
+export const getScheduleSlots = (params) =>
+  axiosWrapper.get("/api/workforce/schedule", { params });
+export const createScheduleSlot = (data) =>
+  axiosWrapper.post("/api/workforce/schedule", data);
+export const bulkCreateScheduleSlots = (data) =>
+  axiosWrapper.post("/api/workforce/schedule/bulk", data);
+export const updateScheduleSlot = ({ id, ...data }) =>
+  axiosWrapper.put(`/api/workforce/schedule/${id}`, data);
+export const deleteScheduleSlot = (id) =>
+  axiosWrapper.delete(`/api/workforce/schedule/${id}`);
+
+export const getLeaveRequests = (params) =>
+  axiosWrapper.get("/api/workforce/leave", { params });
+export const createLeaveRequest = (data) =>
+  axiosWrapper.post("/api/workforce/leave", data);
+export const approveLeaveRequest = (id, data) =>
+  axiosWrapper.post(`/api/workforce/leave/${id}/approve`, data);
+
+export const getWorkHourRecords = (params) =>
+  axiosWrapper.get("/api/workforce/work-hours", { params });
+export const upsertWorkHourRecord = (data) =>
+  axiosWrapper.post("/api/workforce/work-hours", data);
+export const clockIn = (data) =>
+  axiosWrapper.post("/api/workforce/work-hours/clock-in", data);
+export const clockOut = (data) =>
+  axiosWrapper.post("/api/workforce/work-hours/clock-out", data);
+
+export const getWageRules = (params) =>
+  axiosWrapper.get("/api/workforce/wage/rules", { params });
+export const createWageRule = (data) =>
+  axiosWrapper.post("/api/workforce/wage/rules", data);
+export const calculateWage = (data) =>
+  axiosWrapper.post("/api/workforce/wage/calculate", data);
+
 // Kitchen Endpoints
 export const bootstrapKitchenStations = (data) =>
   axiosWrapper.post("/api/kitchen/stations/bootstrap", data);

@@ -55,9 +55,10 @@ const addTable = async (req, res, next) => {
 
 const getTables = async (req, res, next) => {
   try {
+    // 2026-02-24T12:00:00Z: include mergeHistory for unmerge UI in Tables page
     const tables = await Table.find().populate({
       path: "currentOrder",
-      select: "customerDetails orderDate orderStatus paymentMethod items bills sourceType"
+      select: "customerDetails orderDate orderStatus paymentMethod items bills sourceType mergeHistory"
     });
     res.status(200).json({ success: true, data: tables });
   } catch (error) {

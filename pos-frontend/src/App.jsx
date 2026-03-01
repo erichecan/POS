@@ -18,6 +18,10 @@ import {
   TemplatesPage,
   StoresPage,
   TeamPage,
+  TeamSchedulePage,
+  TeamLeavePage,
+  TeamWorkHoursPage,
+  TeamWagePage,
   SettingsPage,
   AuditPage,
 } from "./pages/admin";
@@ -128,6 +132,10 @@ function Layout() {
           <Route path="templates" element={<TemplatesPage />} />
           <Route path="stores" element={<StoresPage />} />
           <Route path="team" element={<TeamPage />} />
+          <Route path="team/schedule" element={<TeamSchedulePage />} />
+          <Route path="team/leave" element={<TeamLeavePage />} />
+          <Route path="team/work-hours" element={<TeamWorkHoursPage />} />
+          <Route path="team/wage" element={<TeamWagePage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="audit" element={<AuditPage />} />
         </Route>
