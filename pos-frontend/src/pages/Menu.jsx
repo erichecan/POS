@@ -90,7 +90,7 @@ const Menu = () => {
             </div>
             <CustomerInfo />
             <hr className="border-[#2a2a2a] border-t-2" />
-            <CartInfo />
+            <CartInfo onAddMore={() => setIsCartPanelOpen(false)} />
             <hr className="border-[#2a2a2a] border-t-2" />
             <Bill />
           </div>

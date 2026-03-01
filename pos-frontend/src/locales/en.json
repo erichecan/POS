@@ -370,6 +370,7 @@
     "orderDetails": "Order Details",
     "items": "Items",
     "empty": "Your cart is empty. Start adding items!",
+    "addMore": "Add more",
     "placeOrder": "Place Order",
     "saveChanges": "Save Changes",
     "submitting": "Submitting...",

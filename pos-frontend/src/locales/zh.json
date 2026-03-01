@@ -370,6 +370,7 @@
     "orderDetails": "订单详情",
     "items": "菜品",
     "empty": "购物车为空，快去添加菜品吧！",
+    "addMore": "加点",
     "placeOrder": "下单",
     "saveChanges": "保存修改",
     "submitting": "提交中...",

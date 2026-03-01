@@ -1,9 +1,11 @@
 // 2026-02-26T21:00:00+08:00: i18n
+// 2026-02-28T12:35:00+08:00: PRD 7.22 - menuOptionProfile 驱动修饰项与多轮加单展示
 import React, { useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { RiDeleteBin2Fill } from "react-icons/ri";
 import { FaRegCopy } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
+import { useVerticalProfile } from "../../contexts/VerticalProfileContext";
 import {
   duplicateItem,
   removeItem,
@@ -28,11 +30,15 @@ const getSelectedOptionIdsByGroup = (modifiers = []) => {
   }, {});
 };
 
-const CartInfo = () => {
+const CartInfo = ({ onAddMore }) => {
   const { t } = useTranslation();
   const cartData = useSelector((state) => state.cart);
   const scrolLRef = useRef();
   const dispatch = useDispatch();
+  const { resolved } = useVerticalProfile();
+  const optionModel = resolved?.menuOptionProfile?.optionModel || "COMBO_AND_MODIFIER";
+  const showModifiers = optionModel !== "SERVICE_PACKAGE";
+  const showMultiRound = ["SMALL_PLATE_MULTI_ROUND", "BASE_AND_MULTI_ROUND"].includes(optionModel);
 
   useEffect(() => {
     if (scrolLRef.current) {
@@ -131,7 +137,7 @@ const CartInfo = () => {
                   </div>
                 </div>
 
-                {optionGroups.length > 0 && (
+                {showModifiers && optionGroups.length > 0 && (
                   <div className="space-y-2">
                     {optionGroups.map((group) => {
                       const groupId = `${group?.id || ""}`.trim();
@@ -253,6 +259,17 @@ const CartInfo = () => {
           })
         )}
       </div>
+      {showMultiRound && cartData.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-[#333]">
+          <button
+            type="button"
+            onClick={() => onAddMore?.()}
+            className="w-full py-2 rounded-lg bg-[#2d3f5d] text-[#dcecff] text-sm font-semibold"
+          >
+            {t("cart.addMore")}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
