@@ -271,10 +271,14 @@ const Bill = () => {
     orderMutation.mutate(payload);
   };
 
+  // 2026-02-28T13:00:00+08:00 PRD 7.23.2 小票打印展示 Logo、品牌标语、促销文案
   const openPrintWindow = (receiptOrder, template) => {
     const mergedTemplate = {
       ...DEFAULT_RECEIPT_TEMPLATE,
       ...(template || {}),
+      logoUrl: template?.logoUrl || "",
+      brandSlogan: template?.brandSlogan || "",
+      promoText: template?.promoText || "",
       fields: {
         ...DEFAULT_RECEIPT_TEMPLATE.fields,
         ...(template?.fields || {}),
@@ -333,8 +337,11 @@ const Bill = () => {
         </head>
         <body>
           <div class="receipt">
+            ${mergedTemplate.logoUrl ? `<div class="logo-wrap" style="text-align:center;margin-bottom:8px"><img src="${mergedTemplate.logoUrl}" alt="Logo" style="max-width:120px;max-height:48px;object-fit:contain" /></div>` : ""}
             <div class="title">${mergedTemplate.headerTitle}</div>
             <div class="store">${mergedTemplate.storeName}</div>
+            ${mergedTemplate.brandSlogan ? `<div class="store" style="font-size:11px;color:#666">${mergedTemplate.brandSlogan}</div>` : ""}
+            ${mergedTemplate.promoText ? `<div class="store" style="font-size:11px;color:#888">${mergedTemplate.promoText}</div>` : ""}
             <div class="sep"></div>
             ${
               fields.showOrderId

@@ -3,6 +3,7 @@
  * 2026-02-24 SaaS admin layout.
  * 2026-02-26: sidebar restructure with sub-menus
  * 2026-02-26: add Table Layout in Organization group
+ * 2026-02-28T13:00:00+08:00: PRD 7.23 品牌管理
  */
 import {
   MdDashboard,
@@ -18,6 +19,7 @@ import {
   MdHistory,
   MdMenuBook,
   MdGridOn,
+  MdCampaign,
 } from "react-icons/md";
 import { IoBarChartSharp } from "react-icons/io5";
 
@@ -78,6 +80,16 @@ export const adminNavConfig = [
       },
       { label: "Hardware", path: "/dashboard/hardware", icon: MdDevices },
       { label: "Templates", path: "/dashboard/templates", icon: MdStorefront },
+      {
+        label: "Brand",
+        icon: MdCampaign,
+        children: [
+          { label: "Brand & Logo", path: "/dashboard/brand/logo" },
+          { label: "Receipt Template", path: "/dashboard/brand/receipt" },
+          { label: "Signage", path: "/dashboard/brand/signage" },
+          { label: "Ad Materials", path: "/dashboard/brand/ads" },
+        ],
+      },
     ],
   },
   {
@@ -130,6 +142,11 @@ export const pathSegmentToLabel = {
   mappings: "Mapping Rules",
   hardware: "Hardware",
   templates: "Templates",
+  brand: "Brand",
+  logo: "Brand & Logo",
+  receipt: "Receipt Template",
+  signage: "Signage",
+  ads: "Ad Materials",
   stores: "Stores",
   layout: "Table Layout",
   team: "Team",

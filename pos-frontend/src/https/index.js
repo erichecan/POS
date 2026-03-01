@@ -59,6 +59,24 @@ export const getReceiptTemplate = (params) =>
 export const upsertReceiptTemplate = (data) =>
   axiosWrapper.put("/api/order/receipt-template", data);
 
+// 2026-02-28T13:00:00+08:00 PRD 7.23 品牌与触点管理
+export const listBrandProfiles = (params) => axiosWrapper.get("/api/brand", { params });
+export const getBrandProfile = (locationId) => axiosWrapper.get(`/api/brand/${locationId}`);
+export const upsertBrandProfile = ({ locationId, ...data }) =>
+  axiosWrapper.put(`/api/brand/${locationId}`, { locationId, ...data });
+
+export const listSignageDevices = (params) => axiosWrapper.get("/api/signage", { params });
+export const getSignageDevice = (id) => axiosWrapper.get(`/api/signage/${id}`);
+export const createSignageDevice = (data) => axiosWrapper.post("/api/signage", data);
+export const updateSignageDevice = ({ id, ...data }) => axiosWrapper.put(`/api/signage/${id}`, data);
+export const deleteSignageDevice = (id) => axiosWrapper.delete(`/api/signage/${id}`);
+
+export const listAdMaterials = (params) => axiosWrapper.get("/api/ad-material", { params });
+export const getAdMaterial = (id) => axiosWrapper.get(`/api/ad-material/${id}`);
+export const createAdMaterial = (data) => axiosWrapper.post("/api/ad-material", data);
+export const updateAdMaterial = ({ id, ...data }) => axiosWrapper.put(`/api/ad-material/${id}`, data);
+export const deleteAdMaterial = (id) => axiosWrapper.delete(`/api/ad-material/${id}`);
+
 // Channel Config Endpoints
 export const createChannelProvider = (data) =>
   axiosWrapper.post("/api/channel-config/providers", data);

@@ -39,6 +39,10 @@ import {
   MenuItemsPage,
   MenuVersionsPage,
   MenuCategoriesPage,
+  BrandLogoPage,
+  BrandReceiptPage,
+  BrandSignagePage,
+  BrandAdsPage,
 } from "./pages/dashboard/index.js";
 import Header from "./components/shared/Header";
 import NotFound from "./components/shared/NotFound";
@@ -130,6 +134,10 @@ function Layout() {
           <Route path="channels/mappings" element={<ChannelMappingsPage />} />
           <Route path="hardware" element={<HardwarePage />} />
           <Route path="templates" element={<TemplatesPage />} />
+          <Route path="brand/logo" element={<BrandLogoPage />} />
+          <Route path="brand/receipt" element={<BrandReceiptPage />} />
+          <Route path="brand/signage" element={<BrandSignagePage />} />
+          <Route path="brand/ads" element={<BrandAdsPage />} />
           <Route path="stores" element={<StoresPage />} />
           <Route path="team" element={<TeamPage />} />
           <Route path="team/schedule" element={<TeamSchedulePage />} />

@@ -68,6 +68,7 @@ const sanitizeCustomerDetails = (customerDetails) => {
 
 const normalizeLocationIdInput = (locationId) => `${locationId || ""}`.trim() || "default";
 
+// 2026-02-28T13:00:00+08:00: PRD 7.23.2 小票模板扩展 logoUrl, brandSlogan, promoText
 const sanitizeReceiptTemplateInput = (payload = {}) => {
   const allowedBooleanFields = [
     "showOrderId",
@@ -103,6 +104,18 @@ const sanitizeReceiptTemplateInput = (payload = {}) => {
       payload.footerMessage === undefined
         ? undefined
         : `${payload.footerMessage || ""}`.trim().slice(0, 200),
+    logoUrl:
+      payload.logoUrl === undefined
+        ? undefined
+        : `${payload.logoUrl || ""}`.trim().slice(0, 512),
+    brandSlogan:
+      payload.brandSlogan === undefined
+        ? undefined
+        : `${payload.brandSlogan || ""}`.trim().slice(0, 120),
+    promoText:
+      payload.promoText === undefined
+        ? undefined
+        : `${payload.promoText || ""}`.trim().slice(0, 200),
     fields: sanitizedFields,
   };
 };
@@ -114,6 +127,9 @@ const mergeWithDefaultTemplate = (row) => {
     headerTitle: safeRow.headerTitle || DEFAULT_RECEIPT_TEMPLATE.headerTitle,
     storeName: safeRow.storeName || DEFAULT_RECEIPT_TEMPLATE.storeName,
     footerMessage: safeRow.footerMessage || DEFAULT_RECEIPT_TEMPLATE.footerMessage,
+    logoUrl: safeRow.logoUrl || "",
+    brandSlogan: safeRow.brandSlogan || "",
+    promoText: safeRow.promoText || "",
     fields: {
       ...DEFAULT_RECEIPT_TEMPLATE.fields,
       ...(safeRow.fields || {}),
@@ -717,6 +733,9 @@ const upsertReceiptTemplate = async (req, res, next) => {
     if (sanitized.footerMessage !== undefined) {
       $set.footerMessage = sanitized.footerMessage || DEFAULT_RECEIPT_TEMPLATE.footerMessage;
     }
+    if (sanitized.logoUrl !== undefined) $set.logoUrl = sanitized.logoUrl || "";
+    if (sanitized.brandSlogan !== undefined) $set.brandSlogan = sanitized.brandSlogan || "";
+    if (sanitized.promoText !== undefined) $set.promoText = sanitized.promoText || "";
     if (Object.keys(sanitized.fields || {}).length > 0) {
       Object.entries(sanitized.fields).forEach(([fieldKey, fieldValue]) => {
         $set[`fields.${fieldKey}`] = fieldValue;

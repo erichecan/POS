@@ -81,6 +81,10 @@ app.use("/api/device", require("./routes/deviceRoute"));
 app.use("/api/self-order", require("./routes/selfOrderRoute"));
 app.use("/api/compliance", require("./routes/complianceRoute"));
 app.use("/api/partner", require("./routes/partnerRoute"));
+// 2026-02-28T13:00:00+08:00: PRD 7.23 品牌与触点管理
+app.use("/api/brand", require("./routes/brandRoute"));
+app.use("/api/signage", require("./routes/signageRoute"));
+app.use("/api/ad-material", require("./routes/adMaterialRoute"));
 
 // Global Error Handler
 app.use(globalErrorHandler);
