@@ -42,6 +42,7 @@ import AdminLayout from "./layouts/AdminLayout";
 import { useSelector } from "react-redux";
 import useLoadData from "./hooks/useLoadData";
 import FullScreenLoader from "./components/shared/FullScreenLoader";
+import { VerticalProfileProvider } from "./contexts/VerticalProfileContext";
 
 const normalizeRole = (role) => `${role || ""}`.trim().toLowerCase();
 
@@ -52,12 +53,13 @@ function Layout() {
   const isDashboard = location.pathname.startsWith("/dashboard");
   const { isAuth } = useSelector(state => state.user);
 
-  if(isLoading) return <FullScreenLoader />
+  if (isLoading) return <FullScreenLoader />;
 
   return (
-    <>
-      {!hideHeaderRoutes.includes(location.pathname) && !isDashboard && <Header />}
-      <Routes>
+    <VerticalProfileProvider>
+      <>
+        {!hideHeaderRoutes.includes(location.pathname) && !isDashboard && <Header />}
+        <Routes>
         <Route
           path="/"
           element={
@@ -147,7 +149,8 @@ function Layout() {
         />
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </>
+      </>
+    </VerticalProfileProvider>
   );
 }
 
