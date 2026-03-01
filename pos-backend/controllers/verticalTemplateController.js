@@ -80,23 +80,38 @@ const listStoreVerticalProfiles = async (req, res, next) => {
   }
 };
 
+// 2026-02-28T12:00:00+08:00: PRD 7.22 行业模版消费端 - Profile 404 时返回 fallback 配置
 const getStoreVerticalProfile = async (req, res, next) => {
   try {
     const locationId = normalizeLocationId(req.params.locationId);
     const includeResolved = `${req.query.includeResolved || ""}`.trim().toLowerCase() === "true";
     const profile = await StoreVerticalProfile.findOne({ locationId });
-    if (!profile) {
-      return next(createHttpError(404, "Store vertical profile not found."));
-    }
 
-    const payload = {
-      ...profile.toObject(),
-    };
-    if (includeResolved) {
-      payload.resolvedTemplate = resolveVerticalTemplateConfig({
-        templateCode: profile.templateCode,
-        overrides: profile.overrides || {},
-      });
+    let payload;
+    if (!profile) {
+      const fallbackTemplateCode = "MILK_TEA";
+      payload = {
+        locationId,
+        countryCode: "US",
+        templateCode: fallbackTemplateCode,
+        profileStatus: "ACTIVE",
+        overrides: {},
+        isFallback: true,
+      };
+      if (includeResolved) {
+        payload.resolvedTemplate = resolveVerticalTemplateConfig({
+          templateCode: fallbackTemplateCode,
+          overrides: {},
+        });
+      }
+    } else {
+      payload = { ...profile.toObject() };
+      if (includeResolved) {
+        payload.resolvedTemplate = resolveVerticalTemplateConfig({
+          templateCode: profile.templateCode,
+          overrides: profile.overrides || {},
+        });
+      }
     }
 
     return res.status(200).json({ success: true, data: payload });
