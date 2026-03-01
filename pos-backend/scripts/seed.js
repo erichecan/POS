@@ -562,17 +562,26 @@ const seedPromotions = async () => {
   return { rules, coupons };
 };
 
+// 2026-02-28T12:10:00+08:00: PRD 7.22 - 确保 default location 有 vertical profile（POS 单店场景）
 const seedStoreProfiles = async (stores) => {
   await StoreVerticalProfile.deleteMany({});
-  const profiles = await StoreVerticalProfile.insertMany(
-    stores.map((s) => ({
-      locationId: s.locationId,
-      countryCode: "CN",
+  const profileList = stores.map((s) => ({
+    locationId: s.locationId,
+    countryCode: "US",
+    templateCode: "WESTERN_DINING",
+    profileStatus: "ACTIVE",
+    overrides: {},
+  }));
+  if (!profileList.some((p) => p.locationId === "default")) {
+    profileList.push({
+      locationId: "default",
+      countryCode: "US",
       templateCode: "WESTERN_DINING",
       profileStatus: "ACTIVE",
       overrides: {},
-    }))
-  );
+    });
+  }
+  const profiles = await StoreVerticalProfile.insertMany(profileList);
   console.log(`  StoreVerticalProfiles: ${profiles.length}`);
   return profiles;
 };
